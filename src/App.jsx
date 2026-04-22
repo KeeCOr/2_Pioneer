@@ -1409,6 +1409,34 @@ const OceanTycoon = () => {
                 </div>
               )}
 
+              {/* 배 — 줌 독립 고정 크기 + smooth transition */}
+              {(() => {
+                const mapW = mapRef.current?.clientWidth  || 600;
+                const mapH = mapRef.current?.clientHeight || 400;
+                const intervalMs = Math.max(16, Math.round(300 / gameSpeed));
+                return gs.ships.map(s => {
+                  const isSel     = s.id === selShip;
+                  const isStormed = s.stormUntil && Date.now() < s.stormUntil;
+                  const crewCnt   = gs.crew.filter(c => c.shipId === s.id).length;
+                  const sx = mapView.x + (s.x / 100) * mapW * mapView.zoom;
+                  const sy = mapView.y + (s.y / 100) * mapH * mapView.zoom;
+                  return (
+                    <div key={s.id} className="absolute select-none"
+                      style={{left: sx, top: sy, transform:'translate(-50%,-50%)', zIndex:20,
+                        transition: s.isMoving ? `left ${intervalMs}ms linear, top ${intervalMs}ms linear` : 'none'}}>
+                      {isSel && <div className="absolute rounded-full border-4 border-gold animate-ping opacity-50 pointer-events-none" style={{width:44,height:44,top:-6,left:-6}}/>}
+                      {isSel && <div className="absolute rounded-full border-2 border-yellow-300 pointer-events-none" style={{width:38,height:38,top:-3,left:-3,boxShadow:'0 0 12px #facc15'}}/>}
+                      {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
+                      {s.booster && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
+                      {isStormed && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
+                      <div className={`text-2xl ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
+                        {SHIP_TYPES[s.type].icon}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+
               {/* ⚡ 부스터 버튼 */}
               {gs.ships.filter(s => s.isMoving).map(s => {
                 const pos = getShipScreenPos(s); if (!pos) return null;
@@ -1435,13 +1463,15 @@ const OceanTycoon = () => {
                 {/* 항해 이벤트 */}
                 {mapEvents.filter(e => !e.claimed).map(evt => (
                   <div key={evt.id}
-                    className={`absolute z-15 text-center transition-all ${evt.clickable?'cursor-pointer pointer-events-auto hover:scale-125':'pointer-events-none'}`}
+                    className={`absolute z-15 text-center transition-all ${evt.clickable?'cursor-pointer pointer-events-auto':'pointer-events-none'}`}
                     style={{left:`${evt.x}%`,top:`${evt.y}%`,transform:'translate(-50%,-50%)'}}
                     onClick={evt.clickable?(e)=>{e.stopPropagation();claimEvent(evt.id);}:undefined}>
-                    <div className="text-2xl animate-bounce drop-shadow-lg">{evt.icon}</div>
-                    <div className="text-white font-bold whitespace-nowrap bg-black bg-opacity-70 px-1.5 py-0.5 rounded mt-0.5"
-                      style={{fontSize:'0.5rem',textShadow:'0 0 4px #000'}}>
-                      {evt.label}{evt.clickable&&!evt.claimed&&evt.reward>0?' (클릭!)':''}
+                    <div style={{transform:`scale(${1/mapView.zoom})`,transformOrigin:'center center'}}>
+                      <div className="text-2xl animate-bounce drop-shadow-lg">{evt.icon}</div>
+                      <div className="text-white font-bold whitespace-nowrap bg-black bg-opacity-70 px-1.5 py-0.5 rounded mt-0.5"
+                        style={{fontSize:'0.5rem',textShadow:'0 0 4px #000'}}>
+                        {evt.label}{evt.clickable&&!evt.claimed&&evt.reward>0?' (클릭!)':''}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1452,40 +1482,24 @@ const OceanTycoon = () => {
                   const isTutTarget = tutorialPhase==='depart'&&(k==='london'||k==='antwerp');
                   return (
                     <div key={k} className="absolute" style={{left:`${p.x}%`,top:`${p.y}%`,transform:'translate(-50%,-50%)',zIndex:10}}>
-                      {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:56,height:56,top:-10,left:-10,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 select-none transition-transform ${routeMode?'hover:scale-150 animate-bounce':'hover:scale-125'} ${rs.border}`}
-                        style={{backgroundColor:rs.color+'22',boxShadow:(routeMode||isTutTarget)?`0 0 12px ${rs.color}`:'none'}}>
-                        {rs.icon}
-                      </div>
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 pointer-events-none" style={{zIndex:100}}>
-                        <div className="px-1 py-0.5 rounded whitespace-nowrap font-bold"
-                          style={{color:rs.color,textShadow:'0 0 4px #000, 0 0 8px #000',fontSize:'0.55rem'}}>
-                          {p.country} {p.name}
+                      <div style={{transform:`scale(${1/mapView.zoom})`,transformOrigin:'center center'}}>
+                        {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:56,height:56,top:-10,left:-10,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 select-none ${routeMode?'animate-bounce':''}  ${rs.border}`}
+                          style={{backgroundColor:rs.color+'22',boxShadow:(routeMode||isTutTarget)?`0 0 12px ${rs.color}`:'none'}}>
+                          {rs.icon}
+                        </div>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 pointer-events-none" style={{zIndex:100}}>
+                          <div className="px-1 py-0.5 rounded whitespace-nowrap font-bold"
+                            style={{color:rs.color,textShadow:'0 0 4px #000, 0 0 8px #000',fontSize:'0.55rem'}}>
+                            {p.country} {p.name}
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* 배 */}
-                {gs.ships.map(s => {
-                  const isSel = s.id === selShip;
-                  const crewCnt = gs.crew.filter(c => c.shipId === s.id).length;
-                  const isStormed = s.stormUntil && Date.now() < s.stormUntil;
-                  return (
-                    <div key={s.id} className="absolute select-none" style={{left:`${s.x}%`,top:`${s.y}%`,transform:'translate(-50%,-50%)',zIndex:20}}>
-                      {isSel&&<div className="absolute rounded-full border-4 border-gold animate-ping opacity-50 pointer-events-none" style={{width:64,height:64,top:-16,left:-16}}/>}
-                      {isSel&&<div className="absolute rounded-full border-2 border-yellow-300 pointer-events-none" style={{width:56,height:56,top:-12,left:-12,boxShadow:'0 0 16px #facc15'}}/>}
-                      {crewCnt===0&&<div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️무승원</div>}
-                      {s.booster&&<div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
-                      {isStormed&&<div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
-                      <div className={`text-4xl transition-all ${s.isMoving?'animate-bounce':''} ${isSel?'scale-125':''}`}>{SHIP_TYPES[s.type].icon}</div>
-                      <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded whitespace-nowrap text-xs font-bold pointer-events-none ${isSel?'opacity-100 bg-gold text-ocean-dark':'opacity-0'}`}>
-                        {isSel&&routeMode?'🎯 목적지 선택':s.name}
-                      </div>
-                    </div>
-                  );
-                })}
+                {/* 배는 transform 레이어 밖에서 렌더링 (크기 고정) */}
 
                 {/* 항로 선 — 완료(밝음) + 잔여(점선) */}
                 {cur?.isMoving && (
