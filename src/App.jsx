@@ -333,7 +333,7 @@ const OceanTycoon = () => {
     const el = mapRef.current; if (!el) return;
     el.addEventListener('wheel', handleWheel, { passive: false });
     return () => el.removeEventListener('wheel', handleWheel);
-  }, [handleWheel]);
+  }, [handleWheel, introSlide]); // introSlide 변경 시 재등록 (인트로 종료 후 지도가 DOM에 마운트됨)
 
   // 배 추적: followShip ON일 때 선택된 배에 5배 줌으로 카메라 따라가기
   useEffect(() => {
