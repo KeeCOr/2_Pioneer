@@ -221,6 +221,39 @@ const generateQuests = () => {
   ];
 };
 
+// ── 일일 목표 생성 ──
+const DAILY_RESET_INTERVAL = 24 * 60 * 60 * 1000; // 24시간
+const generateDailyGoals = (taxLevel = 1) => {
+  const portKeys = Object.keys(PORTS), resKeys = Object.keys(RESOURCES);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const scale = Math.max(1, 1 + (taxLevel - 1) * 0.4);
+  const res = pick(resKeys);
+  const tPort = pick(portKeys);
+  const deliverAmt = Math.floor((8 + Math.floor(Math.random() * 15)) * scale);
+  const visitAmt  = Math.min(8, 2 + Math.floor(taxLevel / 3));
+  const goldAmt   = Math.floor((2000 + Math.floor(Math.random() * 3000)) * scale);
+  const tradesCnt = Math.min(10, 3 + Math.floor(taxLevel / 4));
+  return [
+    { id: 'dg_deliver', type: 'dg_deliver', title: `${RESOURCES[res].icon} ${res} 일일 배달`,
+      desc: `오늘 ${res} ${deliverAmt}개를 ${PORTS[tPort].name}에 판매`,
+      resource: res, targetPort: tPort, targetPortName: PORTS[tPort].name,
+      target: deliverAmt, progress: 0,
+      rewardGold: Math.floor(deliverAmt * 80 * scale), rewardGems: 1, completed: false },
+    { id: 'dg_visit', type: 'dg_visit', title: '🧭 일일 항구 순례',
+      desc: `오늘 항구 ${visitAmt}곳 방문`,
+      target: visitAmt, progress: 0, visitedToday: [],
+      rewardGold: Math.floor(600 * scale), rewardGems: 1, completed: false },
+    { id: 'dg_gold', type: 'dg_gold', title: '💰 일일 매출 목표',
+      desc: `오늘 총 ${goldAmt.toLocaleString()}금 판매`,
+      target: goldAmt, progress: 0,
+      rewardGold: Math.floor(goldAmt * 0.3), rewardGems: 0, completed: false },
+    { id: 'dg_trades', type: 'dg_trades', title: '🔄 일일 거래 횟수',
+      desc: `오늘 ${tradesCnt}회 이상 판매`,
+      target: tradesCnt, progress: 0,
+      rewardGold: Math.floor(400 * scale), rewardGems: 0, completed: false },
+  ];
+};
+
 // ==================== 튜토리얼 단계 ====================
 const TUTORIAL_STEPS = {
   select:  { step: 1, total: 5, icon: '👆', title: '배 선택',    text: '왼쪽 함대 목록 또는 지도의 배 아이콘을 클릭해 배를 선택하세요.' },
@@ -283,6 +316,10 @@ const OceanTycoon = () => {
   const [showInfo,      setShowInfo]      = useState(false);
   const [showAllCrew,   setShowAllCrew]   = useState(false);
   const [showQuests,    setShowQuests]    = useState(false);
+  const [dailyGoals,    setDailyGoals]    = useState([]);
+  const [dailyResetAt,  setDailyResetAt]  = useState(0);
+  const [dailyCountdown,setDailyCountdown]= useState('');
+  const [showDailyGoals,setShowDailyGoals]= useState(false);
   const [mapEvents,     setMapEvents]     = useState([]);
   const [saveExists,    setSaveExists]    = useState(() => !!localStorage.getItem('pioneer_save'));
   const [saveDecided,   setSaveDecided]   = useState(false);
@@ -479,22 +516,34 @@ const OceanTycoon = () => {
   // ── 저장/불러오기 ──
   const saveGame = useCallback(() => {
     const data = {
-      saveVersion: '1.1',
+      saveVersion: '1.2',
       savedAt: new Date().toISOString(),
       gs: gsRef.current,
+      dailyGoals: dailyGoals,
+      dailyResetAt: dailyResetAt,
     };
     localStorage.setItem('pioneer_save', JSON.stringify(data));
     setLastSaved(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     addLog('💾 게임이 저장되었습니다.');
-  }, [addLog]);
+  }, [addLog, dailyGoals, dailyResetAt]);
 
   const handleLoad = useCallback(() => {
     try {
       const raw = localStorage.getItem('pioneer_save');
       if (!raw) return;
       const data = JSON.parse(raw);
-      if (data.saveVersion !== '1.1') { addLog('⚠️ 저장 버전 불일치. 새 게임을 시작합니다.'); setSaveDecided(true); return; }
+      if (!['1.1','1.2'].includes(data.saveVersion)) { addLog('⚠️ 저장 버전 불일치. 새 게임을 시작합니다.'); setSaveDecided(true); return; }
       setGs(data.gs);
+      if (data.dailyGoals && data.dailyResetAt) {
+        const now = Date.now();
+        if (now < data.dailyResetAt) {
+          setDailyGoals(data.dailyGoals);
+          setDailyResetAt(data.dailyResetAt);
+        } else {
+          setDailyGoals(generateDailyGoals(data.gs?.taxLevel || 1));
+          setDailyResetAt(now + DAILY_RESET_INTERVAL);
+        }
+      }
       const t = new Date(data.savedAt).toLocaleString('ko-KR');
       addLog(`📂 저장된 게임을 불러왔습니다. (${t})`);
     } catch { addLog('⚠️ 저장 파일 손상. 새 게임을 시작합니다.'); }
@@ -527,7 +576,33 @@ const OceanTycoon = () => {
     Object.entries(p).forEach(([k, r]) => { h[k] = {}; Object.keys(r).forEach(res => { h[k][res] = [p[k][res]]; }); });
     setPriceHistory(h);
     setGs(prev => ({ ...prev, availableQuests: generateQuests() }));
+    // 일일 목표 초기화 (로드 시 덮어씌워짐)
+    setDailyGoals(generateDailyGoals(1));
+    const nextMidnight = new Date(); nextMidnight.setHours(24, 0, 0, 0);
+    setDailyResetAt(nextMidnight.getTime());
   }, []);
+
+  // ── 일일 목표 카운트다운 & 자동 리셋 ──
+  useEffect(() => {
+    if (!dailyResetAt) return;
+    const id = setInterval(() => {
+      const now = Date.now();
+      if (now >= dailyResetAt) {
+        const goals = generateDailyGoals(gsRef.current?.taxLevel || 1);
+        setDailyGoals(goals);
+        const next = now + DAILY_RESET_INTERVAL;
+        setDailyResetAt(next);
+        addLog('🌅 일일 목표가 초기화되었습니다!');
+        return;
+      }
+      const rem = dailyResetAt - now;
+      const h = Math.floor(rem / 3600000);
+      const m = Math.floor((rem % 3600000) / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      setDailyCountdown(`${h}시간 ${m}분 ${s}초`);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [dailyResetAt, addLog]);
 
   // ── 이동 루프 ──
   useEffect(() => {
@@ -583,6 +658,26 @@ const OceanTycoon = () => {
         }
         return { ...prev, ships, activeQuests, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus };
       });
+      // 일일 방문 목표 추적 (setGs 밖에서 처리)
+      if (arrivedPorts.length > 0) {
+        setDailyGoals(goals => goals.map(g => {
+          if (g.type !== 'dg_visit' || g.completed) return g;
+          let updated = g;
+          arrivedPorts.forEach(({ portKey: pk }) => {
+            if (!(updated.visitedToday || []).includes(pk)) {
+              const newVisited = [...(updated.visitedToday || []), pk];
+              const np = newVisited.length;
+              const done = np >= updated.target;
+              if (done && !updated.completed) {
+                addLog(`🌟 일일 목표 완료: ${updated.title} +${updated.rewardGold.toLocaleString()}금 +${updated.rewardGems}💎`);
+                setGsRaw(prev => ({ ...prev, gold: prev.gold + updated.rewardGold, gems: prev.gems + updated.rewardGems }));
+              }
+              updated = { ...updated, progress: np, visitedToday: newVisited, completed: done };
+            }
+          });
+          return updated;
+        }));
+      }
     }, Math.max(16, Math.round(300 / gameSpeedRef.current)));
     return () => clearInterval(id);
   }, [paused, prices, gameSpeed, addLog]);
@@ -810,6 +905,25 @@ const OceanTycoon = () => {
         ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo } : s), activeQuests: updatedQuests };
     });
     addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금`);
+    // 일일 목표 진행 추적
+    setDailyGoals(goals => {
+      let bonusGold = 0, bonusGems = 0;
+      const next = goals.map(g => {
+        if (g.completed) return g;
+        let np = g.progress, done = false;
+        if (g.type === 'dg_gold') { np = g.progress + total; done = np >= g.target; }
+        else if (g.type === 'dg_trades') { np = g.progress + 1; done = np >= g.target; }
+        else if (g.type === 'dg_deliver' && g.resource === res && portKey === g.targetPort) { np = Math.min(g.target, g.progress + qty); done = np >= g.target; }
+        else return g;
+        if (done && !g.completed) {
+          bonusGold += g.rewardGold; bonusGems += g.rewardGems || 0;
+          addLog(`🌟 일일 목표 완료: ${g.title} +${g.rewardGold.toLocaleString()}금${g.rewardGems ? ` +${g.rewardGems}💎` : ''}`);
+        }
+        return { ...g, progress: np, completed: done };
+      });
+      if (bonusGold > 0 || bonusGems > 0) setGsRaw(prev => ({ ...prev, gold: prev.gold + bonusGold, gems: prev.gems + bonusGems }));
+      return next;
+    });
   }, [cur, portKey, prices, setGs, gs.crew, addLog]);
 
   const refuel = () => {
@@ -1039,6 +1153,48 @@ const OceanTycoon = () => {
         </div>
       )}
 
+      {/* 일일 목표 모달 */}
+      {showDailyGoals && (
+        <div className="fixed inset-0 bg-black/80 z-40 flex items-center justify-center p-4" onClick={() => setShowDailyGoals(false)}>
+          <div className="bg-ocean-dark border-2 border-yellow-500 rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center px-5 py-4 border-b border-yellow-600">
+              <div>
+                <span className="text-lg font-bold text-yellow-400">🌅 일일 목표</span>
+                <span className="text-xs text-gray-400 ml-3">리셋까지: {dailyCountdown}</span>
+              </div>
+              <button onClick={() => setShowDailyGoals(false)} className="text-gray-400 hover:text-gold text-xl">✕</button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-4 space-y-3">
+              {dailyGoals.map(g => {
+                const pct = Math.min(100, (g.progress / g.target) * 100);
+                const progressText = g.type === 'dg_gold'
+                  ? `${Math.floor(g.progress).toLocaleString()} / ${g.target.toLocaleString()}금`
+                  : `${g.progress} / ${g.target}`;
+                return (
+                  <div key={g.id} className={`rounded-xl p-4 border ${g.completed ? 'border-green-500 bg-green-950' : 'border-gray-600 bg-ocean-blue'}`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <span className={`font-bold text-sm ${g.completed ? 'text-green-400' : 'text-yellow-300'}`}>{g.completed ? '✅ ' : ''}{g.title}</span>
+                      <span className="text-xs text-yellow-200 whitespace-nowrap ml-2">+{g.rewardGold.toLocaleString()}금{g.rewardGems ? ` +${g.rewardGems}💎` : ''}</span>
+                    </div>
+                    <div className="text-xs text-gray-400 mb-3">{g.desc}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-ocean-dark rounded-full h-2">
+                        <div className={`${g.completed ? 'bg-green-400' : 'bg-yellow-400'} rounded-full h-2 transition-all`} style={{width:`${pct}%`}}/>
+                      </div>
+                      <span className="text-xs text-yellow-300 whitespace-nowrap font-bold">{progressText}</span>
+                    </div>
+                    {g.completed && <div className="text-xs text-green-400 mt-2 font-bold">🎉 완료! 보상이 자동 지급되었습니다.</div>}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-4 py-3 border-t border-yellow-600/40 text-xs text-gray-500 text-center">
+              매일 자정에 새로운 목표가 생성됩니다
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 퀘스트 모달 */}
       {showQuests && (
         <div className="fixed inset-0 bg-black bg-opacity-80 z-40 flex items-center justify-center p-4">
@@ -1255,6 +1411,11 @@ const OceanTycoon = () => {
           </div>
           <button onClick={() => setShowAllCrew(true)} className="border-l border-gold pl-3 text-xs text-gray-300 hover:text-gold whitespace-nowrap">
             👥 승무원<br/><span className="text-gray-500">{gs.crew.length}명</span>
+          </button>
+          <button onClick={() => setShowDailyGoals(true)} className="border-l border-gold pl-3 text-xs text-gray-300 hover:text-yellow-400 whitespace-nowrap relative">
+            🌅 일일목표<br/>
+            <span className="text-gray-500">{dailyGoals.filter(g=>g.completed).length}/{dailyGoals.length}완료</span>
+            {dailyGoals.some(g=>g.completed) && <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"/>}
           </button>
           <button onClick={() => setShowQuests(true)} className="border-l border-gold pl-3 text-xs text-gray-300 hover:text-gold whitespace-nowrap relative">
             📋 퀘스트<br/><span className="text-gray-500">{gs.activeQuests.length}/3</span>
@@ -1604,6 +1765,30 @@ const OceanTycoon = () => {
               </div>
             </div>
           </div>
+
+          {/* 일일 목표 미니 위젯 */}
+          {dailyGoals.length > 0 && (
+            <div className="mt-1 bg-ocean-dark rounded border border-yellow-600 border-opacity-60 px-3 py-1.5 flex-shrink-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-yellow-400">🌅 일일 목표</span>
+                <span className="text-xs text-gray-500">{dailyCountdown && `리셋: ${dailyCountdown}`}</span>
+                <button onClick={() => setShowDailyGoals(true)} className="ml-auto text-xs text-gray-400 hover:text-yellow-400">상세 보기 →</button>
+              </div>
+              <div className="flex gap-2">
+                {dailyGoals.map(g => {
+                  const pct = Math.min(100, (g.progress / g.target) * 100);
+                  return (
+                    <div key={g.id} className="flex-1 min-w-0">
+                      <div className="text-xs text-gray-400 truncate mb-0.5">{g.title}</div>
+                      <div className="w-full bg-gray-800 rounded-full h-1.5">
+                        <div className={`${g.completed ? 'bg-green-400' : 'bg-yellow-400'} rounded-full h-1.5 transition-all`} style={{width:`${pct}%`}}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* 로그 */}
           <div className="mt-1 bg-ocean-dark rounded border border-gold border-opacity-40 px-3 py-1.5 max-h-16 overflow-y-auto flex-shrink-0">
