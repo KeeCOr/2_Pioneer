@@ -220,6 +220,15 @@ const generateQuests = () => {
   ];
 };
 
+// ==================== 튜토리얼 단계 ====================
+const TUTORIAL_STEPS = {
+  select:  { step: 1, total: 5, icon: '👆', title: '배 선택',    text: '왼쪽 함대 목록 또는 지도의 배 아이콘을 클릭해 배를 선택하세요.' },
+  depart:  { step: 2, total: 5, icon: '🧭', title: '항구 선택',  text: '배가 선택됐어요! 이제 지도에서 목적지 항구를 클릭하세요.\n💡 양털은 유럽 항구(런던·함부르크·앤트워프)에서 비싸게 팔립니다.' },
+  sailing: { step: 3, total: 5, icon: '⛵', title: '항해 중',    text: '배가 출발했어요! 📍 추적 버튼을 눌러 5배 줌으로 배를 가까이 따라가 보세요.\n배 근처 이벤트 아이콘을 클릭하면 보상을 얻을 수 있어요.' },
+  sell:    { step: 4, total: 5, icon: '💰', title: '도착! 판매', text: '항구에 도착했어요! 지도 우측 상단 🏪 시장 버튼을 클릭해 화물을 판매하세요.' },
+  buy:     { step: 5, total: 5, icon: '🛍️', title: '화물 매입', text: '화물을 다 팔았어요! 이 항구에서 싼 물건을 사서 비싼 곳에 파는 게 핵심입니다.\n🏪 시장 → [매입] 탭을 이용하세요.' },
+};
+
 // ==================== 컴포넌트 ====================
 const OceanTycoon = () => {
   const gsRef = useRef(null);
@@ -252,7 +261,7 @@ const OceanTycoon = () => {
 
   const [introSlide,    setIntroSlide]    = useState(0);
   // 'depart' → 'sailing' → 'sell' → 'buy' → 'done'
-  const [tutorialPhase, setTutorialPhase] = useState('depart');
+  const [tutorialPhase, setTutorialPhase] = useState('select');
   const [selShip,       setSelShipRaw]    = useState(1);
   const [tab,           setTab]           = useState('info');
   const [showBuy,       setShowBuy]       = useState(false);
@@ -288,6 +297,7 @@ const OceanTycoon = () => {
   }, []);
 
   const [grabbing, setGrabbing] = useState(false);
+  const [followShip, setFollowShip] = useState(false);
   const mapRef   = useRef(null);
   const dragRef  = useRef({ active: false, sx: 0, sy: 0, px: 0, py: 0, moved: false });
   const ptrsRef  = useRef({});
@@ -320,6 +330,25 @@ const OceanTycoon = () => {
     return () => el.removeEventListener('wheel', handleWheel);
   }, [handleWheel]);
 
+  // 배 추적: followShip ON일 때 선택된 배에 5배 줌으로 카메라 따라가기
+  useEffect(() => {
+    if (!followShip) return;
+    const ship = gs.ships.find(s => s.id === selShip);
+    if (!ship?.isMoving || !mapRef.current) return;
+    const el = mapRef.current;
+    const W = el.clientWidth, H = el.clientHeight;
+    const zoom = 5;
+    const { x, y } = clampXY(W / 2 - (ship.x / 100) * W * zoom, H / 2 - (ship.y / 100) * H * zoom, zoom);
+    setMapView({ zoom, x, y });
+  }, [gs.ships, followShip, selShip, clampXY, setMapView]);
+
+  // 배가 정박하면 추적 모드 자동 해제
+  useEffect(() => {
+    if (!followShip) return;
+    const ship = gs.ships.find(s => s.id === selShip);
+    if (!ship?.isMoving) setFollowShip(false);
+  }, [followShip, gs.ships, selShip]);
+
   const onPtrDown = useCallback((e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     ptrsRef.current[e.pointerId] = { x: e.clientX, y: e.clientY };
@@ -327,6 +356,7 @@ const OceanTycoon = () => {
     if (n === 1) {
       dragRef.current = { active: true, sx: e.clientX, sy: e.clientY, px: mapViewRef.current.x, py: mapViewRef.current.y, moved: false };
       setGrabbing(true);
+      setFollowShip(false);
     } else if (n === 2) {
       dragRef.current.active = false;
       const ids = Object.keys(ptrsRef.current);
@@ -375,7 +405,9 @@ const OceanTycoon = () => {
         if (hits.length > 0) {
           const curIdx = hits.findIndex(s => s.id === selShipRef.current);
           const hit = hits.length === 1 ? hits[0] : hits[(curIdx + 1) % hits.length];
-          setSelShip(hit.id); setRouteMode(true); return;
+          setSelShip(hit.id); setRouteMode(true);
+          if (tutorialPhase === 'select') setTutorialPhase('depart');
+          return;
         }
         if (routeModeRef.current) {
           const portEntry = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - mx, p.y - my) < 5);
@@ -397,7 +429,7 @@ const OceanTycoon = () => {
         }
       }
     }
-  }, [setGs, setSelShip, setRouteMode, tutorialPhase, addLog]);
+  }, [setGs, setSelShip, setRouteMode, tutorialPhase, setTutorialPhase, addLog]);
 
   // ── 저장/불러오기 ──
   const saveGame = useCallback(() => {
@@ -1113,28 +1145,76 @@ const OceanTycoon = () => {
       <div className="flex flex-1 min-h-0 gap-2 p-2">
         {/* 지도 */}
         <div className="flex-1 flex flex-col min-w-0">
-          {tutorialPhase !== 'done' && (
-            <div className={`mb-1 rounded-lg px-3 py-2 text-xs font-bold flex items-center justify-between gap-2
-              ${tutorialPhase==='depart'?'bg-blue-900 border border-blue-500 text-blue-100'
-              :tutorialPhase==='sailing'?'bg-indigo-900 border border-indigo-400 text-indigo-100'
-              :tutorialPhase==='sell'?'bg-green-900 border border-green-500 text-green-100'
-              :'bg-yellow-900 border border-yellow-500 text-yellow-100'}`}>
-              <span className="animate-pulse mr-1">▶</span>
-              <span className="flex-1">
-                {tutorialPhase==='depart'&&'배를 클릭 → 지도에서 목적지 항구를 클릭하면 항해 시작! 양털은 유럽 항구(런던·함부르크 등)에서 비싸게 팔립니다.'}
-                {tutorialPhase==='sailing'&&'항해 중! 마우스 휠(또는 핀치)로 줌인하면 배를 가까이 볼 수 있어요. 배 근처에 나타나는 이벤트를 클릭해보세요!'}
-                {tutorialPhase==='sell'&&'도착! 오른쪽 상단 🏪 시장 버튼 → [매도] 탭에서 양털을 판매해 차익을 남기세요!'}
-                {tutorialPhase==='buy'&&'화물을 모두 팔았어요! 이 항구에서 싼 물건을 사서 비싼 곳에 파는 게 핵심입니다. 🏪 시장 → [매입] 탭을 눌러보세요.'}
-              </span>
-              <button onClick={() => setTutorialPhase('done')} className="opacity-40 hover:opacity-100 flex-shrink-0">✕</button>
-            </div>
-          )}
+          {tutorialPhase !== 'done' && TUTORIAL_STEPS[tutorialPhase] && (() => {
+            const step = TUTORIAL_STEPS[tutorialPhase];
+            const colorMap = {
+              select:  'border-blue-400 bg-blue-950',
+              depart:  'border-blue-400 bg-blue-950',
+              sailing: 'border-indigo-400 bg-indigo-950',
+              sell:    'border-green-500 bg-green-950',
+              buy:     'border-yellow-500 bg-yellow-950',
+            };
+            return (
+              <div className={`mb-1 rounded-lg border px-3 py-2 flex items-start gap-2 ${colorMap[tutorialPhase]}`}>
+                <span className="text-xl flex-shrink-0 mt-0.5">{step.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-white mb-0.5">
+                    <span className="opacity-50 mr-1 font-normal">{step.step}/{step.total}</span>{step.title}
+                  </div>
+                  <div className="text-xs text-gray-200 whitespace-pre-line leading-relaxed">{step.text}</div>
+                  {tutorialPhase === 'sailing' && (
+                    <button
+                      onClick={() => {
+                        const turning = !followShip;
+                        setFollowShip(turning);
+                        if (turning && cur?.isMoving && mapRef.current) {
+                          const el = mapRef.current;
+                          const W = el.clientWidth, H = el.clientHeight, zoom = 5;
+                          const { x, y } = clampXY(W / 2 - (cur.x / 100) * W * zoom, H / 2 - (cur.y / 100) * H * zoom, zoom);
+                          setMapView({ zoom, x, y });
+                        }
+                      }}
+                      className={`mt-1.5 px-3 py-1 rounded text-xs font-bold border transition-all
+                        ${followShip
+                          ? 'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse'
+                          : 'bg-indigo-700 text-indigo-100 border-indigo-400 hover:bg-indigo-600'}`}
+                    >
+                      📍 {followShip ? '추적 중 — 클릭해서 해제' : '배 추적 켜기 (5배 줌)'}
+                    </button>
+                  )}
+                </div>
+                <button onClick={() => setTutorialPhase('done')} className="text-gray-400 hover:text-white flex-shrink-0 text-base leading-none mt-0.5">✕</button>
+              </div>
+            );
+          })()}
           <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-bold text-gold">🗺️ 세계 항해도 <span className="text-xs text-gray-500 font-normal">({Object.keys(PORTS).length}개 항구 | 최대 24x줌)</span></span>
+            <span className="text-sm font-bold text-gold">🗺️ 세계 항해도 <span className="text-xs text-gray-500 font-normal">({Object.keys(PORTS).length}개 항구 | {mapView.zoom.toFixed(1)}x)</span></span>
             <div className="flex gap-1 items-center">
               <button onClick={() => setMapView(p => { const nz=Math.min(24,p.zoom*1.5); const {x,y}=clampXY(p.x,p.y,nz); return {zoom:nz,x,y}; })} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">＋</button>
               <button onClick={() => setMapView(p => { const nz=Math.max(0.5,p.zoom/1.5); const {x,y}=clampXY(p.x,p.y,nz); return {zoom:nz,x,y}; })} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">－</button>
               <button onClick={() => setMapView({x:0,y:0,zoom:1})} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">⊡</button>
+              <button
+                onClick={() => {
+                  const turning = !followShip;
+                  setFollowShip(turning);
+                  if (turning && cur?.isMoving && mapRef.current) {
+                    const el = mapRef.current;
+                    const W = el.clientWidth, H = el.clientHeight, zoom = 5;
+                    const { x, y } = clampXY(W / 2 - (cur.x / 100) * W * zoom, H / 2 - (cur.y / 100) * H * zoom, zoom);
+                    setMapView({ zoom, x, y });
+                  }
+                }}
+                disabled={!cur?.isMoving}
+                title={followShip ? '추적 해제' : '배 추적 (5배 줌인)'}
+                className={`px-2 py-0.5 rounded text-xs font-bold border ml-1 transition-all
+                  ${followShip
+                    ? 'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse'
+                    : cur?.isMoving
+                      ? 'bg-ocean-dark border-blue-400 text-blue-300 hover:bg-blue-900'
+                      : 'bg-ocean-dark border-gray-700 text-gray-600 opacity-50 cursor-not-allowed'}`}
+              >
+                📍 {followShip ? '추적 중' : '추적'}
+              </button>
               <button onClick={() => setPaused(p => !p)} className={`px-2 py-0.5 rounded text-xs font-bold ml-1 ${paused?'bg-gold text-ocean-dark':'bg-ocean-light text-gold'}`}>{paused?'▶':'⏸'}</button>
             </div>
           </div>
@@ -1393,7 +1473,7 @@ const OceanTycoon = () => {
                 const isStormed = s.stormUntil && Date.now() < s.stormUntil;
                 const prog = journeyProgress(s);
                 return (
-                  <button key={s.id} onClick={() => {setSelShip(s.id);setRouteMode(true);}}
+                  <button key={s.id} onClick={() => {setSelShip(s.id);setRouteMode(true); if(tutorialPhase==='select') setTutorialPhase('depart');}}
                     className={`w-full p-2 rounded text-xs text-left border transition-all ${isSel?'bg-gold text-ocean-dark font-bold border-yellow-300':'bg-ocean-blue hover:bg-ocean-light border-transparent'}`}>
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-bold">{SHIP_TYPES[s.type].icon} {s.name}</span>
