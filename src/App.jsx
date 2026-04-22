@@ -268,6 +268,9 @@ const OceanTycoon = () => {
   const [log,           setLog]           = useState(['⚓ 리스본 항구. 양털 20개가 적재되어 있습니다.']);
   const [prices,        setPrices]        = useState({});
   const [paused,        setPaused]        = useState(false);
+  const [gameSpeed,     setGameSpeedRaw]  = useState(1);
+  const gameSpeedRef = useRef(1);
+  const setGameSpeed = (s) => { gameSpeedRef.current = s; setGameSpeedRaw(s); };
   const [lastPrice,     setLastPrice]     = useState(Date.now());
   const [nextUpd,       setNextUpd]       = useState(3600);
   const [lastTax,       setLastTax]       = useState(Date.now());
@@ -535,9 +538,9 @@ const OceanTycoon = () => {
         }
         return { ...prev, ships, activeQuests, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus };
       });
-    }, 300);
+    }, Math.max(16, Math.round(300 / gameSpeedRef.current)));
     return () => clearInterval(id);
-  }, [paused, prices, addLog]);
+  }, [paused, prices, gameSpeed, addLog]);
 
   // ── 이벤트 생성 (5초 간격) ──
   useEffect(() => {
@@ -599,7 +602,7 @@ const OceanTycoon = () => {
     if (paused) return;
     const id = setInterval(() => {
       const el = Math.floor((Date.now() - lastPrice) / 1000);
-      if (el >= 3600) {
+      if (el >= Math.ceil(3600 / gameSpeedRef.current)) {
         setPrices(p => {
           const n = { ...p };
           Object.entries(n).forEach(([k, r]) =>
@@ -620,7 +623,7 @@ const OceanTycoon = () => {
         setLastPrice(Date.now());
         addLog('📈 전세계 시세가 변동되었습니다!');
         saveGame(); // 자동 저장
-      } else setNextUpd(3600 - el);
+      } else setNextUpd(Math.ceil(3600 / gameSpeedRef.current) - el);
     }, 1000);
     return () => clearInterval(id);
   }, [paused, lastPrice, addLog]);
@@ -630,7 +633,7 @@ const OceanTycoon = () => {
     if (paused) return;
     const id = setInterval(() => {
       const el = Math.floor((Date.now() - lastTax) / 1000);
-      if (el >= 600) {
+      if (el >= Math.ceil(600 / gameSpeedRef.current)) {
         setGs(prev => {
           const tax = calcTax(prev.ships.length, prev.taxLevel);
           if (prev.gold >= tax) {
@@ -645,7 +648,7 @@ const OceanTycoon = () => {
           }
         });
         setLastTax(Date.now());
-      } else setNextTax(600 - el);
+      } else setNextTax(Math.ceil(600 / gameSpeedRef.current) - el);
     }, 1000);
     return () => clearInterval(id);
   }, [paused, lastTax, addLog]);
@@ -693,9 +696,9 @@ const OceanTycoon = () => {
     }
   }, [tutorialPhase, cur?.isMoving, addLog]);
   useEffect(() => {
-    if (atPort) setShowMarket(true);
+    if (atPort && !cur?.isMoving) setShowMarket(true);
     else { setShowMarket(false); setShowSellModal(false); }
-  }, [atPort]);
+  }, [atPort, cur?.isMoving]);
 
   // ── 거래 ──
   const getBuy  = (res) => calcBuyPrice(prices[portKey]?.[res] || 0, st?.tradePct || 0);
@@ -1216,6 +1219,13 @@ const OceanTycoon = () => {
                 📍 {followShip ? '추적 중' : '추적'}
               </button>
               <button onClick={() => setPaused(p => !p)} className={`px-2 py-0.5 rounded text-xs font-bold ml-1 ${paused?'bg-gold text-ocean-dark':'bg-ocean-light text-gold'}`}>{paused?'▶':'⏸'}</button>
+              {[1,2,5,10].map(s => (
+                <button key={s} onClick={() => setGameSpeed(s)}
+                  className={`px-1.5 py-0.5 rounded text-xs font-bold ml-0.5 transition-all
+                    ${gameSpeed===s?'bg-gold text-ocean-dark':'bg-ocean-dark border border-gold border-opacity-40 text-gold opacity-50 hover:opacity-100'}`}>
+                  {s}×
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1227,7 +1237,7 @@ const OceanTycoon = () => {
 
               {/* 지도 버튼 */}
               <div className="absolute top-2 right-2 z-30 flex flex-col gap-1">
-                {atPort && <button onClick={() => setShowMarket(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
+                {atPort && !cur?.isMoving && <button onClick={() => setShowMarket(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
                 <button onClick={() => setShowInfo(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showInfo?'bg-ocean-dark text-blue-300 border border-blue-500':'bg-blue-800 text-blue-200 hover:bg-blue-700 border border-blue-600'}`}>{showInfo?'✕ 정보':'📰 정보'}</button>
               </div>
 
