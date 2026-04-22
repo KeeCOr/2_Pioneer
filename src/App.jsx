@@ -268,6 +268,8 @@ const OceanTycoon = () => {
   const [showBuy,       setShowBuy]       = useState(false);
   const [log,           setLog]           = useState(['⚓ 리스본 항구. 양털 20개가 적재되어 있습니다.']);
   const [prices,        setPrices]        = useState({});
+  const [priceHistory,  setPriceHistory]  = useState({});
+  const [showPortPrice, setShowPortPrice] = useState(null);
   const [paused,        setPaused]        = useState(false);
   const [gameSpeed,     setGameSpeedRaw]  = useState(1);
   const gameSpeedRef = useRef(1);
@@ -448,8 +450,12 @@ const OceanTycoon = () => {
           if (tutorialPhase === 'select') setTutorialPhase('depart');
           return;
         }
+        const portEntry = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - mx, p.y - my) < 5);
+        if (!routeModeRef.current && portEntry) {
+          setShowPortPrice(p => p === portEntry[0] ? null : portEntry[0]);
+          return;
+        }
         if (routeModeRef.current) {
-          const portEntry = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - mx, p.y - my) < 5);
           if (portEntry) {
             const [pk] = portEntry;
             const sid = selShipRef.current;
@@ -468,7 +474,7 @@ const OceanTycoon = () => {
         }
       }
     }
-  }, [setGs, setSelShip, setRouteMode, tutorialPhase, setTutorialPhase, addLog]);
+  }, [setGs, setSelShip, setRouteMode, tutorialPhase, setTutorialPhase, addLog, setShowPortPrice]);
 
   // ── 저장/불러오기 ──
   const saveGame = useCallback(() => {
@@ -517,6 +523,9 @@ const OceanTycoon = () => {
       });
     });
     setPrices(p);
+    const h = {};
+    Object.entries(p).forEach(([k, r]) => { h[k] = {}; Object.keys(r).forEach(res => { h[k][res] = [p[k][res]]; }); });
+    setPriceHistory(h);
     setGs(prev => ({ ...prev, availableQuests: generateQuests() }));
   }, []);
 
@@ -655,6 +664,17 @@ const OceanTycoon = () => {
             }),
           }));
           return n;
+        });
+        setPriceHistory(h => {
+          const nh = {};
+          Object.entries(n).forEach(([k, r]) => {
+            nh[k] = { ...(h[k] || {}) };
+            Object.entries(r).forEach(([res, v]) => {
+              const arr = nh[k][res] || [];
+              nh[k][res] = [...arr, v].slice(-20);
+            });
+          });
+          return nh;
         });
         setLastPrice(Date.now());
         addLog('📈 전세계 시세가 변동되었습니다!');
@@ -1075,6 +1095,73 @@ const OceanTycoon = () => {
                   ))}
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 항구 시세 패널 */}
+      {showPortPrice && prices[showPortPrice] && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowPortPrice(null)}>
+          <div className="w-[480px] max-h-[85vh] bg-ocean-dark border border-gold rounded-2xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gold flex-shrink-0">
+              <div>
+                <span className="text-base font-bold text-gold">📊 {PORTS[showPortPrice].country} {PORTS[showPortPrice].name} — 시세</span>
+                <span className="text-xs text-gray-400 ml-2">항구 클릭으로 닫기</span>
+              </div>
+              <button onClick={() => setShowPortPrice(null)} className="text-gray-400 hover:text-gold text-lg">✕</button>
+            </div>
+            <div className="overflow-y-auto flex-1 px-3 py-2">
+              <div className="grid grid-cols-1 gap-1.5">
+                {Object.entries(RESOURCES).map(([res, { icon }]) => {
+                  const hist = priceHistory[showPortPrice]?.[res] || [];
+                  const cur2 = hist[hist.length - 1] ?? prices[showPortPrice][res];
+                  const prev2 = hist[hist.length - 2] ?? cur2;
+                  const delta = cur2 - prev2;
+                  const buyP  = calcBuyPrice(cur2, 0);
+                  const sellP = calcSellPrice(cur2, 0);
+                  const minH = Math.min(...hist, cur2);
+                  const maxH = Math.max(...hist, cur2);
+                  const range = maxH - minH || 1;
+                  const W = 80, H = 28;
+                  const pts = hist.length > 1
+                    ? hist.map((v, i) => `${(i / (hist.length - 1)) * W},${H - ((v - minH) / range) * H}`).join(' ')
+                    : `0,${H/2} ${W},${H/2}`;
+                  const trendColor = delta > 0 ? '#4ade80' : delta < 0 ? '#f87171' : '#9ca3af';
+                  return (
+                    <div key={res} className="flex items-center gap-3 bg-ocean-blue rounded-lg px-3 py-2">
+                      <div className="w-24 flex items-center gap-1.5 flex-shrink-0">
+                        <span className="text-base">{icon}</span>
+                        <span className="text-xs font-bold text-gray-200 truncate">{res}</span>
+                      </div>
+                      <div className="flex-shrink-0 w-20 h-7">
+                        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{overflow:'visible'}}>
+                          <polyline points={pts} fill="none" stroke={trendColor} strokeWidth="1.5" strokeLinejoin="round"/>
+                          {hist.length > 0 && <circle cx={(hist.length-1)/(hist.length-1||1)*W} cy={H-((hist[hist.length-1]-minH)/range)*H} r="2.5" fill={trendColor}/>}
+                        </svg>
+                      </div>
+                      <div className="flex-1 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="text-xs text-gray-400">매입</span>
+                          <span className="text-sm font-bold text-yellow-300">{buyP.toLocaleString()}</span>
+                          <span className="text-xs text-gray-500">|</span>
+                          <span className="text-xs text-gray-400">판매</span>
+                          <span className="text-sm font-bold text-green-300">{sellP.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-end gap-1 mt-0.5">
+                          <span className="text-xs" style={{color: trendColor}}>
+                            {delta > 0 ? '▲' : delta < 0 ? '▼' : '─'} {Math.abs(delta)}
+                          </span>
+                          <span className="text-xs text-gray-600">({hist.length}회 기록)</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="px-4 py-2 border-t border-gold border-opacity-30 flex-shrink-0 text-xs text-gray-500 text-center">
+              항로 모드에서 항구 클릭 시 항로 설정 | 일반 모드에서 클릭 시 시세 보기
             </div>
           </div>
         </div>
