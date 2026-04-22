@@ -303,8 +303,10 @@ const OceanTycoon = () => {
   const [followShip, setFollowShip] = useState(false);
   const mapRef   = useRef(null);
   const dragRef  = useRef({ active: false, sx: 0, sy: 0, px: 0, py: 0, moved: false });
-  const ptrsRef  = useRef({});
-  const pinchRef = useRef({ dist: 0 });
+  const ptrsRef    = useRef({});
+  const pinchRef   = useRef({ dist: 0 });
+  const lastTapRef = useRef({ time: 0, x: 0, y: 0 });
+  const zoomDragRef= useRef({ active: false, startY: 0, startZoom: 1, cx: 0, cy: 0 });
 
   const clampXY = useCallback((x, y, zoom) => {
     const el = mapRef.current; if (!el) return { x, y };
@@ -357,21 +359,52 @@ const OceanTycoon = () => {
     ptrsRef.current[e.pointerId] = { x: e.clientX, y: e.clientY };
     const n = Object.keys(ptrsRef.current).length;
     if (n === 1) {
-      dragRef.current = { active: true, sx: e.clientX, sy: e.clientY, px: mapViewRef.current.x, py: mapViewRef.current.y, moved: false };
+      const now = Date.now();
+      const dt  = now - lastTapRef.current.time;
+      const dd  = Math.hypot(e.clientX - lastTapRef.current.x, e.clientY - lastTapRef.current.y);
+      const isDoubleTap = e.pointerType !== 'mouse' && dt < 300 && dd < 50;
+      lastTapRef.current = { time: now, x: e.clientX, y: e.clientY };
+      if (isDoubleTap) {
+        // 더블탭: 즉시 zoomDrag 모드 — 위로 드래그=줌인, 아래=줌아웃
+        const rect = mapRef.current.getBoundingClientRect();
+        zoomDragRef.current = {
+          active: true,
+          startY: e.clientY,
+          startZoom: mapViewRef.current.zoom,
+          cx: e.clientX - rect.left,
+          cy: e.clientY - rect.top,
+        };
+        dragRef.current.active = false;
+        lastTapRef.current.time = 0; // 다음 탭이 다시 더블탭 트리거하지 않도록 리셋
+      } else {
+        zoomDragRef.current.active = false;
+        dragRef.current = { active: true, sx: e.clientX, sy: e.clientY, px: mapViewRef.current.x, py: mapViewRef.current.y, moved: false };
+      }
       setGrabbing(true);
       setFollowShip(false);
     } else if (n === 2) {
+      zoomDragRef.current.active = false;
       dragRef.current.active = false;
       const ids = Object.keys(ptrsRef.current);
       pinchRef.current.dist = Math.hypot(ptrsRef.current[ids[1]].x - ptrsRef.current[ids[0]].x, ptrsRef.current[ids[1]].y - ptrsRef.current[ids[0]].y);
     }
-  }, []);
+  }, [setFollowShip]);
 
   const onPtrMove = useCallback((e) => {
     if (!ptrsRef.current[e.pointerId]) return;
     ptrsRef.current[e.pointerId] = { x: e.clientX, y: e.clientY };
     const n = Object.keys(ptrsRef.current).length;
-    if (n === 1 && dragRef.current.active) {
+    if (n === 1 && zoomDragRef.current.active) {
+      // 더블탭 드래그 줌: 위=줌인, 아래=줌아웃
+      const dy = zoomDragRef.current.startY - e.clientY;
+      const nz = Math.max(0.5, Math.min(24, zoomDragRef.current.startZoom * Math.pow(1.012, dy)));
+      const { cx, cy } = zoomDragRef.current;
+      setMapView(prev => {
+        const { x, y } = clampXY(cx - (cx - prev.x) * nz / prev.zoom, cy - (cy - prev.y) * nz / prev.zoom, nz);
+        return { zoom: nz, x, y };
+      });
+      dragRef.current.moved = true;
+    } else if (n === 1 && dragRef.current.active) {
       const dx = e.clientX - dragRef.current.sx, dy = e.clientY - dragRef.current.sy;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) dragRef.current.moved = true;
       setMapView(prev => { const { x, y } = clampXY(dragRef.current.px + dx, dragRef.current.py + dy, prev.zoom); return { ...prev, x, y }; });
@@ -394,10 +427,12 @@ const OceanTycoon = () => {
   const addLog = useCallback((m) => setLog(p => [m, ...p.slice(0, 29)]), []);
 
   const onPtrUp = useCallback((e) => {
-    const wasMoved = dragRef.current.moved;
+    const wasMoved = dragRef.current.moved || zoomDragRef.current.active;
     delete ptrsRef.current[e.pointerId];
     if (Object.keys(ptrsRef.current).length === 0) {
-      dragRef.current.active = false; dragRef.current.moved = false; setGrabbing(false);
+      dragRef.current.active = false; dragRef.current.moved = false;
+      zoomDragRef.current.active = false;
+      setGrabbing(false);
       if (!wasMoved) {
         const rect = mapRef.current.getBoundingClientRect();
         const { x: vx, y: vy, zoom } = mapViewRef.current;
