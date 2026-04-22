@@ -98,7 +98,8 @@ const PORT_INFO = [
   { id: 'analysis', tier: 'premium', baseCost: 3000, name: '상업 분석 보고서', desc: '전문 분석가 예측. (1회)',       accuracy: 0.58, magMin: 60,  magMax: 130, repeat: false },
   { id: 'route',    tier: 'premium', baseCost: 8000, name: '내부 정보',        desc: '항구 관리인 내부 정보. (1회)', accuracy: 0.72, magMin: 100, magMax: 200, repeat: false },
 ];
-const infoCurrentCost = (info, bc) => Math.floor(info.baseCost * Math.pow(1.5, bc[info.id] || 0));
+const infoCurrentCost = (info, bc, taxLevel = 1) =>
+  Math.floor(info.baseCost * Math.pow(1.12, Math.max(0, taxLevel - 1)) * Math.pow(1.5, bc[info.id] || 0));
 
 const SPECIAL_CREW_POOL = [
   { name: '이순신',       specialty: 'east_asia',     navBonus: 55, tradeBonus: 25, rarity: 'legendary', label: '🌟전설의 장군'     },
@@ -851,7 +852,7 @@ const OceanTycoon = () => {
     addLog(`🔧 ${{ speed:'돛', cargo:'화물칸', crew:'선원숙소' }[key]} Lv.${lv+1} -${cost}금`);
   };
   const buyInfo = (info) => {
-    const cost = infoCurrentCost(info, gs.infoBuyCounts);
+    const cost = infoCurrentCost(info, gs.infoBuyCounts, gs.taxLevel);
     if (gs.gold < cost) { addLog(`❌ 금 부족! 필요: ${cost.toLocaleString()}금`); return; }
     const premKey = !info.repeat ? info.id : null;
     if (premKey && gs.purchasedInfo[premKey]) { addLog('❌ 이미 구매한 정보!'); return; }
@@ -1278,7 +1279,8 @@ const OceanTycoon = () => {
 
               {/* 시장 팝업 — 매입 전용 */}
               {atPort && showMarket && cur && (
-                <div className="absolute top-2 right-20 z-20 w-80 bg-ocean-dark bg-opacity-97 border border-gold rounded-xl shadow-2xl flex flex-col" style={{maxHeight:'calc(100% - 1rem)'}}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowMarket(false)}>
+                <div className="w-80 max-h-[85vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gold flex-shrink-0">
                     <div className="text-sm font-bold text-gold">🏪 {PORTS[portKey].name} — 매입</div>
                     <div className="flex items-center gap-2">
@@ -1312,6 +1314,7 @@ const OceanTycoon = () => {
                     <button onClick={refuel} className="flex-1 py-1 rounded text-xs bg-orange-900 hover:bg-orange-700 text-orange-200 border border-orange-700">⛽ 보충 ({Math.floor((100-(cur?.fuel??100))*2)}금)</button>
                     <button onClick={doRepair} className="flex-1 py-1 rounded text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600">🔧 수리 ({Math.floor((100-(cur?.hull??100))*5)}금)</button>
                   </div>
+                </div>
                 </div>
               )}
 
@@ -1360,14 +1363,18 @@ const OceanTycoon = () => {
 
               {/* 정보 팝업 */}
               {showInfo && (
-                <div className="absolute top-2 right-20 z-20 w-72 bg-ocean-dark bg-opacity-97 border border-blue-500 rounded-xl shadow-2xl flex flex-col" style={{maxHeight:'calc(100% - 1rem)'}}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowInfo(false)}>
+                <div className="w-80 max-h-[85vh] bg-ocean-dark border border-blue-500 rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-3 py-2 border-b border-blue-500 flex-shrink-0">
-                    <span className="text-sm font-bold text-blue-300">📰 국제 정보 시장</span>
+                    <div>
+                      <span className="text-sm font-bold text-blue-300">📰 국제 정보 시장</span>
+                      {gs.taxLevel > 1 && <span className="text-xs text-orange-400 ml-2">시대 Lv.{gs.taxLevel} 가격 적용</span>}
+                    </div>
                     <button onClick={() => setShowInfo(false)} className="text-gray-400 hover:text-gold">✕</button>
                   </div>
                   <div className="overflow-y-auto flex-1 p-2">
                     {PORT_INFO.map(info => {
-                      const cost = infoCurrentCost(info, gs.infoBuyCounts);
+                      const cost = infoCurrentCost(info, gs.infoBuyCounts, gs.taxLevel);
                       const cnt  = gs.infoBuyCounts[info.id] || 0;
                       const premKey = !info.repeat ? info.id : null;
                       const bought  = premKey && gs.purchasedInfo[premKey];
@@ -1398,6 +1405,7 @@ const OceanTycoon = () => {
                       </div>
                     )}
                   </div>
+                </div>
                 </div>
               )}
 
