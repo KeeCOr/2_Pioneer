@@ -1657,112 +1657,129 @@ const OceanTycoon = () => {
                 </div>
               )}
 
-              {/* 배 — 줌 독립 고정 크기 + smooth transition */}
+              {/* ── 맵 레이어 시스템 (모든 오브젝트를 스크린 좌표로 직접 배치) ──
+                  카메라: mapView = { x, y, zoom }
+                  월드→스크린: sx = x + (wx/100)*W*zoom, sy = y + (wy/100)*H*zoom
+                  CSS scale() 미사용 → 줌 화질 저하 없음, 드래그 시 오브젝트 흔들림 없음 */}
               {(() => {
-                const mapW = mapRef.current?.clientWidth  || 600;
-                const mapH = mapRef.current?.clientHeight || 400;
-                const intervalMs = Math.max(16, Math.round(300 / gameSpeed));
-                return gs.ships.map(s => {
-                  const isSel     = s.id === selShip;
-                  const isStormed = s.stormUntil && Date.now() < s.stormUntil;
-                  const crewCnt   = gs.crew.filter(c => c.shipId === s.id).length;
-                  const sx = mapView.x + (s.x / 100) * mapW * mapView.zoom;
-                  const sy = mapView.y + (s.y / 100) * mapH * mapView.zoom;
-                  return (
-                    <div key={s.id} className="absolute select-none"
-                      style={{left: sx, top: sy, transform:'translate(-50%,-50%)', zIndex:20,
-                        transition: s.isMoving ? `left ${intervalMs}ms linear, top ${intervalMs}ms linear` : 'none'}}>
-                      {isSel && <div className="absolute rounded-full border-4 border-gold animate-ping opacity-50 pointer-events-none" style={{width:44,height:44,top:-6,left:-6}}/>}
-                      {isSel && <div className="absolute rounded-full border-2 border-yellow-300 pointer-events-none" style={{width:38,height:38,top:-3,left:-3,boxShadow:'0 0 12px #facc15'}}/>}
-                      {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
-                      {s.booster && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
-                      {isStormed && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
-                      <div className={`text-2xl ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
-                        {SHIP_TYPES[s.type].icon}
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
+                const W = mapRef.current?.clientWidth  || 600;
+                const H = mapRef.current?.clientHeight || 400;
+                const { x: vx, y: vy, zoom } = mapView;
+                const ws = (wx, wy) => ({ sx: vx + (wx/100)*W*zoom, sy: vy + (wy/100)*H*zoom });
 
-              {/* ⚡ 부스터 버튼 */}
-              {gs.ships.filter(s => s.isMoving).map(s => {
-                const pos = getShipScreenPos(s); if (!pos) return null;
-                const isSel = s.id === selShip;
-                const mapW = mapRef.current?.clientWidth||600, mapH = mapRef.current?.clientHeight||400;
-                const bx = Math.min(mapW-90, Math.max(0, pos.sx-40)), by = Math.min(mapH-30, Math.max(40, pos.sy-55));
                 return (
-                  <button key={s.id} onClick={(e) => { e.stopPropagation(); toggleBooster(s.id); }}
-                    className={`absolute z-25 text-xs font-bold rounded-lg px-2 py-1 shadow-lg border transition-all pointer-events-auto
-                      ${s.booster?'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse':isSel?'bg-blue-700 hover:bg-blue-500 text-blue-100 border-blue-400':'bg-blue-900 text-blue-300 border-blue-700 opacity-75 hover:opacity-100'}`}
-                    style={{left:bx,top:by}}>
-                    ⚡ {s.booster?'부스터 ON':'부스터'}
-                  </button>
-                );
-              })}
+                  <>
+                    {/* ① 격자 — SVG, 고정 strokeWidth */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:1}}>
+                      {Array.from({length:21}).map((_,i) => {
+                        const pct = i * 5;
+                        const { sx: lx } = ws(pct, 0);
+                        const { sy: ly } = ws(0, pct);
+                        return (
+                          <g key={i} opacity="0.06" stroke="#d4a574" strokeWidth="1">
+                            <line x1={lx} y1={0} x2={lx} y2={H}/>
+                            <line x1={0} y1={ly} x2={W} y2={ly}/>
+                          </g>
+                        );
+                      })}
+                    </svg>
 
-              {/* 변환 레이어 */}
-              <div style={{position:'absolute',inset:0,transform:`translate(${mapView.x}px,${mapView.y}px) scale(${mapView.zoom})`,transformOrigin:'0 0',willChange:'transform'}}>
-                <div className="absolute inset-0 opacity-5 pointer-events-none">
-                  {Array.from({length:20}).map((_,i) => <div key={`h${i}`} className="absolute w-full h-px bg-gold" style={{top:`${i*5}%`}}/>)}
-                  {Array.from({length:20}).map((_,i) => <div key={`v${i}`} className="absolute h-full w-px bg-gold" style={{left:`${i*5}%`}}/>)}
-                </div>
+                    {/* ② 항로선 + 항로 설정 선 — SVG, 고정 strokeWidth */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:5}}>
+                      <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto"><polygon points="0 0,8 2.5,0 5" fill="#d4a574"/></marker></defs>
+                      {cur?.isMoving && cur.startX != null && (() => {
+                        const a = ws(cur.startX, cur.startY), b = ws(cur.x, cur.y);
+                        return <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#facc15" strokeWidth="2" opacity="0.5"/>;
+                      })()}
+                      {cur?.isMoving && (() => {
+                        const a = ws(cur.x, cur.y), b = ws(cur.targetX, cur.targetY);
+                        return <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#d4a574" strokeWidth="2" strokeDasharray="8,4" opacity="0.7" markerEnd="url(#arr)"/>;
+                      })()}
+                      {routeMode && cur && Object.entries(PORTS).map(([k, p]) => {
+                        if (Math.hypot(p.x-cur.x, p.y-cur.y) < 0.5) return null;
+                        const a = ws(cur.x, cur.y), b = ws(p.x, p.y);
+                        return <line key={k} x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#d4a574" strokeWidth="1" opacity="0.25"/>;
+                      })}
+                    </svg>
 
-                {/* 항해 이벤트 */}
-                {mapEvents.filter(e => !e.claimed).map(evt => (
-                  <div key={evt.id}
-                    className={`absolute z-15 text-center transition-all ${evt.clickable?'cursor-pointer pointer-events-auto':'pointer-events-none'}`}
-                    style={{left:`${evt.x}%`,top:`${evt.y}%`,transform:'translate(-50%,-50%)'}}
-                    onClick={evt.clickable?(e)=>{e.stopPropagation();claimEvent(evt.id);}:undefined}>
-                    <div style={{transform:`scale(${1/mapView.zoom})`,transformOrigin:'center center'}}>
-                      <div className="text-2xl animate-bounce drop-shadow-lg">{evt.icon}</div>
-                      <div className="text-white font-bold whitespace-nowrap bg-black bg-opacity-70 px-1.5 py-0.5 rounded mt-0.5"
-                        style={{fontSize:'0.5rem',textShadow:'0 0 4px #000'}}>
-                        {evt.label}{evt.clickable&&!evt.claimed&&evt.reward>0?' (클릭!)':''}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* 항구 */}
-                {Object.entries(PORTS).map(([k, p]) => {
-                  const rs = REGION_STYLE[p.region];
-                  const isTutTarget = tutorialPhase==='depart'&&(k==='london'||k==='antwerp');
-                  return (
-                    <div key={k} className="absolute" style={{left:`${p.x}%`,top:`${p.y}%`,transform:'translate(-50%,-50%)',zIndex:10}}>
-                      <div style={{transform:`scale(${1/mapView.zoom})`,transformOrigin:'center center'}}>
-                        {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:56,height:56,top:-10,left:-10,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 select-none ${routeMode?'animate-bounce':''}  ${rs.border}`}
-                          style={{backgroundColor:rs.color+'22',boxShadow:(routeMode||isTutTarget)?`0 0 12px ${rs.color}`:'none'}}>
-                          {rs.icon}
-                        </div>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 pointer-events-none" style={{zIndex:100}}>
-                          <div className="px-1 py-0.5 rounded whitespace-nowrap font-bold"
-                            style={{color:rs.color,textShadow:'0 0 4px #000, 0 0 8px #000',fontSize:'0.55rem'}}>
+                    {/* ③ 항구 — 스크린 좌표, 고정 크기 */}
+                    {Object.entries(PORTS).map(([k, p]) => {
+                      const { sx, sy } = ws(p.x, p.y);
+                      if (sx < -80 || sx > W+80 || sy < -80 || sy > H+80) return null;
+                      const rs = REGION_STYLE[p.region];
+                      const isTutTarget = tutorialPhase==='depart'&&(k==='london'||k==='antwerp');
+                      return (
+                        <div key={k} className="absolute" style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:10}}>
+                          {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:52,height:52,top:-26,left:-26,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 select-none ${routeMode?'animate-bounce':''} ${rs.border}`}
+                            style={{backgroundColor:rs.color+'22',boxShadow:(routeMode||isTutTarget)?`0 0 12px ${rs.color}`:'none'}}>
+                            {rs.icon}
+                          </div>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 pointer-events-none whitespace-nowrap font-bold"
+                            style={{color:rs.color, textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.55rem'}}>
                             {p.country} {p.name}
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
 
-                {/* 배는 transform 레이어 밖에서 렌더링 (크기 고정) */}
+                    {/* ④ 항해 이벤트 — 스크린 좌표, 고정 크기 */}
+                    {mapEvents.filter(e => !e.claimed).map(evt => {
+                      const { sx, sy } = ws(evt.x, evt.y);
+                      if (sx < -50 || sx > W+50 || sy < -50 || sy > H+50) return null;
+                      return (
+                        <div key={evt.id}
+                          className={`absolute text-center ${evt.clickable?'cursor-pointer pointer-events-auto':'pointer-events-none'}`}
+                          style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:12}}
+                          onClick={evt.clickable?(e)=>{e.stopPropagation();claimEvent(evt.id);}:undefined}>
+                          <div className="text-xl animate-bounce drop-shadow-lg">{evt.icon}</div>
+                          <div className="text-white font-bold whitespace-nowrap bg-black/70 px-1 py-0.5 rounded mt-0.5"
+                            style={{fontSize:'0.45rem',textShadow:'0 0 4px #000'}}>
+                            {evt.label}{evt.clickable&&!evt.claimed&&evt.reward>0?' (클릭!)':''}
+                          </div>
+                        </div>
+                      );
+                    })}
 
-                {/* 항로 선 — 완료(밝음) + 잔여(점선) */}
-                {cur?.isMoving && (
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:5}}>
-                    <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto"><polygon points="0 0,8 2.5,0 5" fill="#d4a574"/></marker></defs>
-                    {cur.startX != null && <line x1={`${cur.startX}%`} y1={`${cur.startY}%`} x2={`${cur.x}%`} y2={`${cur.y}%`} stroke="#facc15" strokeWidth="2" opacity="0.5"/>}
-                    <line x1={`${cur.x}%`} y1={`${cur.y}%`} x2={`${cur.targetX}%`} y2={`${cur.targetY}%`} stroke="#d4a574" strokeWidth="2" strokeDasharray="8,4" opacity="0.7" markerEnd="url(#arr)"/>
-                  </svg>
-                )}
-                {routeMode&&cur&&(
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:4}}>
-                    {Object.entries(PORTS).map(([k,p])=>Math.hypot(p.x-cur.x,p.y-cur.y)<0.5?null:<line key={k} x1={`${cur.x}%`} y1={`${cur.y}%`} x2={`${p.x}%`} y2={`${p.y}%`} stroke="#d4a574" strokeWidth="0.8" opacity="0.2"/>)}
-                  </svg>
-                )}
-              </div>
+                    {/* ⑤ 배 — 스크린 좌표, 고정 크기, CSS transition 없음 (드래그 시 흔들림 방지) */}
+                    {gs.ships.map(s => {
+                      const { sx, sy } = ws(s.x, s.y);
+                      const isSel     = s.id === selShip;
+                      const isStormed = s.stormUntil && Date.now() < s.stormUntil;
+                      const crewCnt   = gs.crew.filter(c => c.shipId === s.id).length;
+                      return (
+                        <div key={s.id} className="absolute select-none"
+                          style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:20}}>
+                          {isSel && <div className="absolute rounded-full border-4 border-gold animate-ping opacity-50 pointer-events-none" style={{width:44,height:44,top:-6,left:-6}}/>}
+                          {isSel && <div className="absolute rounded-full border-2 border-yellow-300 pointer-events-none" style={{width:38,height:38,top:-3,left:-3,boxShadow:'0 0 12px #facc15'}}/>}
+                          {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
+                          {s.booster && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
+                          {isStormed && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
+                          <div className={`text-2xl ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
+                            {SHIP_TYPES[s.type].icon}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* ⑥ 부스터 버튼 — 스크린 좌표 */}
+                    {gs.ships.filter(s => s.isMoving).map(s => {
+                      const { sx, sy } = ws(s.x, s.y);
+                      const isSel = s.id === selShip;
+                      const bx = Math.min(W-90, Math.max(0, sx-40));
+                      const by = Math.min(H-30, Math.max(40, sy-55));
+                      return (
+                        <button key={s.id} onClick={(e)=>{e.stopPropagation();toggleBooster(s.id);}}
+                          className={`absolute text-xs font-bold rounded-lg px-2 py-1 shadow-lg border transition-colors pointer-events-auto
+                            ${s.booster?'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse':isSel?'bg-blue-700 hover:bg-blue-500 text-blue-100 border-blue-400':'bg-blue-900 text-blue-300 border-blue-700 opacity-75 hover:opacity-100'}`}
+                          style={{left:bx, top:by, zIndex:25}}>
+                          ⚡ {s.booster?'부스터 ON':'부스터'}
+                        </button>
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </div>
           </div>
 
