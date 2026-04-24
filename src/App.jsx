@@ -16,29 +16,29 @@ const SHIP_TYPES = {
 };
 
 const PORTS = {
-  london:    { name: '런던',         region: 'europe',        country: '🇬🇧', x: 8,  y: 5  },
-  bristol:   { name: '브리스톨',     region: 'europe',        country: '🇬🇧', x: 3,  y: 12 },
-  lisbon:    { name: '리스본',       region: 'europe',        country: '🇵🇹', x: 3,  y: 24 },
-  hamburg:   { name: '함부르크',     region: 'europe',        country: '🇩🇪', x: 18, y: 2  },
-  antwerp:   { name: '앤트워프',     region: 'europe',        country: '🇧🇪', x: 21, y: 5  },
-  marseille: { name: '마르세유',     region: 'mediterranean', country: '🇫🇷', x: 22, y: 30 },
-  genoa:     { name: '제노바',       region: 'mediterranean', country: '🇮🇹', x: 26, y: 23 },
-  venice:    { name: '베니스',       region: 'mediterranean', country: '🇮🇹', x: 36, y: 12 },
-  tripoli:   { name: '트리폴리',     region: 'mediterranean', country: '🇱🇾', x: 38, y: 40 },
-  istanbul:  { name: '이스탄불',     region: 'mediterranean', country: '🇹🇷', x: 47, y: 18 },
-  alexandria:{ name: '알렉산드리아', region: 'arabian',       country: '🇪🇬', x: 43, y: 33 },
-  aden:      { name: '아덴',         region: 'arabian',       country: '🇾🇪', x: 52, y: 45 },
-  dubai:     { name: '두바이',       region: 'arabian',       country: '🇦🇪', x: 61, y: 33 },
-  mumbai:    { name: '뭄바이',       region: 'south_asia',    country: '🇮🇳', x: 49, y: 53 },
-  goa:       { name: '고아',         region: 'south_asia',    country: '🇮🇳', x: 52, y: 58 },
-  calicut:   { name: '칼리컷',       region: 'south_asia',    country: '🇮🇳', x: 57, y: 65 },
-  colombo:   { name: '콜롬보',       region: 'south_asia',    country: '🇱🇰', x: 66, y: 74 },
-  malacca:   { name: '말라카',       region: 'east_asia',     country: '🇲🇾', x: 68, y: 59 },
-  singapore: { name: '싱가포르',     region: 'east_asia',     country: '🇸🇬', x: 76, y: 63 },
-  bangkok:   { name: '방콕',         region: 'east_asia',     country: '🇹🇭', x: 71, y: 50 },
-  guangzhou: { name: '광저우',       region: 'east_asia',     country: '🇨🇳', x: 82, y: 36 },
-  shanghai:  { name: '상하이',       region: 'east_asia',     country: '🇨🇳', x: 86, y: 26 },
-  yokohama:  { name: '요코하마',     region: 'east_asia',     country: '🇯🇵', x: 94, y: 15 },
+  london:    { name: '런던',         region: 'europe',        country: '🇬🇧', x: 10, y: 7  },
+  bristol:   { name: '브리스톨',     region: 'europe',        country: '🇬🇧', x: 4,  y: 16 },
+  lisbon:    { name: '리스본',       region: 'europe',        country: '🇵🇹', x: 4,  y: 30 },
+  hamburg:   { name: '함부르크',     region: 'europe',        country: '🇩🇪', x: 24, y: 4  },
+  antwerp:   { name: '앤트워프',     region: 'europe',        country: '🇧🇪', x: 28, y: 9  },
+  marseille: { name: '마르세유',     region: 'mediterranean', country: '🇫🇷', x: 27, y: 36 },
+  genoa:     { name: '제노바',       region: 'mediterranean', country: '🇮🇹', x: 31, y: 28 },
+  venice:    { name: '베니스',       region: 'mediterranean', country: '🇮🇹', x: 40, y: 18 },
+  tripoli:   { name: '트리폴리',     region: 'mediterranean', country: '🇱🇾', x: 42, y: 47 },
+  istanbul:  { name: '이스탄불',     region: 'mediterranean', country: '🇹🇷', x: 52, y: 24 },
+  alexandria:{ name: '알렉산드리아', region: 'arabian',       country: '🇪🇬', x: 48, y: 43 },
+  aden:      { name: '아덴',         region: 'arabian',       country: '🇾🇪', x: 58, y: 57 },
+  dubai:     { name: '두바이',       region: 'arabian',       country: '🇦🇪', x: 66, y: 40 },
+  mumbai:    { name: '뭄바이',       region: 'south_asia',    country: '🇮🇳', x: 56, y: 63 },
+  goa:       { name: '고아',         region: 'south_asia',    country: '🇮🇳', x: 59, y: 70 },
+  calicut:   { name: '칼리컷',       region: 'south_asia',    country: '🇮🇳', x: 64, y: 76 },
+  colombo:   { name: '콜롬보',       region: 'south_asia',    country: '🇱🇰', x: 72, y: 84 },
+  malacca:   { name: '말라카',       region: 'east_asia',     country: '🇲🇾', x: 76, y: 68 },
+  singapore: { name: '싱가포르',     region: 'east_asia',     country: '🇸🇬', x: 83, y: 74 },
+  bangkok:   { name: '방콕',         region: 'east_asia',     country: '🇹🇭', x: 79, y: 55 },
+  guangzhou: { name: '광저우',       region: 'east_asia',     country: '🇨🇳', x: 87, y: 43 },
+  shanghai:  { name: '상하이',       region: 'east_asia',     country: '🇨🇳', x: 90, y: 30 },
+  yokohama:  { name: '요코하마',     region: 'east_asia',     country: '🇯🇵', x: 96, y: 18 },
 };
 
 const RESOURCES = {
@@ -82,8 +82,11 @@ const RESOURCE_REGIONS = {
   '쌀':        { cheap: ['east_asia', 'south_asia'],   expensive: ['europe', 'arabian']              },
 };
 
-const calcBuyPrice  = (base, tradePct) => Math.max(1, Math.floor(base * 1.4 * Math.max(0.75, 1 - tradePct / 100)));
-const calcSellPrice = (base, tradePct) => Math.max(1, Math.floor(base * 0.8 * Math.min(1.25, 1 + tradePct / 100)));
+const TRADE_FEE_PCT = 10; // 기본 수수료 10%
+const calcPrice     = (base) => Math.max(1, base); // 매입=판매=기준가
+const calcBuyPrice  = (base, tradePct) => calcPrice(base);
+const calcSellPrice = (base, tradePct) => calcPrice(base);
+const getFeeRate    = (tradePct) => Math.max(0, TRADE_FEE_PCT - Math.floor((tradePct || 0) / 2));
 
 // 세금: 초반 거의 없다가 중반부터 급증 (지수 성장)
 const calcTax = (shipCount, taxLevel) => {
@@ -120,7 +123,7 @@ const INTRO_SLIDES = [
 
 // ── 모듈 레벨 헬퍼 ──
 const portOf = (s) => {
-  const e = Object.entries(PORTS).find(([, p]) => Math.abs(s.x - p.x) < 1.5 && Math.abs(s.y - p.y) < 1.5);
+  const e = Object.entries(PORTS).find(([, p]) => Math.hypot(s.x - p.x, s.y - p.y) < 3.5);
   return e ? e[0] : null;
 };
 const routeRegionOf = (s) => {
@@ -164,7 +167,7 @@ const calcStats = (s, crew) => {
 };
 
 let _predId = 1;
-const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMax) => {
+const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMax, turnsUntil = 1) => {
   const resources = Object.keys(RESOURCES);
   const portKeys  = Object.keys(PORTS);
   const resource  = resources[Math.floor(Math.random() * resources.length)];
@@ -173,6 +176,7 @@ const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMa
   const mag = Math.floor(magMin + Math.random() * (magMax - magMin));
   return { id: _predId++, infoId, tier, resource, targetPort,
     targetPortName: PORTS[targetPort].name, direction, accuracy, mag,
+    turnsUntil, turnsRemaining: turnsUntil,
     applied: false, hit: null, boughtAt: portName };
 };
 
@@ -208,15 +212,15 @@ const generateQuests = () => {
   const visitAmt = 2 + Math.floor(Math.random() * 4);
   const tradeAmt = 1000 + Math.floor(Math.random() * 5000);
   return [
-    { id: _questId++, type: 'deliver', title: `${RESOURCES[res].icon} ${res} 배달`,
-      desc: `${res} ${amt}개를 ${PORTS[tPort].name}에 납품`, resource: res, targetPort: tPort,
+    { id: _questId++, type: 'deliver', title: `${RESOURCES[res].icon} ${res} 운송`,
+      desc: `${res} ${amt}개를 구매한 뒤 📍 ${PORTS[tPort].name}에서 판매하세요.`, resource: res, targetPort: tPort,
       targetPortName: PORTS[tPort].name, target: amt, progress: 0,
       rewardGold: amt * 70 + 300 + Math.floor(Math.random() * 800), rewardGems: 0, completed: false },
     { id: _questId++, type: 'visit', title: '📍 항구 탐험',
-      desc: `새로운 항구 ${visitAmt}곳 방문`, target: visitAmt, progress: 0, visitedPorts: [],
+      desc: `미개척 항구 ${visitAmt}곳을 새로 방문하세요. (지도에서 🔒 자물쇠 항구로 이동)`, target: visitAmt, progress: 0, visitedPorts: [],
       rewardGold: visitAmt * 400 + Math.floor(Math.random() * 500), rewardGems: 1, completed: false },
     { id: _questId++, type: 'trade', title: '💰 무역 목표',
-      desc: `총 ${tradeAmt.toLocaleString()}금 판매`, target: tradeAmt, progress: 0,
+      desc: `어느 항구에서든 총 ${tradeAmt.toLocaleString()}금 어치 화물을 판매하세요.`, target: tradeAmt, progress: 0,
       rewardGold: Math.floor(tradeAmt * 0.25) + 300, rewardGems: 0, completed: false },
   ];
 };
@@ -234,21 +238,21 @@ const generateDailyGoals = (taxLevel = 1) => {
   const goldAmt   = Math.floor((2000 + Math.floor(Math.random() * 3000)) * scale);
   const tradesCnt = Math.min(10, 3 + Math.floor(taxLevel / 4));
   return [
-    { id: 'dg_deliver', type: 'dg_deliver', title: `${RESOURCES[res].icon} ${res} 일일 배달`,
-      desc: `오늘 ${res} ${deliverAmt}개를 ${PORTS[tPort].name}에 판매`,
+    { id: 'dg_deliver', type: 'dg_deliver', title: `${RESOURCES[res].icon} ${res} 일일 운송`,
+      desc: `📍 ${PORTS[tPort].name}에서 ${res} ${deliverAmt}개를 오늘 안에 판매하세요.`,
       resource: res, targetPort: tPort, targetPortName: PORTS[tPort].name,
       target: deliverAmt, progress: 0,
       rewardGold: Math.floor(deliverAmt * 80 * scale), rewardGems: 1, completed: false },
     { id: 'dg_visit', type: 'dg_visit', title: '🧭 일일 항구 순례',
-      desc: `오늘 항구 ${visitAmt}곳 방문`,
+      desc: `오늘 새 항구 ${visitAmt}곳을 발견하세요. (지도 🔒 자물쇠 항구 진입)`,
       target: visitAmt, progress: 0, visitedToday: [],
       rewardGold: Math.floor(600 * scale), rewardGems: 1, completed: false },
     { id: 'dg_gold', type: 'dg_gold', title: '💰 일일 매출 목표',
-      desc: `오늘 총 ${goldAmt.toLocaleString()}금 판매`,
+      desc: `오늘 화물 판매로 총 ${goldAmt.toLocaleString()}금 달성하세요.`,
       target: goldAmt, progress: 0,
       rewardGold: Math.floor(goldAmt * 0.3), rewardGems: 0, completed: false },
     { id: 'dg_trades', type: 'dg_trades', title: '🔄 일일 거래 횟수',
-      desc: `오늘 ${tradesCnt}회 이상 판매`,
+      desc: `오늘 판매 거래를 ${tradesCnt}회 완료하세요. (종류·수량 무관)`,
       target: tradesCnt, progress: 0,
       rewardGold: Math.floor(400 * scale), rewardGems: 0, completed: false },
   ];
@@ -271,7 +275,7 @@ const OceanTycoon = () => {
     const v = {
       gold: 0, gems: 3,
       ships: [{ id: 1, type: 'merchant', name: '황금 수호자호',
-        x: 3, y: 24, targetX: null, targetY: null, startX: null, startY: null,
+        x: 4, y: 30, targetX: null, targetY: null, startX: null, startY: null,
         isMoving: false, booster: false, stormUntil: null,
         cargo: { '양털': 20 }, fuel: 100, hull: 100,
         upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 }],
@@ -281,6 +285,7 @@ const OceanTycoon = () => {
       infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
       taxLevel: 1,
       availableQuests: [], activeQuests: [],
+      visitedPorts: ['lisbon'],
     };
     gsRef.current = v;
     return v;
@@ -301,8 +306,10 @@ const OceanTycoon = () => {
   const [showBuy,       setShowBuy]       = useState(false);
   const [log,           setLog]           = useState(['⚓ 리스본 항구. 양털 20개가 적재되어 있습니다.']);
   const [prices,        setPrices]        = useState({});
+  const [pricesReady,   setPricesReady]   = useState(false);
   const [priceHistory,  setPriceHistory]  = useState({});
   const [showPortPrice, setShowPortPrice] = useState(null);
+  const [selectedPortRes, setSelectedPortRes] = useState(null);
   const [paused,        setPaused]        = useState(false);
   const [gameSpeed,     setGameSpeedRaw]  = useState(1);
   const gameSpeedRef = useRef(1);
@@ -351,10 +358,12 @@ const OceanTycoon = () => {
   const clampXY = useCallback((x, y, zoom) => {
     const el = mapRef.current; if (!el) return { x, y };
     const W = el.clientWidth, H = el.clientHeight;
-    const m = Math.max(W, H) * 0.5;
-    const minX = zoom >= 1 ? W * (1 - zoom) - m : -m;
-    const minY = zoom >= 1 ? H * (1 - zoom) - m : -m;
-    return { x: Math.min(m, Math.max(minX, x)), y: Math.min(m, Math.max(minY, y)) };
+    const pad = Math.min(W, H) * 0.25; // 25% 여유
+    const minX = W * (1 - zoom) - pad, minY = H * (1 - zoom) - pad;
+    return {
+      x: zoom <= 1 ? minX / 2 : Math.min(pad, Math.max(minX, x)),
+      y: zoom <= 1 ? minY / 2 : Math.min(pad, Math.max(minY, y)),
+    };
   }, []);
 
   const handleWheel = useCallback((e) => {
@@ -396,6 +405,7 @@ const OceanTycoon = () => {
 
   const onPtrDown = useCallback((e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
     ptrsRef.current[e.pointerId] = { x: e.clientX, y: e.clientY };
     const n = Object.keys(ptrsRef.current).length;
     if (n === 1) {
@@ -479,19 +489,44 @@ const OceanTycoon = () => {
         const mx = (e.clientX - rect.left - vx) / (rect.width  * zoom) * 100;
         const my = (e.clientY - rect.top  - vy) / (rect.height * zoom) * 100;
         const curGs = gsRef.current;
-        const hits = curGs.ships.filter(s => Math.hypot(s.x - mx, s.y - my) < 4);
-        if (hits.length > 0) {
-          const curIdx = hits.findIndex(s => s.id === selShipRef.current);
-          const hit = hits.length === 1 ? hits[0] : hits[(curIdx + 1) % hits.length];
+        const portEntry = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - mx, p.y - my) < 5);
+
+        // 배 클릭 감지 (반경 2.5 월드유닛)
+        const dockedHits  = curGs.ships.filter(s => !s.isMoving && Math.hypot(s.x - mx, s.y - my) < 2.5);
+        const movingHits  = curGs.ships.filter(s =>  s.isMoving && Math.hypot(s.x - mx, s.y - my) < 2.5 && !portEntry);
+        const hits = [...dockedHits, ...movingHits];
+
+        // 1순위: 정박 배 (항구보다 우선)
+        if (!routeModeRef.current && dockedHits.length > 0) {
+          const curIdx = dockedHits.findIndex(s => s.id === selShipRef.current);
+          const hit = dockedHits.length === 1 ? dockedHits[0] : dockedHits[(curIdx + 1) % dockedHits.length];
+          if (hit.id === selShipRef.current && routeModeRef.current) { setRouteMode(false); return; }
           setSelShip(hit.id); setRouteMode(true);
           if (tutorialPhase === 'select') setTutorialPhase('depart');
           return;
         }
-        const portEntry = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - mx, p.y - my) < 5);
+
+        // 2순위: 항구 시세 (항로 모드 아닐 때, 정박 배 없을 때)
         if (!routeModeRef.current && portEntry) {
-          setShowPortPrice(p => p === portEntry[0] ? null : portEntry[0]);
+          const [pk, pData] = portEntry;
+          if (!(curGs.visitedPorts || ['lisbon']).includes(pk)) {
+            addLog(`🔒 ${pData.name}에 방문한 적이 없어 시세를 알 수 없습니다.`);
+            return;
+          }
+          setShowPortPrice(pk);
           return;
         }
+
+        // 3순위: 이동 중인 배 (항구 근처가 아닐 때)
+        if (!routeModeRef.current && movingHits.length > 0) {
+          const curIdx = movingHits.findIndex(s => s.id === selShipRef.current);
+          const hit = movingHits.length === 1 ? movingHits[0] : movingHits[(curIdx + 1) % movingHits.length];
+          setSelShip(hit.id); setRouteMode(true);
+          if (tutorialPhase === 'select') setTutorialPhase('depart');
+          return;
+        }
+
+        // 항로 모드: 항구 클릭 → 항로 설정 / 빈 곳 클릭 → 취소
         if (routeModeRef.current) {
           if (portEntry) {
             const [pk] = portEntry;
@@ -501,13 +536,22 @@ const OceanTycoon = () => {
               if (prev.crew.filter(c => c.shipId === sid).length < 1) { addLog('❌ 출항하려면 승무원이 최소 1명 필요!'); return prev; }
               const p = PORTS[pk];
               if (Math.hypot(s.x - p.x, s.y - p.y) < 1) return prev;
-              addLog(`${s.name}이(가) ${p.name}으로 항해 중...`);
+              addLog(`${s.name}이(가) ${p.name}으로 ${s.isMoving ? '항로 변경' : '항해 중'}...`);
               return { ...prev, ships: prev.ships.map(s2 => s2.id === sid
-                ? { ...s2, isMoving: true, targetX: p.x, targetY: p.y, startX: s.x, startY: s.y, booster: false } : s2) };
+                ? { ...s2, isMoving: true, targetX: p.x, targetY: p.y, startX: s2.x, startY: s2.y, booster: false } : s2) };
             });
             setRouteMode(false);
             if (tutorialPhase === 'depart') setTutorialPhase('sailing');
-          } else setRouteMode(false);
+          } else {
+            setRouteMode(false); // 빈 곳 클릭 → 항로 모드 취소
+          }
+          return;
+        }
+
+        // 항로 모드가 아닐 때 빈 곳 클릭 → 항해 중인 배면 선택 해제
+        const movingSelected = curGs.ships.find(s => s.id === selShipRef.current && s.isMoving);
+        if (movingSelected && !portEntry && hits.length === 0) {
+          setRouteMode(false);
         }
       }
     }
@@ -533,7 +577,8 @@ const OceanTycoon = () => {
       if (!raw) return;
       const data = JSON.parse(raw);
       if (!['1.1','1.2'].includes(data.saveVersion)) { addLog('⚠️ 저장 버전 불일치. 새 게임을 시작합니다.'); setSaveDecided(true); return; }
-      setGs(data.gs);
+      const loadedGs = { visitedPorts: ['lisbon'], ...data.gs };
+      setGs(loadedGs);
       if (data.dailyGoals && data.dailyResetAt) {
         const now = Date.now();
         if (now < data.dailyResetAt) {
@@ -572,10 +617,20 @@ const OceanTycoon = () => {
       });
     });
     setPrices(p);
+    setPricesReady(true);
     const h = {};
     Object.entries(p).forEach(([k, r]) => { h[k] = {}; Object.keys(r).forEach(res => { h[k][res] = [p[k][res]]; }); });
     setPriceHistory(h);
-    setGs(prev => ({ ...prev, availableQuests: generateQuests() }));
+    setGs(prev => {
+      const rumorInfo = PORT_INFO[0];
+      const portKeys = Object.keys(PORTS);
+      const startRumors = Array.from({ length: 3 }, () => {
+        const fromKey = portKeys[Math.floor(Math.random() * portKeys.length)];
+        const t = 1 + Math.floor(Math.random() * 3);
+        return makePrediction('rumor', 'basic', fromKey, PORTS[fromKey].name, rumorInfo.accuracy, rumorInfo.magMin, rumorInfo.magMax, t);
+      });
+      return { ...prev, availableQuests: generateQuests(), predictions: [...prev.predictions, ...startRumors] };
+    });
     // 일일 목표 초기화 (로드 시 덮어씌워짐)
     setDailyGoals(generateDailyGoals(1));
     const nextMidnight = new Date(); nextMidnight.setHours(24, 0, 0, 0);
@@ -606,10 +661,11 @@ const OceanTycoon = () => {
 
   // ── 이동 루프 ──
   useEffect(() => {
-    if (paused || !Object.keys(prices).length) return;
+    if (paused || !pricesReady) return;
     const id = setInterval(() => {
+      let arrivedPorts = []; // scope outside setGs so we can read it after
       setGs(prev => {
-        const arrivedPorts = [];
+        const ap = [];
         const ships = prev.ships.map(s => {
           const crewRepair = prev.crew.filter(c => c.shipId === s.id).reduce((a, c) => a + (c.repair || 0), 0);
           const hullRecovery = crewRepair * 0.0002;
@@ -618,10 +674,10 @@ const OceanTycoon = () => {
           }
           const dx = s.targetX - s.x, dy = s.targetY - s.y;
           const d  = Math.hypot(dx, dy);
-          if (d < 0.3) {
+          if (d < 1.0) {
             addLog(`✅ ${s.name}이(가) 도착했습니다!`);
-            const arrivedPk = Object.entries(PORTS).find(([, p]) => Math.abs(p.x - s.targetX) < 1.5 && Math.abs(p.y - s.targetY) < 1.5)?.[0];
-            if (arrivedPk) arrivedPorts.push({ shipId: s.id, portKey: arrivedPk });
+            const arrivedPk = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - s.targetX, p.y - s.targetY) < 3.5)?.[0];
+            if (arrivedPk) ap.push({ shipId: s.id, portKey: arrivedPk });
             return { ...s, x: s.targetX, y: s.targetY, isMoving: false, targetX: null, targetY: null,
               startX: null, startY: null, booster: false, stormUntil: null,
               hull: Math.min(100, (s.hull ?? 100) + hullRecovery) };
@@ -637,14 +693,17 @@ const OceanTycoon = () => {
             fuel: newFuel, hull: newHull, booster: effectiveBooster && newFuel > 5 };
         });
 
-        // 방문 퀘스트 업데이트
+        arrivedPorts = ap; // expose to outer scope for daily goal tracking
+        // 방문 퀘스트 + visitedPorts 업데이트
         let goldBonus = 0, gemBonus = 0;
         let activeQuests = prev.activeQuests;
-        if (arrivedPorts.length > 0) {
+        let visitedPorts = prev.visitedPorts || ['lisbon'];
+        if (ap.length > 0) {
+          visitedPorts = [...new Set([...visitedPorts, ...ap.map(a => a.portKey)])];
           activeQuests = prev.activeQuests.map(q => {
             if (q.type !== 'visit' || q.completed) return q;
             let updated = q;
-            arrivedPorts.forEach(({ portKey: pk }) => {
+            ap.forEach(({ portKey: pk }) => {
               if (!(updated.visitedPorts || []).includes(pk)) {
                 const newVisited = [...(updated.visitedPorts || []), pk];
                 const newProg = newVisited.length;
@@ -656,9 +715,9 @@ const OceanTycoon = () => {
             return updated;
           });
         }
-        return { ...prev, ships, activeQuests, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus };
+        return { ...prev, ships, activeQuests, visitedPorts, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus };
       });
-      // 일일 방문 목표 추적 (setGs 밖에서 처리)
+      // 일일 방문 목표 추적 (setGs 밖에서 처리 — arrivedPorts는 위에서 할당됨)
       if (arrivedPorts.length > 0) {
         setDailyGoals(goals => goals.map(g => {
           if (g.type !== 'dg_visit' || g.completed) return g;
@@ -680,7 +739,7 @@ const OceanTycoon = () => {
       }
     }, Math.max(16, Math.round(300 / gameSpeedRef.current)));
     return () => clearInterval(id);
-  }, [paused, prices, gameSpeed, addLog]);
+  }, [paused, pricesReady, gameSpeed, addLog]);
 
   // ── 이벤트 생성 (5초 간격) ──
   useEffect(() => {
@@ -748,16 +807,28 @@ const OceanTycoon = () => {
           Object.entries(n).forEach(([k, r]) =>
             Object.entries(r).forEach(([res, v]) => { n[k][res] = Math.max(20, Math.floor(v + (Math.random() - 0.5) * 60)); })
           );
-          setGs(prev => ({
-            ...prev,
-            availableQuests: generateQuests(), // 퀘스트 순환
-            predictions: prev.predictions.map(pred => {
+          setGs(prev => {
+            const rumorInfo = PORT_INFO[0]; // 거리 소문 (정확도 최하)
+            const portKeys = Object.keys(PORTS);
+            const freeRumors = Array.from({ length: 3 }, () => {
+              const fromKey = portKeys[Math.floor(Math.random() * portKeys.length)];
+              const t = 1 + Math.floor(Math.random() * 3); // 1~3턴 후
+              return makePrediction('rumor', 'basic', fromKey, PORTS[fromKey].name, rumorInfo.accuracy, rumorInfo.magMin, rumorInfo.magMax, t);
+            });
+            const applied = prev.predictions.map(pred => {
               if (pred.applied) return pred;
+              const remaining = (pred.turnsRemaining ?? 1) - 1;
+              if (remaining > 0) return { ...pred, turnsRemaining: remaining };
               const hit = Math.random() < pred.accuracy;
               if (hit) { const dir = pred.direction === 'up' ? 1 : -1; n[pred.targetPort][pred.resource] = Math.max(20, (n[pred.targetPort][pred.resource] || 100) + dir * pred.mag); }
-              return { ...pred, applied: true, hit };
-            }),
-          }));
+              return { ...pred, turnsRemaining: 0, applied: true, hit };
+            });
+            return {
+              ...prev,
+              availableQuests: generateQuests(),
+              predictions: [...applied, ...freeRumors].slice(-30), // 최대 30개 보관
+            };
+          });
           return n;
         });
         setPriceHistory(h => {
@@ -772,7 +843,7 @@ const OceanTycoon = () => {
           return nh;
         });
         setLastPrice(Date.now());
-        addLog('📈 전세계 시세가 변동되었습니다!');
+        addLog('📈 전세계 시세 변동! 💬 거리 소문 3개가 무료로 도착했습니다.');
         saveGame(); // 자동 저장
       } else setNextUpd(Math.ceil(3600 / gameSpeedRef.current) - el);
     }, 1000);
@@ -818,10 +889,10 @@ const OceanTycoon = () => {
   };
   const eta = (s) => {
     if (!s?.isMoving || s.targetX === null) return null;
-    const d = Math.hypot(s.targetX - s.x, s.targetY - s.y);
+    const remaining = Math.max(0, Math.hypot(s.targetX - s.x, s.targetY - s.y) - 1.0); // 도착 판정 d<1.0 반영
     const isStormed = s.stormUntil && Date.now() < s.stormUntil;
     const sp = calcStats(s, gs.crew).speed * (s.booster ? 1.43 : 1.0) * (isStormed ? 0.4 : 1.0);
-    const secs = Math.round(d / (sp / 0.3));
+    const secs = Math.round(remaining / (sp / 0.3));
     if (secs >= 3600) return `${Math.floor(secs/3600)}h ${String(Math.floor((secs%3600)/60)).padStart(2,'0')}m`;
     return `${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;
   };
@@ -858,28 +929,33 @@ const OceanTycoon = () => {
   const cargoSellTotal = (ship, pk) => {
     if (!pk || !prices[pk]) return 0;
     const tp = calcStats(ship, gs.crew).tradePct;
-    return Object.entries(ship.cargo).reduce((sum, [r, n]) => sum + calcSellPrice(prices[pk][r] || 0, tp) * n, 0);
+    const fr = getFeeRate(tp);
+    return Object.entries(ship.cargo).reduce((sum, [r, n]) => sum + Math.floor(calcSellPrice(prices[pk][r] || 0, tp) * n * (1 - fr / 100)), 0);
   };
 
   const doBuy = useCallback((res, n) => {
-    if (!cur || !portKey || n < 1) return;
-    const price = calcBuyPrice(prices[portKey]?.[res] || 0, calcStats(cur, gs.crew).tradePct);
-    const total = price * n;
+    if (!cur || !portKey || n < 1 || cur.isMoving) return;
+    const tradePct = calcStats(cur, gs.crew).tradePct;
+    const price = calcBuyPrice(prices[portKey]?.[res] || 0, tradePct);
+    const feeRate = getFeeRate(tradePct);
+    const total = Math.ceil(price * n * (1 + feeRate / 100));
     if (gsRef.current.gold < total) { addLog(`❌ 금 부족! 필요: ${total.toLocaleString()}금`); return; }
     const cap = calcStats(cur, gs.crew).capacity;
     if (cargoN(cur) + n > cap) { addLog(`❌ 화물 공간 부족! 여유: ${cap - cargoN(cur)}개`); return; }
     setGs(prev => ({ ...prev, gold: prev.gold - total,
       ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo: { ...s.cargo, [res]: (s.cargo[res] || 0) + n } } : s) }));
-    addLog(`✅ ${RESOURCES[res].icon} ${res} ×${n} 구매 -${total.toLocaleString()}금`);
+    addLog(`✅ ${RESOURCES[res].icon} ${res} ×${n} 구매 -${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
   }, [cur, portKey, prices, setGs, gs.crew, addLog]);
 
   const doSell = useCallback((res, n) => {
-    if (!cur || !portKey || n < 1) return;
+    if (!cur || !portKey || n < 1 || cur.isMoving) return;
     const have = cur.cargo[res] || 0;
     const qty = Math.min(n, have);
     if (qty < 1) { addLog('❌ 화물 없음!'); return; }
-    const price = calcSellPrice(prices[portKey]?.[res] || 0, calcStats(cur, gs.crew).tradePct);
-    const total = price * qty;
+    const tradePct = calcStats(cur, gs.crew).tradePct;
+    const price = calcSellPrice(prices[portKey]?.[res] || 0, tradePct);
+    const feeRate = getFeeRate(tradePct);
+    const total = Math.floor(price * qty * (1 - feeRate / 100));
     setGs(prev => {
       const cargo = { ...prev.ships.find(s => s.id === cur.id).cargo };
       cargo[res] = (cargo[res] || 0) - qty;
@@ -904,7 +980,7 @@ const OceanTycoon = () => {
       return { ...prev, gold: prev.gold + total + goldBonus, gems: prev.gems + gemBonus,
         ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo } : s), activeQuests: updatedQuests };
     });
-    addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금`);
+    addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
     // 일일 목표 진행 추적
     setDailyGoals(goals => {
       let bonusGold = 0, bonusGems = 0;
@@ -992,14 +1068,17 @@ const OceanTycoon = () => {
     if (premKey && gs.purchasedInfo[premKey]) { addLog('❌ 이미 구매한 정보!'); return; }
     const portKeys = Object.keys(PORTS);
     const fromKey  = portKey || portKeys[Math.floor(Math.random() * portKeys.length)];
-    const pred = makePrediction(info.id, info.tier, fromKey, PORTS[fromKey].name, info.accuracy, info.magMin, info.magMax);
+    const turnsUntil = info.id === 'rumor' ? 1 + Math.floor(Math.random() * 3)
+                     : info.id === 'hint'   ? 1 + Math.floor(Math.random() * 2)
+                     : 1;
+    const pred = makePrediction(info.id, info.tier, fromKey, PORTS[fromKey].name, info.accuracy, info.magMin, info.magMax, turnsUntil);
     setGs(prev => ({
       ...prev, gold: prev.gold - cost,
       purchasedInfo: premKey ? { ...prev.purchasedInfo, [premKey]: true } : prev.purchasedInfo,
       predictions: [...prev.predictions, pred],
       infoBuyCounts: info.repeat ? { ...prev.infoBuyCounts, [info.id]: (prev.infoBuyCounts[info.id] || 0) + 1 } : prev.infoBuyCounts,
     }));
-    addLog(`${info.tier==='premium'?'⭐':'💬'} ${pred.resource}이(가) ${pred.targetPortName}에서 ${pred.direction==='up'?'📈 상승':'📉 하락'} 예상 -${cost.toLocaleString()}금`);
+    addLog(`${info.tier==='premium'?'⭐':'💬'} [${pred.turnsUntil}턴 후] ${pred.resource} ${pred.targetPortName} ${pred.direction==='up'?'📈 상승':'📉 하락'} 예상 -${cost.toLocaleString()}금`);
   };
   const toggleBooster = useCallback((sid) => {
     const shipId = sid ?? cur?.id;
@@ -1235,6 +1314,12 @@ const OceanTycoon = () => {
                         <span className="font-bold text-gold text-sm">{q.title}</span>
                         <span className="text-yellow-300 text-xs whitespace-nowrap ml-2">+{q.rewardGold.toLocaleString()}금{q.rewardGems ? ` +${q.rewardGems}💎` : ''}</span>
                       </div>
+                      {(q.type==='deliver'||q.type==='dg_deliver') && q.targetPortName && (
+                        <div className="flex items-center gap-1 mb-1">
+                          <span className="text-xs bg-blue-900 border border-blue-600 text-blue-300 px-1.5 py-0.5 rounded font-bold">📍 목적지: {q.targetPortName}</span>
+                          <span className="text-xs text-gray-600">| {q.resource} {q.progress}/{q.target}개</span>
+                        </div>
+                      )}
                       <div className="text-xs text-gray-400 mb-2">{q.desc}</div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className="flex-1 bg-ocean-dark rounded-full h-1.5">
@@ -1256,70 +1341,283 @@ const OceanTycoon = () => {
         </div>
       )}
 
-      {/* 항구 시세 패널 */}
-      {showPortPrice && prices[showPortPrice] && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowPortPrice(null)}>
-          <div className="w-[480px] max-h-[85vh] bg-ocean-dark border border-gold rounded-2xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gold flex-shrink-0">
-              <div>
-                <span className="text-base font-bold text-gold">📊 {PORTS[showPortPrice].country} {PORTS[showPortPrice].name} — 시세</span>
-                <span className="text-xs text-gray-400 ml-2">항구 클릭으로 닫기</span>
+      {/* 항구 시세 패널 — 좌: 상품 목록 / 우: 선택 상품 대형 차트 */}
+      {showPortPrice && prices[showPortPrice] && (() => {
+        const port = PORTS[showPortPrice];
+        const rs = REGION_STYLE[port.region];
+        const allRes = Object.entries(RESOURCES).map(([res, { icon }]) => {
+          const hist = priceHistory[showPortPrice]?.[res] || [];
+          const cur2 = hist[hist.length - 1] ?? prices[showPortPrice][res];
+          const prev2 = hist[hist.length - 2] ?? cur2;
+          const delta = cur2 - prev2;
+          const pct = prev2 > 0 ? (delta / prev2 * 100) : 0;
+          return { res, icon, hist, cur2, prev2, delta, pct,
+            minH: Math.min(...(hist.length ? hist : [cur2])),
+            maxH: Math.max(...(hist.length ? hist : [cur2])) };
+        });
+        const risers  = allRes.filter(r => r.delta > 0).length;
+        const fallers = allRes.filter(r => r.delta < 0).length;
+        const selRes  = selectedPortRes ?? allRes[0]?.res;
+        const detail  = allRes.find(r => r.res === selRes) ?? allRes[0];
+
+        const renderChart = (d, W, H) => {
+          if (!d) return null;
+          const { hist, cur2, delta, minH, maxH } = d;
+          const isUp = delta > 0, isDown = delta < 0;
+          const lineColor = isUp ? '#22c55e' : isDown ? '#ef4444' : '#64748b';
+          const glowColor = isUp ? '#22c55e33' : isDown ? '#ef444433' : '#64748b22';
+          const range = (maxH - minH) || 1;
+          const pts = hist.length > 1 ? hist : [cur2, cur2];
+          const toY = v => H - ((v - minH) / range) * (H - 6) - 3;
+          const linePts = pts.map((v, i) => `${(i/(pts.length-1||1))*W},${toY(v)}`).join(' ');
+          const areaD = pts.length > 1
+            ? `M0,${H} ` + pts.map((v,i) => `L${(i/(pts.length-1))*W},${toY(v)}`).join(' ') + ` L${W},${H} Z`
+            : `M0,${H/2} L${W},${H/2}`;
+          const lastX = (pts.length-1)/(pts.length-1||1)*W, lastY = toY(pts[pts.length-1]);
+          return (
+            <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+              <defs>
+                <linearGradient id={`grad-detail-${d.res}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={lineColor} stopOpacity="0.4"/>
+                  <stop offset="100%" stopColor={lineColor} stopOpacity="0.02"/>
+                </linearGradient>
+              </defs>
+              <path d={areaD} fill={`url(#grad-detail-${d.res})`}/>
+              <polyline points={linePts} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+              <circle cx={lastX} cy={lastY} r="4" fill={lineColor} stroke="#0b1623" strokeWidth="2"/>
+              <circle cx={lastX} cy={lastY} r="9" fill={glowColor}/>
+            </svg>
+          );
+        };
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); }} onPointerDown={e => e.stopPropagation()}>
+            <div className="w-[700px] max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-slate-700"
+              style={{background:'#0b1623'}} onClick={e => e.stopPropagation()}>
+
+              {/* ── 헤더 ── */}
+              <div className="flex items-center justify-between px-5 py-3.5 flex-shrink-0" style={{background:'#0f1e30', borderBottom:'1px solid #1e3a5f'}}>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-lg font-bold text-white">{port.country} {port.name}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{background:rs.color+'22', color:rs.color, border:`1px solid ${rs.color}55`}}>{rs.icon} {rs.label}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">● 거래소 개장</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <span>상품 {allRes.length}종</span>
+                    <span className="text-emerald-500">▲ {risers}종 상승</span>
+                    <span className="text-red-500">▼ {fallers}종 하락</span>
+                    <span className="text-slate-600">{allRes.length - risers - fallers}종 보합</span>
+                  </div>
+                </div>
+                <button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-slate-500 hover:text-white hover:bg-white/10 transition-colors text-lg">✕</button>
               </div>
-              <button onClick={() => setShowPortPrice(null)} className="text-gray-400 hover:text-gold text-lg">✕</button>
-            </div>
-            <div className="overflow-y-auto flex-1 px-3 py-2">
-              <div className="grid grid-cols-1 gap-1.5">
-                {Object.entries(RESOURCES).map(([res, { icon }]) => {
-                  const hist = priceHistory[showPortPrice]?.[res] || [];
-                  const cur2 = hist[hist.length - 1] ?? prices[showPortPrice][res];
-                  const prev2 = hist[hist.length - 2] ?? cur2;
-                  const delta = cur2 - prev2;
-                  const buyP  = calcBuyPrice(cur2, 0);
-                  const sellP = calcSellPrice(cur2, 0);
-                  const minH = Math.min(...hist, cur2);
-                  const maxH = Math.max(...hist, cur2);
-                  const range = maxH - minH || 1;
-                  const W = 80, H = 28;
-                  const pts = hist.length > 1
-                    ? hist.map((v, i) => `${(i / (hist.length - 1)) * W},${H - ((v - minH) / range) * H}`).join(' ')
-                    : `0,${H/2} ${W},${H/2}`;
-                  const trendColor = delta > 0 ? '#4ade80' : delta < 0 ? '#f87171' : '#9ca3af';
-                  return (
-                    <div key={res} className="flex items-center gap-3 bg-ocean-blue rounded-lg px-3 py-2">
-                      <div className="w-24 flex items-center gap-1.5 flex-shrink-0">
-                        <span className="text-base">{icon}</span>
-                        <span className="text-xs font-bold text-gray-200 truncate">{res}</span>
-                      </div>
-                      <div className="flex-shrink-0 w-20 h-7">
-                        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{overflow:'visible'}}>
-                          <polyline points={pts} fill="none" stroke={trendColor} strokeWidth="1.5" strokeLinejoin="round"/>
-                          {hist.length > 0 && <circle cx={(hist.length-1)/(hist.length-1||1)*W} cy={H-((hist[hist.length-1]-minH)/range)*H} r="2.5" fill={trendColor}/>}
-                        </svg>
-                      </div>
-                      <div className="flex-1 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="text-xs text-gray-400">매입</span>
-                          <span className="text-sm font-bold text-yellow-300">{buyP.toLocaleString()}</span>
-                          <span className="text-xs text-gray-500">|</span>
-                          <span className="text-xs text-gray-400">판매</span>
-                          <span className="text-sm font-bold text-green-300">{sellP.toLocaleString()}</span>
+
+              {/* ── 본문: 좌측 목록 + 우측 차트 ── */}
+              <div className="flex flex-1 min-h-0">
+                {/* 좌: 상품 목록 */}
+                <div className="w-44 flex-shrink-0 overflow-y-auto" style={{background:'#0a1520', borderRight:'1px solid #1e3a5f'}}>
+                  {allRes.map(({ res, icon, cur2, delta, pct }) => {
+                    const isUp = delta > 0, isDown = delta < 0;
+                    const isSel = res === selRes;
+                    return (
+                      <button key={res}
+                        onClick={() => setSelectedPortRes(res)}
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors"
+                        style={{
+                          background: isSel ? '#132233' : 'transparent',
+                          borderLeft: isSel ? '3px solid #3b82f6' : '3px solid transparent',
+                          borderBottom: '1px solid #1e3a5f22'
+                        }}>
+                        <span className="text-lg leading-none">{icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-bold text-white truncate">{res}</div>
+                          <div className="text-xs text-slate-400">{cur2.toLocaleString()}</div>
                         </div>
-                        <div className="flex items-center justify-end gap-1 mt-0.5">
-                          <span className="text-xs" style={{color: trendColor}}>
-                            {delta > 0 ? '▲' : delta < 0 ? '▼' : '─'} {Math.abs(delta)}
-                          </span>
-                          <span className="text-xs text-gray-600">({hist.length}회 기록)</span>
+                        <div className={`text-xs font-bold shrink-0 ${isUp ? 'text-emerald-400' : isDown ? 'text-red-400' : 'text-slate-500'}`}>
+                          {isUp ? '▲' : isDown ? '▼' : '─'}{Math.abs(pct).toFixed(1)}%
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 우: 선택 상품 상세 */}
+                <div className="flex-1 flex flex-col p-5 gap-4 overflow-y-auto">
+                  {detail ? (() => {
+                    const { res, icon, cur2, delta, pct, minH, maxH } = detail;
+                    const isUp = delta > 0, isDown = delta < 0;
+                    return (
+                      <>
+                        {/* 상품명 + 현재가 */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-3xl">{icon}</span>
+                            <div>
+                              <div className="text-lg font-bold text-white">{res}</div>
+                              <div className="text-xs text-slate-500">{port.name} 현재 시세</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-3xl font-bold text-white">{cur2.toLocaleString()}</div>
+                            <div className={`text-sm font-bold ${isUp ? 'text-emerald-400' : isDown ? 'text-red-400' : 'text-slate-500'}`}>
+                              {isUp ? '▲ +' : isDown ? '▼ ' : ''}{delta} ({isUp ? '+' : ''}{pct.toFixed(1)}%)
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 대형 차트 */}
+                        <div className="w-full rounded-xl overflow-hidden" style={{height:160, background:'#060e18', border:'1px solid #1e3a5f'}}>
+                          {renderChart(detail, 500, 160)}
+                        </div>
+
+                        {/* 고/저/변동 */}
+                        <div className="grid grid-cols-3 gap-3">
+                          {[
+                            { label:'최고가', val: maxH.toLocaleString(), color:'text-emerald-400' },
+                            { label:'최저가', val: minH.toLocaleString(), color:'text-red-400' },
+                            { label:'변동폭', val: (maxH - minH).toLocaleString(), color:'text-slate-300' },
+                          ].map(({ label, val, color }) => (
+                            <div key={label} className="rounded-lg px-3 py-2.5 text-center" style={{background:'#0f1e30', border:'1px solid #1e3a5f'}}>
+                              <div className="text-xs text-slate-500 mb-1">{label}</div>
+                              <div className={`text-base font-bold ${color}`}>{val}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* 거래 안내 */}
+                        <div className="rounded-lg px-4 py-3 flex items-center justify-between" style={{background:'#0f1e30', border:'1px solid #1e3a5f'}}>
+                          <span className="text-xs text-slate-400">거래 수수료 {TRADE_FEE_PCT}%</span>
+                          <div className="flex gap-4 text-sm font-bold">
+                            <span className="text-yellow-400">매입 {Math.ceil(cur2*(1+TRADE_FEE_PCT/100)).toLocaleString()}</span>
+                            <span className="text-emerald-400">판매 {Math.floor(cur2*(1-TRADE_FEE_PCT/100)).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })() : (
+                    <div className="flex-1 flex items-center justify-center text-slate-600 text-sm">좌측에서 상품을 선택하세요</div>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="px-4 py-2 border-t border-gold border-opacity-30 flex-shrink-0 text-xs text-gray-500 text-center">
-              항로 모드에서 항구 클릭 시 항로 설정 | 일반 모드에서 클릭 시 시세 보기
             </div>
           </div>
+        );
+      })()}
+
+      {/* 시장 팝업 — 매입 전용 (루트 레벨, 맵 이벤트 간섭 없음) */}
+      {atPort && showMarket && cur && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowMarket(false)}>
+        <div className="w-80 max-h-[85vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gold flex-shrink-0">
+            <div className="text-sm font-bold text-gold">🏪 {PORTS[portKey]?.name} — 매입</div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">{gs.gold.toLocaleString()}금</span>
+              <button onClick={() => setShowMarket(false)} className="text-gray-400 hover:text-gold">✕</button>
+            </div>
+          </div>
+          <div className="px-3 py-1.5 border-b border-gold border-opacity-40 flex-shrink-0 flex items-center gap-2">
+            <span className="text-xs text-gray-400">화물</span>
+            <div className="flex-1 bg-ocean-blue rounded-full h-1.5"><div className="bg-gold rounded-full h-1.5" style={{width:`${Math.min(100,cargoN(cur)/(st?.capacity||1)*100)}%`}}/></div>
+            <span className="text-xs text-gold font-bold">{cargoN(cur)}/{st?.capacity}</span>
+          </div>
+          <div className="overflow-y-auto flex-1 px-2 py-1">
+            {Object.entries(RESOURCES).map(([r, {icon}]) => {
+              const baseP = getBuy(r);
+              const feeR = getFeeRate(st?.tradePct);
+              const buyP = Math.ceil(baseP * (1 + feeR / 100));
+              const canAfford = gs.gold >= buyP; const spaceLeft = (st?.capacity||0)-cargoN(cur);
+              return (
+                <div key={r} className="flex items-center gap-1 py-1 border-b border-gray-800 last:border-0">
+                  <div className="w-20 text-xs flex items-center gap-1 flex-shrink-0"><span>{icon}</span><span className="truncate">{r}</span></div>
+                  <div className="flex-1 text-right"><span className={`text-xs font-bold ${canAfford?'text-yellow-300':'text-gray-600'}`}>{buyP.toLocaleString()}금</span></div>
+                  <div className="flex gap-0.5 ml-1">
+                    {[1,5,10].map(n => <button key={n} onClick={() => doBuy(r,n)} disabled={!canAfford||spaceLeft<1} className={`px-1.5 py-0.5 rounded text-xs font-bold border ${canAfford&&spaceLeft>=n?'border-gold text-gold hover:bg-gold hover:text-ocean-dark':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>+{n}</button>)}
+                    <button onClick={() => doBuy(r, Math.min(spaceLeft, Math.floor(gs.gold/buyP)))} disabled={!canAfford||spaceLeft<1} className={`px-1.5 py-0.5 rounded text-xs font-bold border ${canAfford&&spaceLeft>=1?'border-yellow-500 text-yellow-400 hover:bg-yellow-900':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>최대</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-1 px-2 py-2 border-t border-gold border-opacity-40 flex-shrink-0">
+            <button onClick={refuel} className="flex-1 py-1 rounded text-xs bg-orange-900 hover:bg-orange-700 text-orange-200 border border-orange-700">⛽ 보충 ({Math.floor((100-(cur?.fuel??100))*2)}금)</button>
+            <button onClick={doRepair} className="flex-1 py-1 rounded text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600">🔧 수리 ({Math.floor((100-(cur?.hull??100))*5)}금)</button>
+          </div>
+        </div>
+        </div>
+      )}
+
+      {/* 정보 팝업 (루트 레벨) */}
+      {showInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowInfo(false)}>
+        <div className="w-80 max-h-[85vh] bg-ocean-dark border border-blue-500 rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center justify-between px-3 py-2 border-b border-blue-500 flex-shrink-0">
+            <div>
+              <span className="text-sm font-bold text-blue-300">📰 국제 정보 시장</span>
+              {gs.taxLevel > 1 && <span className="text-xs text-orange-400 ml-2">시대 Lv.{gs.taxLevel} 가격 적용</span>}
+            </div>
+            <button onClick={() => setShowInfo(false)} className="text-gray-400 hover:text-gold">✕</button>
+          </div>
+          <div className="overflow-y-auto flex-1 p-2">
+            {PORT_INFO.map(info => {
+              const cost = infoCurrentCost(info, gs.infoBuyCounts, gs.taxLevel);
+              const cnt  = gs.infoBuyCounts[info.id] || 0;
+              const premKey = !info.repeat ? info.id : null;
+              const bought  = premKey && gs.purchasedInfo[premKey];
+              return (
+                <div key={info.id} className="bg-ocean-blue rounded-lg p-2.5 mb-2 text-xs border border-gray-700">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className={`font-bold ${info.tier==='premium'?'text-yellow-300':'text-gray-200'}`}>{info.tier==='premium'?'⭐':'💬'} {info.name}</span>
+                    <div className="text-right text-gray-500"><div>적중률 {Math.round(info.accuracy*100)}%</div>{info.repeat&&cnt>0&&<div className="text-orange-400">×{cnt}회</div>}</div>
+                  </div>
+                  <div className="text-gray-400 mb-1.5">{info.desc}</div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`font-bold text-sm ${bought?'text-gray-500':'text-yellow-300'}`}>{bought?'완료':cost.toLocaleString()+'금'}</span>
+                    {info.repeat&&cnt>0&&<span className="text-xs text-orange-400">+{Math.round((Math.pow(1.5,cnt)-1)*100)}%</span>}
+                  </div>
+                  <button onClick={() => buyInfo(info)} disabled={!!bought} className={`w-full py-1 rounded text-xs font-bold ${bought?'bg-gray-700 text-gray-500 cursor-not-allowed':'bg-blue-900 hover:bg-blue-700 text-blue-200 border border-blue-600'}`}>{bought?'구매 완료':'구매'}</button>
+                </div>
+              );
+            })}
+            {gs.predictions.length > 0 && (
+              <div className="mt-2 border-t border-gray-700 pt-2">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-blue-300">🔮 보유 예측</span>
+                  {gs.predictions.filter(p => !p.applied && p.infoId === 'rumor').length > 0 && (
+                    <span className="text-xs text-gray-400">💬 무료 소문 {gs.predictions.filter(p => !p.applied && p.infoId === 'rumor').length}개 대기 중</span>
+                  )}
+                </div>
+                {[...gs.predictions].reverse().map(pred => {
+                  const isPending = !pred.applied;
+                  const turns = pred.turnsRemaining ?? 0;
+                  return (
+                  <div key={pred.id} className={`rounded px-2 py-1.5 mb-1 text-xs ${isPending ? 'bg-gray-900 border border-gray-700' : 'bg-ocean-dark opacity-70'}`}>
+                    <div className="flex justify-between items-start mb-0.5">
+                      <span className="flex items-center gap-1 font-bold">
+                        {RESOURCES[pred.resource]?.icon}
+                        <span className="text-white">{pred.resource}</span>
+                        {pred.infoId==='rumor'&&isPending&&<span className="text-gray-600 font-normal">무료</span>}
+                      </span>
+                      <span className={pred.hit===null?'text-gray-400':pred.hit?'text-green-400':'text-red-400'}>
+                        {pred.hit===null?'⏳':pred.hit?'✅':'❌'} {pred.targetPortName}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className={pred.direction==='up'?'text-green-400':'text-red-400'}>
+                        {pred.direction==='up'?'📈 상승':'📉 하락'} ~{pred.mag}금
+                      </span>
+                      {isPending
+                        ? <span className={`font-bold px-1.5 py-0.5 rounded ${turns===1?'bg-red-950 text-red-400':'bg-gray-800 text-gray-400'}`}>{turns}턴 후 적용</span>
+                        : <span className="text-gray-600">{pred.hit?'적중':'빗나감'}</span>
+                      }
+                    </div>
+                  </div>
+                )})}
+              </div>
+            )}
+          </div>
+        </div>
         </div>
       )}
 
@@ -1525,46 +1823,6 @@ const OceanTycoon = () => {
                 <button onClick={() => setShowInfo(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showInfo?'bg-ocean-dark text-blue-300 border border-blue-500':'bg-blue-800 text-blue-200 hover:bg-blue-700 border border-blue-600'}`}>{showInfo?'✕ 정보':'📰 정보'}</button>
               </div>
 
-              {/* 시장 팝업 — 매입 전용 */}
-              {atPort && showMarket && cur && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowMarket(false)}>
-                <div className="w-80 max-h-[85vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-gold flex-shrink-0">
-                    <div className="text-sm font-bold text-gold">🏪 {PORTS[portKey].name} — 매입</div>
-                    <div className="flex items-center gap-2">
-                      {st?.tradePct !== 0 && <span className={`text-xs ${st.tradePct>0?'text-green-400':'text-red-400'}`}>상술{st.tradePct>0?'+':''}{st.tradePct}%</span>}
-                      <button onClick={() => setShowMarket(false)} className="text-gray-400 hover:text-gold">✕</button>
-                    </div>
-                  </div>
-                  <div className="px-3 py-1.5 border-b border-gold border-opacity-40 flex-shrink-0 flex items-center gap-2">
-                    <span className="text-xs text-gray-400">화물</span>
-                    <div className="flex-1 bg-ocean-blue rounded-full h-1.5"><div className="bg-gold rounded-full h-1.5" style={{width:`${Math.min(100,cargoN(cur)/(st?.capacity||1)*100)}%`}}/></div>
-                    <span className="text-xs text-gold font-bold">{cargoN(cur)}/{st?.capacity}</span>
-                    <span className="text-xs text-gray-500">{gs.gold.toLocaleString()}금</span>
-                  </div>
-                  <div className="overflow-y-auto flex-1 px-2 py-1">
-                    <div className="text-xs text-gray-500 mb-1 px-1">※ 다른 항구에서 판매해야 이익</div>
-                    {Object.entries(RESOURCES).map(([r, {icon}]) => {
-                      const buyP = getBuy(r); const canAfford = gs.gold >= buyP; const spaceLeft = (st?.capacity||0)-cargoN(cur);
-                      return (
-                        <div key={r} className="flex items-center gap-1 py-1 border-b border-gray-800 last:border-0">
-                          <div className="w-20 text-xs flex items-center gap-1 flex-shrink-0"><span>{icon}</span><span className="truncate">{r}</span></div>
-                          <div className="flex-1 text-right"><span className={`text-xs font-bold ${canAfford?'text-yellow-300':'text-gray-600'}`}>{buyP.toLocaleString()}금</span></div>
-                          <div className="flex gap-0.5 ml-1">
-                            {[1,5,10].map(n => <button key={n} onClick={() => doBuy(r,n)} disabled={!canAfford||spaceLeft<1} className={`px-1.5 py-0.5 rounded text-xs font-bold border ${canAfford&&spaceLeft>=n?'border-gold text-gold hover:bg-gold hover:text-ocean-dark':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>+{n}</button>)}
-                            <button onClick={() => doBuy(r, Math.min(spaceLeft, Math.floor(gs.gold/buyP)))} disabled={!canAfford||spaceLeft<1} className={`px-1.5 py-0.5 rounded text-xs font-bold border ${canAfford&&spaceLeft>=1?'border-yellow-500 text-yellow-400 hover:bg-yellow-900':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>최대</button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex gap-1 px-2 py-2 border-t border-gold border-opacity-40 flex-shrink-0">
-                    <button onClick={refuel} className="flex-1 py-1 rounded text-xs bg-orange-900 hover:bg-orange-700 text-orange-200 border border-orange-700">⛽ 보충 ({Math.floor((100-(cur?.fuel??100))*2)}금)</button>
-                    <button onClick={doRepair} className="flex-1 py-1 rounded text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600">🔧 수리 ({Math.floor((100-(cur?.hull??100))*5)}금)</button>
-                  </div>
-                </div>
-                </div>
-              )}
 
               {/* 화물 인벤토리 — 지도 우측 하단 */}
               {cur && (
@@ -1594,7 +1852,7 @@ const OceanTycoon = () => {
                       })}
                     </div>
                   )}
-                  {atPort && cargoN(cur) > 0 && (
+                  {atPort && !cur.isMoving && cargoN(cur) > 0 && (
                     <div className="px-2 pb-2 pt-1 border-t border-gold border-opacity-20">
                       <div className="flex justify-between items-center mb-1.5">
                         <span className="text-xs text-gray-400">합계</span>
@@ -1609,54 +1867,6 @@ const OceanTycoon = () => {
                 </div>
               )}
 
-              {/* 정보 팝업 */}
-              {showInfo && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowInfo(false)}>
-                <div className="w-80 max-h-[85vh] bg-ocean-dark border border-blue-500 rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-blue-500 flex-shrink-0">
-                    <div>
-                      <span className="text-sm font-bold text-blue-300">📰 국제 정보 시장</span>
-                      {gs.taxLevel > 1 && <span className="text-xs text-orange-400 ml-2">시대 Lv.{gs.taxLevel} 가격 적용</span>}
-                    </div>
-                    <button onClick={() => setShowInfo(false)} className="text-gray-400 hover:text-gold">✕</button>
-                  </div>
-                  <div className="overflow-y-auto flex-1 p-2">
-                    {PORT_INFO.map(info => {
-                      const cost = infoCurrentCost(info, gs.infoBuyCounts, gs.taxLevel);
-                      const cnt  = gs.infoBuyCounts[info.id] || 0;
-                      const premKey = !info.repeat ? info.id : null;
-                      const bought  = premKey && gs.purchasedInfo[premKey];
-                      return (
-                        <div key={info.id} className="bg-ocean-blue rounded-lg p-2.5 mb-2 text-xs border border-gray-700">
-                          <div className="flex justify-between items-start mb-1">
-                            <span className={`font-bold ${info.tier==='premium'?'text-yellow-300':'text-gray-200'}`}>{info.tier==='premium'?'⭐':'💬'} {info.name}</span>
-                            <div className="text-right text-gray-500"><div>적중률 {Math.round(info.accuracy*100)}%</div>{info.repeat&&cnt>0&&<div className="text-orange-400">×{cnt}회</div>}</div>
-                          </div>
-                          <div className="text-gray-400 mb-1.5">{info.desc}</div>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <span className={`font-bold text-sm ${bought?'text-gray-500':'text-yellow-300'}`}>{bought?'완료':cost.toLocaleString()+'금'}</span>
-                            {info.repeat&&cnt>0&&<span className="text-xs text-orange-400">+{Math.round((Math.pow(1.5,cnt)-1)*100)}%</span>}
-                          </div>
-                          <button onClick={() => buyInfo(info)} disabled={!!bought} className={`w-full py-1 rounded text-xs font-bold ${bought?'bg-gray-700 text-gray-500 cursor-not-allowed':'bg-blue-900 hover:bg-blue-700 text-blue-200 border border-blue-600'}`}>{bought?'구매 완료':'구매'}</button>
-                        </div>
-                      );
-                    })}
-                    {gs.predictions.length > 0 && (
-                      <div className="mt-2 border-t border-gray-700 pt-2">
-                        <div className="text-xs font-bold text-blue-300 mb-1.5">🔮 보유 예측</div>
-                        {[...gs.predictions].reverse().map(pred => (
-                          <div key={pred.id} className="bg-ocean-dark rounded px-2 py-1 mb-1 text-xs">
-                            <div className="flex justify-between"><span>{RESOURCES[pred.resource]?.icon} {pred.resource}</span><span className={pred.hit===null?'text-gray-400':pred.hit?'text-green-400':'text-red-400'}>{pred.hit===null?'⏳':pred.hit?'✅':'❌'} {pred.targetPortName}</span></div>
-                            <span className={pred.direction==='up'?'text-green-400':'text-red-400'}>{pred.direction==='up'?'📈':'📉'} ~{pred.mag}금</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                </div>
-              )}
-
               {/* ── 맵 레이어 시스템 (모든 오브젝트를 스크린 좌표로 직접 배치) ──
                   카메라: mapView = { x, y, zoom }
                   월드→스크린: sx = x + (wx/100)*W*zoom, sy = y + (wy/100)*H*zoom
@@ -1665,12 +1875,12 @@ const OceanTycoon = () => {
                 const W = mapRef.current?.clientWidth  || 600;
                 const H = mapRef.current?.clientHeight || 400;
                 const { x: vx, y: vy, zoom } = mapView;
-                const ws = (wx, wy) => ({ sx: vx + (wx/100)*W*zoom, sy: vy + (wy/100)*H*zoom });
+                const ws = (wx, wy) => ({ sx: Math.round(vx + (wx/100)*W*zoom), sy: Math.round(vy + (wy/100)*H*zoom) });
 
                 return (
                   <>
                     {/* ① 격자 — SVG, 고정 strokeWidth */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:1}}>
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:1}} shapeRendering="crispEdges">
                       {Array.from({length:21}).map((_,i) => {
                         const pct = i * 5;
                         const { sx: lx } = ws(pct, 0);
@@ -1742,25 +1952,52 @@ const OceanTycoon = () => {
                     })}
 
                     {/* ⑤ 배 — 스크린 좌표, 고정 크기, CSS transition 없음 (드래그 시 흔들림 방지) */}
-                    {gs.ships.map(s => {
-                      const { sx, sy } = ws(s.x, s.y);
-                      const isSel     = s.id === selShip;
-                      const isStormed = s.stormUntil && Date.now() < s.stormUntil;
-                      const crewCnt   = gs.crew.filter(c => c.shipId === s.id).length;
-                      return (
-                        <div key={s.id} className="absolute select-none"
-                          style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:20}}>
-                          {isSel && <div className="absolute rounded-full border-4 border-gold animate-ping opacity-50 pointer-events-none" style={{width:44,height:44,top:-6,left:-6}}/>}
-                          {isSel && <div className="absolute rounded-full border-2 border-yellow-300 pointer-events-none" style={{width:38,height:38,top:-3,left:-3,boxShadow:'0 0 12px #facc15'}}/>}
-                          {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
-                          {s.booster && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
-                          {isStormed && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
-                          <div className={`text-2xl ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
-                            {SHIP_TYPES[s.type].icon}
+                    {(() => {
+                      // 같은 항구에 정박한 배들을 원형으로 배치
+                      const dockGroups = {};
+                      gs.ships.forEach(s => {
+                        if (s.isMoving) return;
+                        const pk = portOf(s);
+                        if (!pk) return;
+                        if (!dockGroups[pk]) dockGroups[pk] = [];
+                        dockGroups[pk].push(s.id);
+                      });
+                      const getDockOffset = (shipId) => {
+                        for (const ids of Object.values(dockGroups)) {
+                          const idx = ids.indexOf(shipId);
+                          if (idx === -1) continue;
+                          const n = ids.length;
+                          // 항구 오른쪽으로 세로 배열 — 아이콘·레이블과 완전히 분리
+                          // 3척 초과면 두 번째 열 사용
+                          const col = Math.floor(idx / 3);
+                          const row = idx % 3;
+                          const ox = 42 + col * 30;
+                          const oy = Math.round((row - (Math.min(n, 3) - 1) / 2) * 26);
+                          return { ox, oy };
+                        }
+                        return { ox: 0, oy: 0 };
+                      };
+                      return gs.ships.map(s => {
+                        const { sx, sy } = ws(s.x, s.y);
+                        const { ox, oy } = getDockOffset(s.id);
+                        const isSel     = s.id === selShip;
+                        const isStormed = s.stormUntil && Date.now() < s.stormUntil;
+                        const crewCnt   = gs.crew.filter(c => c.shipId === s.id).length;
+                        return (
+                          <div key={s.id} className="absolute select-none"
+                            style={{left: sx + ox, top: sy + oy, transform:'translate(-50%,-50%)', zIndex:20}}>
+                            {isSel && <div className="absolute rounded-full border-4 border-gold animate-ping opacity-50 pointer-events-none" style={{width:44,height:44,top:-6,left:-6}}/>}
+                            {isSel && <div className="absolute rounded-full border-2 border-yellow-300 pointer-events-none" style={{width:38,height:38,top:-3,left:-3,boxShadow:'0 0 12px #facc15'}}/>}
+                            {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
+                            {s.booster && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
+                            {isStormed && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
+                            <div className={`text-2xl ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
+                              {SHIP_TYPES[s.type].icon}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      });
+                    })()}
 
                     {/* ⑥ 부스터 버튼 — 스크린 좌표 */}
                     {gs.ships.filter(s => s.isMoving).map(s => {
@@ -1975,11 +2212,19 @@ const OceanTycoon = () => {
                 )}
                 {tab==='upgrade'&&(!atPort?portGuard('업그레이드'):(
                   <div className="space-y-2">
-                    {[{k:'speed',l:'⛵ 돛',d:'속도 +15%/레벨',b:2000},{k:'cargo',l:'📦 화물칸',d:'적재량 +25/레벨',b:1500},{k:'crew',l:'🛏️ 선원숙소',d:'최대 승무원 +1/레벨',b:1000}].map(({k,l,d,b}) => {
+                    {[{k:'speed',l:'⛵ 돛',b:2000},{k:'cargo',l:'📦 화물칸',b:1500},{k:'crew',l:'🛏️ 선원숙소',b:1000}].map(({k,l,b}) => {
                       const lv=cur.upgrades[k], cost=b*(lv+1);
+                      const preview = k==='speed'
+                        ? { cur:`항속 +${lv*15}%`, next:`+${(lv+1)*15}%` }
+                        : k==='cargo'
+                        ? { cur:`적재 ${st.capacity}개`, next:`${st.capacity+25}개` }
+                        : { cur:`승무원 최대 ${st.maxCrew}명`, next:`${Math.min(14,st.maxCrew+1)}명` };
                       return <div key={k} className="bg-ocean-dark rounded p-2">
                         <div className="flex justify-between items-center mb-0.5"><span className="text-xs font-bold text-gold">{l}</span><span className="text-xs text-gray-400">Lv.{lv}/5</span></div>
-                        <div className="text-xs text-gray-500 mb-1">{d}</div>
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-xs text-gray-500">{preview.cur}</span>
+                          {lv<5&&<><span className="text-xs text-gray-600">→</span><span className="text-xs text-emerald-400 font-bold">{preview.next}</span></>}
+                        </div>
                         <div className="flex gap-0.5 mb-1.5">{[0,1,2,3,4].map(i=><div key={i} className={`flex-1 h-1.5 rounded ${i<lv?'bg-gold':'bg-ocean-blue'}`}/>)}</div>
                         {lv<5?<button onClick={()=>upgrade(cur.id,k)} className="w-full button-gold text-xs py-0.5">업그레이드 ({cost.toLocaleString()}금)</button>:<div className="text-xs text-center text-gold">✨ 최대</div>}
                       </div>;
