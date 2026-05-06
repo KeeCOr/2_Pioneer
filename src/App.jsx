@@ -354,7 +354,7 @@ const OceanTycoon = () => {
         cargo: { '양털': 20 }, fuel: 100, hull: 100,
         upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 }],
       crew: [firstCrew],
-      availableCrew: Array.from({ length: 5 }, () => makeCrew()),
+      availableCrew: generateAvailableCrew(1, null, 5),
       purchasedInfo: {}, predictions: [],
       infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
       taxLevel: 1,
