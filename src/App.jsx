@@ -158,17 +158,32 @@ const calcStats = (s, crew) => {
   const fuelMult = fuel < 30 ? 0.5 : fuel < 60 ? 0.75 : 1.0;
   const hullMult = hull < 30 ? 0.6 : hull < 60 ? 0.8 : 1.0;
   const totalRepair = crewOnShip.reduce((a, c) => a + (c.repair || 0), 0);
-  const avgMorale = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.morale || 50), 0) / crewOnShip.length : 50;
-  const avgCombat = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.combat || 30), 0) / crewOnShip.length : 30;
+  const avgMorale   = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.morale    || 50), 0) / crewOnShip.length : 50;
+  const avgCombat   = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.combat    || 30), 0) / crewOnShip.length : 30;
+  const avgFuelEff  = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.fuelEff   || 30), 0) / crewOnShip.length : 30;
+  const avgHullEff  = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.hullEff   || 30), 0) / crewOnShip.length : 30;
+  const avgLogistics= crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.logistics || 30), 0) / crewOnShip.length : 30;
+  // fuelEff: 0→0%, 100→20% 연료 절감
+  const fuelEffMult = 1 - avgFuelEff * 0.002;
+  // hullEff: 회복 보너스 & 항해 중 내구도 손상 경감
+  const hullEffBonus = avgHullEff * 0.003;     // 수리량 ×(1+0~0.3)
+  const hullDmgMult  = 1 - avgHullEff * 0.002; // 손상 0→0%, 100→20% 경감
+  // logistics: 0-100 → 최대 +20 화물 슬롯
+  const extraCargo   = Math.floor(avgLogistics * 0.2);
   return {
-    speed:      Math.max(0.0005, t.baseSpeed * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
-    capacity:   t.baseCapacity + s.upgrades.cargo * 25,
-    maxCrew:    Math.min(14, t.maxCrew + s.upgrades.crew),
-    tradePct:   Math.round((tr - 50) / 2 * hullMult),
-    crewCnt:    crewOnShip.length,
+    speed:       Math.max(0.0005, t.baseSpeed * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
+    capacity:    t.baseCapacity + s.upgrades.cargo * 25 + extraCargo,
+    maxCrew:     Math.min(14, t.maxCrew + s.upgrades.crew),
+    tradePct:    Math.round((tr - 50) / 2 * hullMult),
+    crewCnt:     crewOnShip.length,
     fuelMult, hullMult, totalRepair,
-    avgMorale: Math.round(avgMorale),
-    avgCombat: Math.round(avgCombat),
+    avgMorale:   Math.round(avgMorale),
+    avgCombat:   Math.round(avgCombat),
+    fuelEffMult, hullEffBonus, hullDmgMult,
+    avgFuelEff:  Math.round(avgFuelEff),
+    avgHullEff:  Math.round(avgHullEff),
+    avgLogistics:Math.round(avgLogistics),
+    extraCargo,
   };
 };
 
@@ -189,11 +204,11 @@ const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMa
 const CREW_NAMES = ['김해룡','이바람','박정현','최강석','정승호','장민우','오선장','신무적','한파도','윤청해','임항해','서무역','조상인','강탐험','백용사','류대항','문원양','권북해','노선비','채항도'];
 // 지역별 승무원 스탯 보정
 const REGION_CREW_BIAS = {
-  europe:        { navigation: 5,  trading: 10, stamina: 5,  repair: 0,  morale: 5,  combat: 0  },
-  mediterranean: { navigation: 0,  trading: 5,  stamina: 5,  repair: 5,  morale: 15, combat: 5  },
-  arabian:       { navigation: -5, trading: 15, stamina: 10, repair: 0,  morale: 5,  combat: 10 },
-  south_asia:    { navigation: 5,  trading: 5,  stamina: 15, repair: 15, morale: 5,  combat: 0  },
-  east_asia:     { navigation: 15, trading: 5,  stamina: 5,  repair: 5,  morale: 0,  combat: 10 },
+  europe:        { navigation: 5,  trading: 10, stamina: 5,  repair: 0,  morale: 5,  combat: 0,  fuelEff: 0,  hullEff: 5,  logistics: 10 },
+  mediterranean: { navigation: 0,  trading: 5,  stamina: 5,  repair: 5,  morale: 15, combat: 5,  fuelEff: 5,  hullEff: 10, logistics: 0  },
+  arabian:       { navigation: -5, trading: 15, stamina: 10, repair: 0,  morale: 5,  combat: 10, fuelEff: 15, hullEff: 0,  logistics: 5  },
+  south_asia:    { navigation: 5,  trading: 5,  stamina: 15, repair: 15, morale: 5,  combat: 0,  fuelEff: 5,  hullEff: 10, logistics: 5  },
+  east_asia:     { navigation: 15, trading: 5,  stamina: 5,  repair: 5,  morale: 0,  combat: 10, fuelEff: 10, hullEff: 0,  logistics: 10 },
 };
 const MAJOR_PORTS = new Set(['london','lisbon','venice','istanbul','alexandria','dubai','mumbai','guangzhou','shanghai','singapore']);
 let _crewSeed = 100;
@@ -214,6 +229,9 @@ const makeCrew = (region = null) => {
     repair:     clamp(Math.floor(10 + Math.random() * 60) + bias.repair),
     morale:     clamp(Math.floor(20 + Math.random() * 60) + bias.morale),
     combat:     clamp(Math.floor(10 + Math.random() * 60) + bias.combat),
+    fuelEff:    clamp(Math.floor(10 + Math.random() * 60) + (bias.fuelEff  || 0)),
+    hullEff:    clamp(Math.floor(10 + Math.random() * 60) + (bias.hullEff  || 0)),
+    logistics:  clamp(Math.floor(10 + Math.random() * 60) + (bias.logistics|| 0)),
     hireCost:   special ? Math.floor(1500 + Math.random() * 5000) : Math.floor(500 + Math.random() * 1500),
     shipId: null,
     specialty: special?.specialty || null, navBonus: special?.navBonus || 0,
@@ -712,7 +730,10 @@ const OceanTycoon = () => {
           const crewRepair = prev.crew.filter(c => c.shipId === s.id).reduce((a, c) => a + (c.repair || 0), 0);
           const hullRecovery = crewRepair * 0.0002;
           if (!s.isMoving || s.targetX === null) {
-            return hullRecovery > 0 ? { ...s, hull: Math.min(100, (s.hull ?? 100) + hullRecovery) } : s;
+            if (hullRecovery <= 0) return s;
+            const dockedSt = calcStats(s, prev.crew);
+            const dockedRepair = hullRecovery * (1 + dockedSt.hullEffBonus);
+            return { ...s, hull: Math.min(100, (s.hull ?? 100) + dockedRepair) };
           }
           const dx = s.targetX - s.x, dy = s.targetY - s.y;
           const d  = Math.hypot(dx, dy);
@@ -726,11 +747,15 @@ const OceanTycoon = () => {
           }
           const isStormed = s.stormUntil && Date.now() < s.stormUntil;
           const effectiveBooster = s.booster && (s.fuel ?? 100) > 5;
-          const sp = calcStats(s, prev.crew).speed * (effectiveBooster ? 1.43 : 1.0) * (isStormed ? 0.4 : 1.0);
-          const fuelCost = effectiveBooster ? 0.030 : 0.015;
+          const st = calcStats(s, prev.crew);
+          const sp = st.speed * (effectiveBooster ? 1.43 : 1.0) * (isStormed ? 0.4 : 1.0);
+          const baseFuel = effectiveBooster ? 0.030 : 0.015;
+          const fuelCost = baseFuel * st.fuelEffMult;
           const a  = Math.atan2(dy, dx);
           const newFuel = Math.max(0, (s.fuel ?? 100) - fuelCost);
-          const newHull = Math.min(100, Math.max(0, (s.hull ?? 100) - 0.005 + hullRecovery));
+          const hullRepair = hullRecovery * (1 + st.hullEffBonus);
+          const hullDmg = 0.005 * st.hullDmgMult;
+          const newHull = Math.min(100, Math.max(0, (s.hull ?? 100) - hullDmg + hullRepair));
           return { ...s, x: s.x + sp * Math.cos(a), y: s.y + sp * Math.sin(a),
             fuel: newFuel, hull: newHull, booster: effectiveBooster && newFuel > 5 };
         });
@@ -2274,7 +2299,7 @@ const OceanTycoon = () => {
                               <button onClick={() => unassign(c.id)} className="text-red-400 hover:text-red-300 text-xs px-1.5 py-0.5 border border-red-900 rounded ml-2 flex-shrink-0">하선</button>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500']].map(([label,val,color])=>(
+                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500'],['연료',c.fuelEff||0,'bg-cyan-500'],['내구',c.hullEff||0,'bg-lime-500'],['선적',c.logistics||0,'bg-violet-500']].map(([label,val,color])=>(
                                 <div key={label} className="flex items-center gap-1">
                                   <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
                                   <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${val}%`}}/></div>
@@ -2303,7 +2328,7 @@ const OceanTycoon = () => {
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500']].map(([label,val,color])=>(
+                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500'],['연료',c.fuelEff||0,'bg-cyan-500'],['내구',c.hullEff||0,'bg-lime-500'],['선적',c.logistics||0,'bg-violet-500']].map(([label,val,color])=>(
                                 <div key={label} className="flex items-center gap-1">
                                   <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
                                   <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${val}%`}}/></div>
@@ -2343,7 +2368,7 @@ const OceanTycoon = () => {
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1 mb-1.5">
-                              {[['항법',c.navigation+(c.navBonus||0),'bg-blue-500'],['거래',c.trading+(c.tradeBonus||0),'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500']].map(([label,val,color])=>(
+                              {[['항법',c.navigation+(c.navBonus||0),'bg-blue-500'],['거래',c.trading+(c.tradeBonus||0),'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500'],['연료',c.fuelEff||0,'bg-cyan-500'],['내구',c.hullEff||0,'bg-lime-500'],['선적',c.logistics||0,'bg-violet-500']].map(([label,val,color])=>(
                                 <div key={label} className="flex items-center gap-1">
                                   <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
                                   <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${Math.min(100,val)}%`}}/></div>
