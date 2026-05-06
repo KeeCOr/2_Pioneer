@@ -153,29 +153,50 @@ const routeRegionOf = (s) => {
 const calcStats = (s, crew) => {
   const t = SHIP_TYPES[s.type];
   const crewOnShip = crew.filter(c => c.shipId === s.id);
-  const region = routeRegionOf(s);
-  let navSum = 0, trSum = 0;
-  crewOnShip.forEach(c => {
-    let nav = c.navigation, tr = c.trading;
-    if (c.specialty && (c.specialty === 'any' || c.specialty === region)) {
-      nav = Math.min(100, c.navigation + (c.navBonus  || 0));
-      tr  = Math.min(100, c.trading   + (c.tradeBonus || 0));
-    }
-    navSum += nav; trSum += tr;
-  });
-  const n  = crewOnShip.length ? navSum / crewOnShip.length : 50;
-  const tr = crewOnShip.length ? trSum  / crewOnShip.length : 50;
   const fuel = s.fuel ?? 100, hull = s.hull ?? 100;
   const fuelMult = fuel < 30 ? 0.5 : fuel < 60 ? 0.75 : 1.0;
   const hullMult = hull < 30 ? 0.6 : hull < 60 ? 0.8 : 1.0;
-  const totalRepair = crewOnShip.reduce((a, c) => a + (c.repair || 0), 0);
+
+  // Collect per-stat arrays from crew (using new 5-stat system)
+  const statVals = { speed: [], cargo: [], trade: [], defense: [], repair: [] };
+  crewOnShip.forEach(c => {
+    const cs = c.stats || {};
+    for (const k of STAT_KEYS) {
+      const v = cs[k] ?? 0;
+      if (v > 0) statVals[k].push(v);
+    }
+  });
+
+  // Diminishing returns stacking: effective = (1 - product(1 - v/100)) * 100
+  const dimReturns = (vals) =>
+    vals.length === 0 ? 0 : (1 - vals.reduce((acc, v) => acc * (1 - v / 100), 1)) * 100;
+
+  // cargo is additive (slot count)
+  const crewCargoSum = statVals.cargo.reduce((a, v) => a + v, 0);
+
+  const effectiveSpeed   = dimReturns(statVals.speed);
+  const effectiveTrade   = dimReturns(statVals.trade);
+  const effectiveDefense = dimReturns(statVals.defense);
+  const effectiveRepair  = dimReturns(statVals.repair);
+
+  // New 5-stat results
+  const speed    = Math.max(0.0005, t.baseSpeed * (1 + effectiveSpeed / 100 + s.upgrades.speed * 0.15) * fuelMult);
+  const cargo    = t.baseCapacity + s.upgrades.cargo * 25 + crewCargoSum;
+  const trade    = effectiveTrade * hullMult;
+  const defense  = effectiveDefense;
+  const repair   = effectiveRepair;
+
+  // Legacy aliases so existing call sites keep working
+  const capacity    = cargo;
+  const tradePct    = Math.round((trade - 50) / 2);  // map to old ±% display centred at 50
+  const totalRepair = repair;
+  const maxCrew     = Math.min(14, t.maxCrew + s.upgrades.crew);
+  const crewCnt     = crewOnShip.length;
+
   return {
-    speed:      Math.max(0.0005, t.baseSpeed * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
-    capacity:   t.baseCapacity + s.upgrades.cargo * 25,
-    maxCrew:    Math.min(14, t.maxCrew + s.upgrades.crew),
-    tradePct:   Math.round((tr - 50) / 2 * hullMult),
-    crewCnt:    crewOnShip.length,
-    fuelMult, hullMult, totalRepair,
+    speed, cargo, trade, defense, repair,
+    capacity, tradePct, totalRepair, maxCrew, crewCnt,
+    fuelMult, hullMult,
   };
 };
 
