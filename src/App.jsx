@@ -447,8 +447,29 @@ const EventChoiceOverlay = ({ pendingEvent, gs, setGs, setLog, addLog }) => {
           s.id === pendingEvent.shipId ? { ...s, targetX: s.startX || s.x, targetY: s.startY || s.y } : s
         )};
       }
+      // extraHours: delay ship (simulate with fuel cost — 50 gold per extra hour)
+      if (eff.extraHours) {
+        const fuelCost = eff.extraHours * 50;
+        next = { ...next, gold: Math.max(0, next.gold - fuelCost) };
+      }
+      // reroute: set ship destination to origin (return to port of departure)
+      if (eff.reroute) {
+        next = { ...next, ships: next.ships.map(s =>
+          s.id === pendingEvent.shipId
+            ? { ...s, targetX: s.startX ?? s.x, targetY: s.startY ?? s.y }
+            : s
+        )};
+      }
+      // portSkip: mark ship to skip current destination (use returnToOrigin behavior)
+      if (eff.portSkip) {
+        next = { ...next, ships: next.ships.map(s =>
+          s.id === pendingEvent.shipId
+            ? { ...s, targetX: s.startX ?? s.x, targetY: s.startY ?? s.y }
+            : s
+        )};
+      }
       // Info reward (not on gem-avoid)
-      if (evtDef.infoReward && !eff.avoidGems) {
+      if (evtDef.infoReward && eff.avoidGems == null) {
         const infoPred = makePrediction(evtDef.infoReward);
         next = { ...next, predictions: [infoPred, ...(next.predictions || [])] };
       }
@@ -1017,20 +1038,22 @@ const OceanTycoon = () => {
       const now = Date.now();
       const expiredEvents = (gsRef.current.pendingEvents || []).filter(pe => !pe.autoResolved && pe.expiresAt <= now);
       if (expiredEvents.length > 0) {
+        const expiredWithChoices = expiredEvents.map(pe => {
+          const evtDef = EVENT_TABLE.find(e => e.id === pe.eventId);
+          const choices = evtDef?.choices || [];
+          const choiceIdx = Math.floor(Math.random() * choices.length);
+          const randomChoice = choices[choiceIdx] || null;
+          return { pe, evtDef, randomChoice };
+        });
         setGs(prev => ({
           ...prev,
           pendingEvents: prev.pendingEvents.map(pe => {
-            const exp = expiredEvents.find(e => e.id === pe.id);
-            if (!exp) return pe;
-            const evtDef = EVENT_TABLE.find(e => e.id === pe.eventId);
-            const choices = evtDef?.choices || [];
-            const randomChoice = choices[Math.floor(Math.random() * choices.length)];
-            return { ...pe, autoResolved: true, autoChoiceId: randomChoice?.id || null };
+            const found = expiredWithChoices.find(ewc => ewc.pe.id === pe.id);
+            if (!found) return pe;
+            return { ...pe, autoResolved: true, autoChoiceId: found.randomChoice?.id || null };
           }),
         }));
-        expiredEvents.forEach(pe => {
-          const evtDef = EVENT_TABLE.find(e => e.id === pe.eventId);
-          const randomChoice = evtDef?.choices[Math.floor(Math.random() * (evtDef?.choices.length || 1))];
+        expiredWithChoices.forEach(({ pe, evtDef, randomChoice }) => {
           setLog(l => [`🎲 [자동처리] ${pe.shipName}: ${evtDef?.name || pe.eventId} — "${randomChoice?.label || '알 수 없음'}" 선택됨`, ...l]);
         });
       }
