@@ -546,6 +546,29 @@ const EventChoiceOverlay = ({ pendingEvent, gs, setGs, setLog, addLog }) => {
   );
 };
 
+const LevelUpOverlay = ({ cards, playerLevel, onSelect }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div className="bg-[#0d1b2a] border-2 border-yellow-400/60 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+      <div className="text-center mb-6">
+        <div className="text-4xl mb-2">🆙</div>
+        <h2 className="text-2xl font-bold text-yellow-400">레벨 {playerLevel} 달성!</h2>
+        <p className="text-gray-400 text-sm mt-1">업그레이드를 선택하세요</p>
+      </div>
+      <div className="flex flex-col gap-3">
+        {cards.map(card => (
+          <button key={card.id}
+            onClick={() => onSelect(card)}
+            className="p-4 rounded-xl bg-[#1a2f4a] border border-blue-600/40 hover:border-yellow-400/60 hover:bg-[#243d5e] transition text-left">
+            <div className="text-lg font-bold text-white">{card.label}</div>
+            <div className="text-sm text-gray-400 mt-1">{card.desc}</div>
+            <div className="text-xs text-blue-400 mt-1 capitalize">{card.category}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 // ==================== 컴포넌트 ====================
 const OceanTycoon = () => {
   const gsRef = useRef(null);
@@ -620,6 +643,8 @@ const OceanTycoon = () => {
   const [saveExists,    setSaveExists]    = useState(() => !!localStorage.getItem('pioneer_save'));
   const [saveDecided,   setSaveDecided]   = useState(false);
   const [lastSaved,     setLastSaved]     = useState(null);
+  const [showLevelUp,   setShowLevelUp]   = useState(false);
+  const [levelUpCards,  setLevelUpCards]  = useState([]);
 
   const routeModeRef = useRef(false);
   const [routeMode, setRouteModeRaw] = useState(false);
@@ -691,6 +716,15 @@ const OceanTycoon = () => {
     const ship = gs.ships.find(s => s.id === selShip);
     if (!ship?.isMoving) setFollowShip(false);
   }, [followShip, gs.ships, selShip]);
+
+  useEffect(() => {
+    if (gs._pendingLevelUp && !showLevelUp) {
+      const shuffled = [...UPGRADE_POOL].sort(() => Math.random() - 0.5);
+      setLevelUpCards(shuffled.slice(0, 3));
+      setShowLevelUp(true);
+      setGs(prev => ({ ...prev, _pendingLevelUp: false }));
+    }
+  }, [gs._pendingLevelUp]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 마운트 시: 자동처리된 이벤트 로그 출력 후 제거
   useEffect(() => {
@@ -1519,6 +1553,15 @@ const OceanTycoon = () => {
     addLog('💎 즉시 도착!');
   };
 
+  const handleLevelUpSelect = (card) => {
+    setGs(prev => {
+      const applied = card.apply(prev);
+      return { ...applied, permanentUpgrades: [...(prev.permanentUpgrades || []), card.id] };
+    });
+    setLog(l => [`🆙 레벨업 업그레이드: ${card.label}`, ...l]);
+    setShowLevelUp(false);
+  };
+
   // 퀘스트
   const acceptQuest = (qid) => {
     if (gs.activeQuests.length >= 3) { addLog('❌ 퀘스트 슬롯 가득! (최대 3개)'); return; }
@@ -1592,6 +1635,15 @@ const OceanTycoon = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Level-up overlay */}
+      {showLevelUp && (
+        <LevelUpOverlay
+          cards={levelUpCards}
+          playerLevel={gs.playerLevel}
+          onSelect={handleLevelUpSelect}
+        />
       )}
 
       {/* Event choice overlay — show oldest unresolved pending event */}
@@ -2117,6 +2169,15 @@ const OceanTycoon = () => {
           <p className="text-xs text-ocean-light">항해와 정보의 시대</p>
         </div>
         <div className="bg-ocean-dark rounded p-2 border border-gold flex gap-3 items-center">
+          <div className="flex items-center gap-1 text-xs text-gray-400">
+            <span>Lv.{gs.playerLevel}</span>
+            <div className="w-20 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-yellow-400 rounded-full transition-all"
+                style={{ width: `${Math.min(100, ((gs.playerXP || 0) / XP_TO_NEXT_LEVEL(gs.playerLevel || 1)) * 100)}%` }}
+              />
+            </div>
+          </div>
           <div className="text-right">
             <div className="text-xl font-bold text-gold">{gs.gold.toLocaleString()} 금</div>
             <div className="text-xs text-gray-400">시세: <span className="text-yellow-300">{fmt(nextUpd)}</span></div>
