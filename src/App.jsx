@@ -289,13 +289,13 @@ const generateQuests = () => {
     { id: _questId++, type: 'deliver', title: `${RESOURCES[res].icon} ${res} 운송`,
       desc: `${res} ${amt}개를 구매한 뒤 📍 ${PORTS[tPort].name}에서 판매하세요.`, resource: res, targetPort: tPort,
       targetPortName: PORTS[tPort].name, target: amt, progress: 0,
-      rewardGold: amt * 70 + 300 + Math.floor(Math.random() * 800), rewardGems: 0, completed: false },
+      rewardGold: amt * 70 + 300 + Math.floor(Math.random() * 800), rewardGems: 0, completed: false, deadline: 5 },
     { id: _questId++, type: 'visit', title: '📍 항구 탐험',
       desc: `미개척 항구 ${visitAmt}곳을 새로 방문하세요. (지도에서 🔒 자물쇠 항구로 이동)`, target: visitAmt, progress: 0, visitedPorts: [],
-      rewardGold: visitAmt * 400 + Math.floor(Math.random() * 500), rewardGems: 1, completed: false },
+      rewardGold: visitAmt * 400 + Math.floor(Math.random() * 500), rewardGems: 1, completed: false, deadline: 5 },
     { id: _questId++, type: 'trade', title: '💰 무역 목표',
       desc: `어느 항구에서든 총 ${tradeAmt.toLocaleString()}금 어치 화물을 판매하세요.`, target: tradeAmt, progress: 0,
-      rewardGold: Math.floor(tradeAmt * 0.25) + 300, rewardGems: 0, completed: false },
+      rewardGold: Math.floor(tradeAmt * 0.25) + 300, rewardGems: 0, completed: false, deadline: 5 },
   ];
 };
 
@@ -358,6 +358,7 @@ const OceanTycoon = () => {
       purchasedInfo: {}, predictions: [],
       infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
       taxLevel: 1,
+      taxPenaltyPct: 0,
       availableQuests: [], activeQuests: [],
       visitedPorts: ['lisbon'],
     };
@@ -900,8 +901,29 @@ const OceanTycoon = () => {
               if (hit) { const dir = pred.direction === 'up' ? 1 : -1; n[pred.targetPort][pred.resource] = Math.max(20, (n[pred.targetPort][pred.resource] || 100) + dir * pred.mag); }
               return { ...pred, turnsRemaining: 0, applied: true, hit };
             });
+            // Quest deadline tracking: decrement deadline on active incomplete quests
+            let newTaxPenaltyPct = prev.taxPenaltyPct || 0;
+            const newActiveQuests = prev.activeQuests.map(q => {
+              if (q.completed) return q;
+              const newDeadline = (q.deadline ?? 5) - 1;
+              return { ...q, deadline: newDeadline };
+            });
+            // Fire penalty for quests that just hit deadline 0
+            newActiveQuests.forEach(q => {
+              if (!q.completed && q.deadline <= 0) {
+                const prevPenalty = newTaxPenaltyPct;
+                newTaxPenaltyPct = Math.min(20, newTaxPenaltyPct + 2);
+                if (newTaxPenaltyPct > prevPenalty) {
+                  addLog(`❌ 퀘스트 실패: ${q.title} — 세금 영구 +2% 증가`);
+                }
+              }
+            });
+            // Remove expired (deadline <= 0) incomplete quests
+            const filteredActiveQuests = newActiveQuests.filter(q => q.completed || q.deadline > 0);
             return {
               ...prev,
+              activeQuests: filteredActiveQuests,
+              taxPenaltyPct: newTaxPenaltyPct,
               availableQuests: generateQuests(),
               predictions: [...applied, ...freeRumors].slice(-30), // 최대 30개 보관
             };
@@ -934,16 +956,51 @@ const OceanTycoon = () => {
       const el = Math.floor((Date.now() - lastTax) / 1000);
       if (el >= Math.ceil(600 / gameSpeedRef.current)) {
         setGs(prev => {
-          const tax = calcTax(prev.ships.length, prev.taxLevel);
+          const baseTax = calcTax(prev.ships.length, prev.taxLevel);
+          const penalty = prev.taxPenaltyPct || 0;
+          const tax = Math.floor(baseTax * (1 + penalty / 100));
+          const newTaxLevel = prev.taxLevel + 1;
           if (prev.gold >= tax) {
             addLog(`🏛️ 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
-            return { ...prev, gold: prev.gold - tax, taxLevel: prev.taxLevel + 1 };
-          } else if (prev.gems >= 1) {
-            addLog(`💎 금 부족! 다이아몬드 1개로 세금 대납 (Lv.${prev.taxLevel})`);
-            return { ...prev, gems: prev.gems - 1, taxLevel: prev.taxLevel + 1 };
+            const newUnlocked = UNLOCK_TIERS.find(t => t.minLevel === newTaxLevel)?.resources || [];
+            if (newUnlocked.length > 0) addLog(`🔓 새 품목 해금: ${newUnlocked.join(', ')}`);
+            addLog('🆙 세금 레벨 상승! 패널티 초기화됨');
+            return { ...prev, gold: prev.gold - tax, taxLevel: newTaxLevel, taxPenaltyPct: 0 };
           } else {
-            addLog(`🚨 세금 납부 불가! 세무관이 찾아옵니다... (Lv.${prev.taxLevel})`);
-            return { ...prev, taxLevel: prev.taxLevel + 1 };
+            // Priority 1: force-sell cheapest ships (keep at least 1)
+            let newGold = prev.gold;
+            let newShips = [...prev.ships];
+            let newCrew = [...prev.crew];
+            if (newShips.length > 1) {
+              const sortedShips = [...newShips].sort((a, b) =>
+                (SHIP_TYPES[a.type]?.cost || 0) - (SHIP_TYPES[b.type]?.cost || 0)
+              );
+              for (const ship of sortedShips) {
+                if (newShips.length <= 1) break;
+                if (newGold >= tax) break;
+                const sellValue = Math.floor((SHIP_TYPES[ship.type]?.cost || 0) * 0.5);
+                newGold += sellValue;
+                newShips = newShips.filter(s => s.id !== ship.id);
+                newCrew = newCrew.map(c => c.shipId === ship.id ? { ...c, shipId: null } : c);
+                addLog(`⚠️ 세금 부족 — ${ship.name} 강제 매각 (${sellValue.toLocaleString()}금 수령)`);
+              }
+            }
+            if (newGold >= tax) {
+              addLog(`🏛️ 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
+              const newUnlocked = UNLOCK_TIERS.find(t => t.minLevel === newTaxLevel)?.resources || [];
+              if (newUnlocked.length > 0) addLog(`🔓 새 품목 해금: ${newUnlocked.join(', ')}`);
+              addLog('🆙 세금 레벨 상승! 패널티 초기화됨');
+              return { ...prev, gold: newGold - tax, ships: newShips, crew: newCrew, taxLevel: newTaxLevel, taxPenaltyPct: 0 };
+            } else if (prev.gems >= 1) {
+              addLog(`💎 금 부족! 다이아몬드 1개로 세금 대납 (Lv.${prev.taxLevel})`);
+              const newUnlocked = UNLOCK_TIERS.find(t => t.minLevel === newTaxLevel)?.resources || [];
+              if (newUnlocked.length > 0) addLog(`🔓 새 품목 해금: ${newUnlocked.join(', ')}`);
+              addLog('🆙 세금 레벨 상승! 패널티 초기화됨');
+              return { ...prev, gems: prev.gems - 1, ships: newShips, crew: newCrew, taxLevel: newTaxLevel, taxPenaltyPct: 0 };
+            } else {
+              addLog(`🚨 세금 납부 불가! 세무관이 찾아옵니다... (Lv.${prev.taxLevel})`);
+              return { ...prev, ships: newShips, crew: newCrew, taxLevel: newTaxLevel };
+            }
           }
         });
         setLastTax(Date.now());
@@ -957,7 +1014,7 @@ const OceanTycoon = () => {
   const portKey = cur ? portOf(cur) : null;
   const atPort  = !!portKey;
   const st      = cur ? calcStats(cur, gs.crew) : null;
-  const nextTaxAmount = calcTax(gs.ships.length, gs.taxLevel);
+  const nextTaxAmount = Math.floor(calcTax(gs.ships.length, gs.taxLevel) * (1 + (gs.taxPenaltyPct || 0) / 100));
   const journeyProgress = (s) => {
     if (!s?.isMoving || s.startX == null) return 0;
     const total = Math.hypot(s.targetX - s.startX, s.targetY - s.startY);
@@ -1792,6 +1849,11 @@ const OceanTycoon = () => {
           <div className="border-l border-gold pl-3">
             <div className={`text-sm font-bold ${gs.taxLevel >= 15 ? 'text-red-400' : gs.taxLevel >= 10 ? 'text-orange-300' : 'text-orange-300'}`}>
               🏛️ {nextTaxAmount.toLocaleString()}금
+              {(gs.taxPenaltyPct || 0) > 0 && (
+                <span className="text-xs text-red-400 ml-1" title="퀘스트 실패 누적 패널티">
+                  +{gs.taxPenaltyPct}%
+                </span>
+              )}
             </div>
             <div className="text-xs text-gray-500">Lv.{gs.taxLevel} — {fmt(nextTax)}</div>
           </div>
