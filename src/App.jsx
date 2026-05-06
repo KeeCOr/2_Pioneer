@@ -719,7 +719,14 @@ const OceanTycoon = () => {
 
   useEffect(() => {
     if (gs._pendingLevelUp && !showLevelUp) {
-      const shuffled = [...UPGRADE_POOL].sort(() => Math.random() - 0.5);
+      // Upgrades are stackable by design — same card can be offered again
+      // Fisher-Yates shuffle for uniform card selection
+      const pool = [...UPGRADE_POOL];
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const shuffled = pool;
       setLevelUpCards(shuffled.slice(0, 3));
       setShowLevelUp(true);
       setGs(prev => ({ ...prev, _pendingLevelUp: false }));
