@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pioneer — 게임 기획서 v2.1</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2128;
+      --border: #30363d;
+      --accent: #d4a843;
+      --accent2: #58a6ff;
+      --accent3: #3fb950;
+      --accent4: #f85149;
+      --accent5: #bc8cff;
+      --text: #e6edf3;
+      --text2: #8b949e;
+      --text3: #c9d1d9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1a2235 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 48px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 80% 50%, rgba(212,168,67,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(212,168,67,0.15);
+      border: 1px solid rgba(212,168,67,0.4);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #d4a843, #f0c87a, #a07830);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .hero-subtitle { font-size: 18px; color: var(--text2); margin-top: 10px; }
+    .hero-meta { display: flex; gap: 24px; margin-top: 28px; flex-wrap: wrap; }
+    .meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .meta-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+    .meta-value { font-size: 14px; color: var(--text); font-weight: 600; }
+
+    /* LAYOUT */
+    .layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 200px); }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: 11px; font-weight: 700; color: var(--text2);
+      letter-spacing: 1.5px; text-transform: uppercase; padding: 0 20px 12px;
+    }
+    .nav-item {
+      display: block; padding: 7px 20px; color: var(--text2);
+      text-decoration: none; font-size: 13px;
+      border-left: 2px solid transparent; transition: all 0.15s;
+    }
+    .nav-item:hover { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+    .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(212,168,67,0.05); }
+    .nav-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+    /* CONTENT */
+    .content { padding: 48px 56px; max-width: 960px; }
+    section { margin-bottom: 72px; }
+
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .section-num {
+      width: 28px; height: 28px; background: var(--accent); color: #0d1117;
+      font-size: 12px; font-weight: 800; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-num.blue   { background: var(--accent2); }
+    .section-num.green  { background: var(--accent3); }
+    .section-num.red    { background: var(--accent4); }
+    .section-num.purple { background: var(--accent5); }
+    h2 { font-size: 22px; font-weight: 700; color: var(--text); }
+    h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 28px 0 12px; }
+    h3:first-child { margin-top: 0; }
+    p { color: var(--text3); margin-bottom: 12px; }
+
+    /* CARDS */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 8px; letter-spacing: 0.5px; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--text2); margin-top: 6px; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 20px; }
+    thead th {
+      background: var(--surface2); color: var(--text2); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px;
+      text-align: left; border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid rgba(48,54,61,0.5); transition: background 0.1s; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 10px 14px; color: var(--text3); vertical-align: top; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+
+    /* BADGE */
+    .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; line-height: 1.6; }
+    .badge-gold   { background: rgba(212,168,67,0.15); color: var(--accent);  border: 1px solid rgba(212,168,67,0.3); }
+    .badge-blue   { background: rgba(88,166,255,0.12); color: var(--accent2); border: 1px solid rgba(88,166,255,0.3); }
+    .badge-green  { background: rgba(63,185,80,0.12);  color: var(--accent3); border: 1px solid rgba(63,185,80,0.3); }
+    .badge-red    { background: rgba(248,81,73,0.12);  color: var(--accent4); border: 1px solid rgba(248,81,73,0.3); }
+    .badge-purple { background: rgba(188,140,255,0.12);color: var(--accent5); border: 1px solid rgba(188,140,255,0.3); }
+    .badge-gray   { background: rgba(139,148,158,0.12);color: var(--text2);   border: 1px solid rgba(139,148,158,0.3); }
+
+    /* CODE */
+    pre, code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 13px; }
+    pre {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px 20px; overflow-x: auto; color: var(--text3); margin: 12px 0 20px; line-height: 1.7;
+    }
+    code { background: rgba(139,148,158,0.12); border: 1px solid rgba(139,148,158,0.2); padding: 1px 6px; border-radius: 4px; color: #f0c87a; font-size: 12.5px; }
+    pre code { background: none; border: none; padding: 0; color: inherit; }
+
+    /* CALLOUT */
+    .callout { display: flex; gap: 12px; padding: 14px 18px; border-radius: 8px; margin: 16px 0; font-size: 14px; }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout p { margin: 0; }
+    .callout-gold   { background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.25); }
+    .callout-blue   { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); }
+    .callout-green  { background: rgba(63,185,80,0.08);  border: 1px solid rgba(63,185,80,0.25); }
+    .callout-red    { background: rgba(248,81,73,0.08);  border: 1px solid rgba(248,81,73,0.25); }
+
+    /* FLOW */
+    .flow {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px 24px; margin: 12px 0 20px;
+      font-size: 14px; color: var(--text3); line-height: 2;
+    }
+    .flow-step { display: flex; align-items: flex-start; gap: 12px; }
+    .flow-arrow { color: var(--text2); padding: 0 4px; flex-shrink: 0; }
+    .flow-line { display: flex; flex-direction: column; gap: 4px; }
+
+    /* CREW CARD EXAMPLE */
+    .crew-example {
+      background: var(--surface2); border: 1px solid var(--accent5);
+      box-shadow: 0 0 12px rgba(188,140,255,0.15);
+      border-radius: 10px; padding: 16px 20px; display: inline-block; margin: 8px 0;
+    }
+    .crew-name { font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .crew-stat { font-size: 13px; color: var(--text3); line-height: 1.9; }
+    .crew-stat span { color: var(--accent3); font-weight: 600; }
+    .crew-bonus { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+    /* UPGRADE CARDS */
+    .upgrade-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+    .upgrade-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; text-align: center;
+      transition: border-color 0.15s;
+    }
+    .upgrade-card:hover { border-color: var(--accent); }
+    .upgrade-icon { font-size: 28px; margin-bottom: 8px; }
+    .upgrade-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .upgrade-effect { font-size: 12px; color: var(--accent3); margin-top: 4px; }
+
+    /* UNLOCK STEPS */
+    .unlock-row { display: flex; align-items: center; gap: 0; margin-bottom: 8px; }
+    .unlock-level {
+      width: 64px; text-align: center; font-size: 12px; font-weight: 700;
+      color: #0d1117; border-radius: 6px 0 0 6px; padding: 8px 0;
+    }
+    .unlock-body {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-left: none; border-radius: 0 6px 6px 0; padding: 8px 14px;
+      font-size: 13px; color: var(--text3);
+    }
+    .unlock-body strong { color: var(--text); }
+
+    /* EVENT CARD */
+    .event-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; margin-bottom: 12px;
+    }
+    .event-header {
+      background: var(--surface2); padding: 10px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .event-icon { font-size: 20px; }
+    .event-name { font-weight: 700; font-size: 14px; color: var(--text); }
+    .event-body { padding: 12px 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .choice-item { background: var(--surface2); border-radius: 6px; padding: 10px 12px; font-size: 12.5px; color: var(--text3); }
+    .choice-label { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Design Spec</div>
+  <h1>Pioneer v2.1</h1>
+  <div class="hero-subtitle">10개 시스템 개편 — 세금 해금 · 이벤트 · 로그라이트 · 선원 스탯 · 배달 의뢰</div>
+  <div class="hero-meta">
+    <div class="meta-item"><span class="meta-label">Date</span><span class="meta-value">2026-05-06</span></div>
+    <div class="meta-item"><span class="meta-label">Base</span><span class="meta-value">v2.0 (2026-04-21)</span></div>
+    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value">Draft</span></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-title">목차</div>
+    <a class="nav-item active" href="#overview">개요</a>
+    <a class="nav-item" href="#unlock">1. 세금 해금 시스템</a>
+    <a class="nav-item" href="#info">2. 정보 시스템 개편</a>
+    <a class="nav-item" href="#events">3. 이벤트 시스템 개편</a>
+    <a class="nav-item" href="#roguelite">4. 로그라이트 레벨</a>
+    <a class="nav-item" href="#penalty">5. 퀘스트 실패 패널티</a>
+    <a class="nav-item" href="#quests">6. 퀘스트 / 일일목표 분리</a>
+    <a class="nav-item" href="#crew">7. 선원 스탯 시스템</a>
+    <a class="nav-item" href="#port-hire">8. 항구 고용 시스템</a>
+    <a class="nav-item" href="#tax-default">9. 세금 미납 처리</a>
+    <a class="nav-item" href="#delivery">10. 배달 의뢰</a>
+    <div class="nav-section">
+      <a class="nav-item" href="#interactions">시스템 상호작용</a>
+      <a class="nav-item" href="#success">성공 기준</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="content">
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <div class="section-header">
+        <div class="section-num">⚓</div>
+        <h2>개요</h2>
+      </div>
+
+      <div class="callout callout-gold">
+        <div class="callout-icon">🎯</div>
+        <p><strong>핵심 목표</strong> — 세금 압박이 "벌칙"이 아닌 "더 큰 판"으로 느껴지도록. 방치 시간이 플레이어를 기다리게 만들도록. 선원 한 명이 함대 전략을 바꾸도록.</p>
+      </div>
+
+      <div class="card-grid" style="margin-top:20px">
+        <div class="stat-card">
+          <div class="stat-num">10</div>
+          <div class="stat-label">개편 시스템</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--accent3)">v2.0</div>
+          <div class="stat-label">베이스 버전</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--accent2)">시즌</div>
+          <div class="stat-label">로그라이트 리셋 단위</div>
+        </div>
+      </div>
+
+      <h3>핵심 루프 변화</h3>
+      <div class="flow">
+        배 출발 →&nbsp; 방치 &nbsp;→&nbsp; (이벤트 발생 시 +1h 대기) →&nbsp; 접속 →&nbsp; 이벤트 선택지 처리
+        &nbsp;→&nbsp; 도착 → 배달 정산 + 화물 판매 →&nbsp; 경험치 적립 →&nbsp; 레벨업 시 업그레이드 선택 →&nbsp; 재출발
+      </div>
+
+      <h3>v2.0 대비 주요 변경</h3>
+      <table>
+        <thead><tr><th>항목</th><th>v2.0</th><th>v2.1</th></tr></thead>
+        <tbody>
+          <tr><td>세금 레벨 상승 의미</td><td>압박만 증가</td><td>압박 + 품목/선원 해금</td></tr>
+          <tr><td>정보 구매 ROI</td><td>모두 음수</td><td>귀띔 이상 양수 기대값</td></tr>
+          <tr><td>이벤트 처리 방식</td><td>실시간 팝업 강제</td><td>접속 시 선택지 일괄 처리</td></tr>
+          <tr><td>이벤트 보상</td><td>없음</td><td>정보 자동 지급</td></tr>
+          <tr><td>선원 시스템</td><td>역할 4종 + 주/부 효과</td><td>스탯 5종 직접 표시</td></tr>
+          <tr><td>퀘스트 실패 패널티</td><td>세금 1회분 즉시 추가</td><td>세금 영구 +2% (최대 +20%)</td></tr>
+          <tr><td>성장 시스템</td><td>없음</td><td>로그라이트 레벨업</td></tr>
+          <tr><td>수익 다변화</td><td>직접 매매만</td><td>+ 배달 의뢰</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 1. 세금 해금 -->
+    <section id="unlock">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>세금 해금 시스템</h2>
+      </div>
+
+      <div class="callout callout-gold">
+        <div class="callout-icon">💡</div>
+        <p>세금 레벨 상승 = 더 큰 판에 진입했다는 신호. 압박과 보상이 동시에 온다.</p>
+      </div>
+
+      <h3>레벨별 해금 테이블</h3>
+
+      <div class="unlock-row">
+        <div class="unlock-level" style="background:#3fb950">L1~2</div>
+        <div class="unlock-body"><strong>품목</strong> 밀, 면화, 목재 (기초 3종) &nbsp;|&nbsp; <strong>선원</strong> 일반 등급만</div>
+      </div>
+      <div class="unlock-row">
+        <div class="unlock-level" style="background:#58a6ff">L3~4</div>
+        <div class="unlock-body"><strong>품목</strong> + 향신료, 비단, 도자기 &nbsp;|&nbsp; <strong>선원</strong> + 숙련 등급 등장</div>
+      </div>
+      <div class="unlock-row">
+        <div class="unlock-level" style="background:#d4a843">L5~6</div>
+        <div class="unlock-body"><strong>품목</strong> + 상아, 염료, 금속 &nbsp;|&nbsp; <strong>선원</strong> + 전문가 등급 등장</div>
+      </div>
+      <div class="unlock-row">
+        <div class="unlock-level" style="background:#e67e22">L7~8</div>
+        <div class="unlock-body"><strong>품목</strong> + 보석류, 희귀 향료 &nbsp;|&nbsp; <strong>선원</strong> + 전설 등급 등장</div>
+      </div>
+      <div class="unlock-row">
+        <div class="unlock-level" style="background:#bc8cff">L9+</div>
+        <div class="unlock-body"><strong>품목</strong> + 독점 품목 (세계 단일 항구 전용) &nbsp;|&nbsp; <strong>선원</strong> 전설 풀 확장</div>
+      </div>
+
+      <div class="callout callout-blue" style="margin-top:20px">
+        <div class="callout-icon">🔒</div>
+        <p>미해금 품목은 거래 패널에 잠금 아이콘으로 표시. 클릭 시 <strong>"세금 레벨 N 도달 시 해금"</strong> 툴팁 표시. 레벨 상승 시 로그에 "새 품목 해금!" 강조.</p>
+      </div>
+    </section>
+
+    <!-- 2. 정보 시스템 -->
+    <section id="info">
+      <div class="section-header">
+        <div class="section-num blue">2</div>
+        <h2>정보 시스템 개편</h2>
+      </div>
+
+      <p>정보 구매 = <strong>특정 항구의 특정 품목 가격 방향성만 예측</strong>. 명확한 양수 ROI로 전략적 구매를 유도.</p>
+
+      <h3>예측 정보 형식</h3>
+      <pre>📈 리스본 · 향신료 — 2시간 내 +20~30% 예상  (정확도 65%)
+📉 런던 · 비단 — 다음 시세 변동 시 -15% 예상  (정확도 45%)</pre>
+
+      <h3>등급별 상세</h3>
+      <table>
+        <thead><tr><th>등급</th><th>비용</th><th>정확도</th><th>예측 내용</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-gray">소문</span></td>
+            <td>무료 (시세 변동마다 3개 자동)</td>
+            <td>40%</td>
+            <td>방향만 (상승 / 하락)</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-blue">귀띔</span></td>
+            <td>300금</td>
+            <td>60%</td>
+            <td>방향 + 대략적 폭</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gold">분석</span></td>
+            <td>1,000금</td>
+            <td>75%</td>
+            <td>방향 + 구체적 폭 + 시점</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-purple">내부정보</span></td>
+            <td>4,000금</td>
+            <td>90%</td>
+            <td>방향 + 폭 + 시점 + 지속 시간</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-green">
+        <div class="callout-icon">📊</div>
+        <p><strong>ROI 설계</strong> — 귀띔(300금) 적중 시 향신료 20개 기준 기대 차익 약 +800금. 대량 거래일수록 등급 높은 정보가 압도적으로 유리.</p>
+      </div>
+
+      <div class="callout callout-gold">
+        <div class="callout-icon">🎁</div>
+        <p><strong>이벤트 보상으로 정보 지급</strong> — 이벤트 해결 후 자동 지급. 가벼운 이벤트 → 귀띔 1개 / 심각한 이벤트(해적·대공황) → 분석 1개.</p>
+      </div>
+    </section>
+
+    <!-- 3. 이벤트 -->
+    <section id="events">
+      <div class="section-header">
+        <div class="section-num red">3</div>
+        <h2>이벤트 시스템 개편</h2>
+      </div>
+
+      <p>방치형 게임과 충돌하는 실시간 팝업을 제거. 이벤트는 <strong>접속 시 선택지로 일괄 처리</strong>. 항로당 최대 1회, 장거리 항로에 집중 발생.</p>
+
+      <h3>발생 확률</h3>
+      <div class="card">
+        <div class="card-title">발생 확률 = 항해 시간(시간) × 8% (최대 80%)</div>
+        <table style="margin:0">
+          <thead><tr><th>항해 시간</th><th>발생 확률</th></tr></thead>
+          <tbody>
+            <tr><td>1시간</td><td>8%</td></tr>
+            <tr><td>3시간</td><td>24%</td></tr>
+            <tr><td>6시간</td><td>48%</td></tr>
+            <tr><td>10시간+</td><td>80% (상한)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>이벤트 처리 흐름</h3>
+      <div class="flow">
+        출발 시 이벤트 발생 판정 (1회)<br>
+        &darr; 발생 &rarr; 항해 시간 <strong>+1시간</strong> 자동 추가<br>
+        &darr; 플레이어 접속 시 선택지 팝업 (유효 시간 <strong>1시간</strong>)<br>
+        &darr; 선택 &rarr; 결과 적용 + <strong>정보 보상 자동 지급</strong><br>
+        &darr; 미선택(1시간 경과) &rarr; 랜덤 자동 처리 &rarr; 접속 시 "자동 처리됨" 로그 확인 가능
+      </div>
+
+      <h3>이벤트 선택지 목록</h3>
+
+      <div class="event-card">
+        <div class="event-header"><div class="event-icon">⛈️</div><div class="event-name">풍랑</div><span class="badge badge-blue" style="margin-left:auto">귀띔 보상</span></div>
+        <div class="event-body">
+          <div class="choice-item"><div class="choice-label">선택지 A</div>우회 항로<br><small style="color:var(--text2)">추가 +2시간</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 B</div>강행<br><small style="color:var(--accent4)">화물 10% 손실</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 C</div>💎 1개로 회피</div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header"><div class="event-icon">🏴‍☠️</div><div class="event-name">해적 출몰</div><span class="badge badge-gold" style="margin-left:auto">분석 보상</span></div>
+        <div class="event-body">
+          <div class="choice-item"><div class="choice-label">선택지 A</div>협상<br><small style="color:var(--accent4)">금화 500 지불</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 B</div>저항<br><small style="color:var(--accent4)">화물 20% 손실</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 C</div>💎 2개로 회피</div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header"><div class="event-icon">📉</div><div class="event-name">대공황</div><span class="badge badge-gold" style="margin-left:auto">분석 보상</span></div>
+        <div class="event-body">
+          <div class="choice-item"><div class="choice-label">선택지 A</div>목적지 변경<br><small style="color:var(--text2)">가장 가까운 항구</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 B</div>감수<br><small style="color:var(--accent4)">판매가 -30%</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 C</div>💎 3개로 회피</div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header"><div class="event-icon">🧊</div><div class="event-name">빙하 충돌</div><span class="badge badge-blue" style="margin-left:auto">귀띔 보상</span></div>
+        <div class="event-body">
+          <div class="choice-item"><div class="choice-label">선택지 A</div>서행 항해<br><small style="color:var(--text2)">추가 +3시간</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 B</div>강행<br><small style="color:var(--accent4)">선체 -50</small></div>
+          <div class="choice-item"><div class="choice-label">선택지 C</div>💎 2개로 회피</div>
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header"><div class="event-icon">💨</div><div class="event-name">순풍 행운</div><span class="badge badge-green" style="margin-left:auto">선택 불필요</span></div>
+        <div class="event-body">
+          <div class="choice-item" style="grid-column: 1/-1"><div class="choice-label">자동 적용</div>항해 시간 -30% 자동 적용. 별도 선택지 없음.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 로그라이트 -->
+    <section id="roguelite">
+      <div class="section-header">
+        <div class="section-num purple">4</div>
+        <h2>로그라이트 레벨 시스템</h2>
+      </div>
+
+      <p>매매·세금 납부가 경험치로 연결되어 레벨업 시 <strong>Slay the Spire 스타일</strong>로 선단 전체를 영구 성장시킨다. 시즌 리셋은 개발자가 설정.</p>
+
+      <h3>경험치 획득</h3>
+      <table>
+        <thead><tr><th>행동</th><th>경험치</th></tr></thead>
+        <tbody>
+          <tr><td>화물 판매</td><td>판매금액 × 0.1 XP</td></tr>
+          <tr><td>화물 구매</td><td>구매금액 × 0.05 XP</td></tr>
+          <tr><td>세금 납부</td><td>납부금액 × 0.2 XP</td></tr>
+          <tr><td>퀘스트 완료</td><td>200 XP 고정</td></tr>
+          <tr><td>일일목표 완료</td><td>50 XP 고정</td></tr>
+          <tr><td>배달 의뢰 완료</td><td>30 XP 고정</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue">
+        <div class="callout-icon">📈</div>
+        <p><strong>레벨업 임계값</strong> = 레벨 × 500 XP &nbsp;(L1→L2: 500 / L2→L3: 1,000 / L10→L11: 5,000)</p>
+      </div>
+
+      <h3>업그레이드 카드 풀 (레벨업 시 3장 랜덤, 1장 선택)</h3>
+
+      <div class="upgrade-grid">
+        <div class="upgrade-card">
+          <div class="upgrade-icon">⚡</div>
+          <div class="upgrade-name">함대 강화</div>
+          <div class="upgrade-effect">항속 +5% / 화물칸 +3 / 연료 -8%</div>
+        </div>
+        <div class="upgrade-card">
+          <div class="upgrade-icon">💰</div>
+          <div class="upgrade-name">경제 최적화</div>
+          <div class="upgrade-effect">수수료 -2% / 구매가 -3% / 판매가 +3%</div>
+        </div>
+        <div class="upgrade-card">
+          <div class="upgrade-icon">🛡️</div>
+          <div class="upgrade-name">생존 강화</div>
+          <div class="upgrade-effect">이벤트율 -3% / 유예 +2h / 수리비 -10%</div>
+        </div>
+        <div class="upgrade-card">
+          <div class="upgrade-icon">👤</div>
+          <div class="upgrade-name">선원 지원</div>
+          <div class="upgrade-effect">슬롯 +1 / 고용비 -10% / 스탯 +3%</div>
+        </div>
+        <div class="upgrade-card">
+          <div class="upgrade-icon">🔍</div>
+          <div class="upgrade-name">정보 강화</div>
+          <div class="upgrade-effect">소문 +1/시세 / 정확도 +5% / 비용 -15%</div>
+        </div>
+      </div>
+
+      <div class="callout callout-red">
+        <div class="callout-icon">🔄</div>
+        <p><strong>시즌 리셋</strong> — 리셋 시 레벨·업그레이드 초기화. 누적 레벨에 따른 시즌 보상(보석·선원) 지급. 리셋 시기는 개발자가 상수값으로 설정.</p>
+      </div>
+    </section>
+
+    <!-- 5. 퀘스트 패널티 -->
+    <section id="penalty">
+      <div class="section-header">
+        <div class="section-num red">5</div>
+        <h2>퀘스트 실패 패널티 변경</h2>
+      </div>
+
+      <p>즉각 타격(세금 1회분 추가) 대신, <strong>서서히 목이 조이는 영구 세금 증가</strong>. 무작정 수락보다 신중한 선택을 유도한다.</p>
+
+      <div class="card">
+        <div class="card-title">패널티 공식</div>
+        <pre style="margin:0">실패 1회 → 현재 일일 세금 × +2% 영구 추가
+누적 상한: +20% (10회 실패까지)
+
+예) 세금 1,000금 기준
+  실패 1회 → 1,020금
+  실패 5회 → 1,100금
+  실패 10회 → 1,200금 (상한, 이후 고정)</pre>
+      </div>
+
+      <h3>패널티 완화 방법</h3>
+      <table>
+        <thead><tr><th>방법</th><th>효과</th><th>희귀도</th></tr></thead>
+        <tbody>
+          <tr><td>특수 퀘스트 보상</td><td>세금 패널티 -1회분 감소</td><td><span class="badge badge-purple">희귀</span></td></tr>
+          <tr><td>세금 레벨 상승 시</td><td>패널티 누적치 초기화</td><td><span class="badge badge-gold">자동</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 6. 퀘스트/일일목표 -->
+    <section id="quests">
+      <div class="section-header">
+        <div class="section-num green">6</div>
+        <h2>퀘스트 / 일일목표 분리</h2>
+      </div>
+
+      <table>
+        <thead><tr><th>구분</th><th>퀘스트</th><th>일일목표</th></tr></thead>
+        <tbody>
+          <tr><td>성격</td><td>스토리형, 도전형</td><td>습관형, 루틴</td></tr>
+          <tr><td>기한</td><td>2~4시간 (엄격)</td><td>자정까지 (24h)</td></tr>
+          <tr><td>보상</td><td>금화(세금 2~3배) + 정보 1개</td><td>소액 금화 + 경험치</td></tr>
+          <tr><td>실패 패널티</td><td><span class="badge badge-red">세금 영구 +2%</span></td><td><span class="badge badge-gray">없음</span></td></tr>
+          <tr><td>수락 여부</td><td>플레이어 선택 (거절 가능)</td><td>자동 부여</td></tr>
+          <tr><td>최대 동시</td><td>3개</td><td>4개</td></tr>
+        </tbody>
+      </table>
+
+      <h3>일일목표 예시</h3>
+      <table>
+        <thead><tr><th>목표</th><th>보상</th></tr></thead>
+        <tbody>
+          <tr><td>배 1척 이상 목적지 출발</td><td>100금 + 20 XP</td></tr>
+          <tr><td>화물 10개 이상 판매</td><td>200금 + 30 XP</td></tr>
+          <tr><td>이벤트 선택지 처리</td><td>150금 + 25 XP</td></tr>
+          <tr><td>선원 1명 고용</td><td>100금 + 20 XP</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue">
+        <div class="callout-icon">🖥️</div>
+        <p><strong>UI 분리</strong> — 하단 패널에 [퀘스트]와 [목표] 탭 별도 분리. 퀘스트: 기한 카운트다운 + 붉은 경고. 일일목표: 진행 바 + 자정 리셋 타이머.</p>
+      </div>
+    </section>
+
+    <!-- 7. 선원 스탯 -->
+    <section id="crew">
+      <div class="section-header">
+        <div class="section-num purple">7</div>
+        <h2>선원 스탯 시스템</h2>
+      </div>
+
+      <p>역할(항해사/상인 등) 레이블 제거. 각 선원이 보유한 <strong>스탯 수치를 직접 표시</strong>하여 숫자만 보고 즉시 판단 가능.</p>
+
+      <h3>스탯 5종</h3>
+      <table>
+        <thead><tr><th>스탯</th><th>아이콘</th><th>효과</th></tr></thead>
+        <tbody>
+          <tr><td>항속</td><td>⚡</td><td>배 이동 속도 +N%</td></tr>
+          <tr><td>적재</td><td>📦</td><td>화물 칸 +N개</td></tr>
+          <tr><td>거래</td><td>💰</td><td>구매가 -N/2%, 판매가 +N/2%</td></tr>
+          <tr><td>방어</td><td>🛡️</td><td>이벤트 발생 확률 -N%</td></tr>
+          <tr><td>정비</td><td>🔧</td><td>수리비 -N/2%, 연료 소모 -N/2%</td></tr>
+        </tbody>
+      </table>
+
+      <h3>등급별 스탯 구성</h3>
+      <table>
+        <thead><tr><th>등급</th><th>보유 스탯 수</th><th>수치 범위</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-gray">일반</span></td><td>1개</td><td>+5~10%</td></tr>
+          <tr><td><span class="badge badge-blue">숙련</span></td><td>2개</td><td>+10~18%</td></tr>
+          <tr><td><span class="badge badge-purple">전문가</span></td><td>3개</td><td>+18~28%</td></tr>
+          <tr><td><span class="badge badge-gold">전설</span></td><td>3~4개</td><td>+28~40%</td></tr>
+        </tbody>
+      </table>
+
+      <h3>선원 카드 예시</h3>
+      <div class="crew-example">
+        <div class="crew-name">이반 코르테스 &nbsp;<span class="badge badge-purple">전문가</span> &nbsp;<span class="badge badge-gray">리스본 출신</span></div>
+        <div class="crew-stat">⚡ 항속 &nbsp;<span>+22%</span></div>
+        <div class="crew-stat">💰 거래 &nbsp;<span>+14%</span></div>
+        <div class="crew-stat">🛡️ 방어 &nbsp;<span>+6%</span> <small style="color:var(--text2)">&nbsp;← 리스본 출신 보너스</small></div>
+      </div>
+    </section>
+
+    <!-- 8. 항구 고용 -->
+    <section id="port-hire">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <h2>항구 선원 고용 시스템</h2>
+      </div>
+
+      <p>각 항구에서 고용한 선원은 <strong>출신 항구 보너스 스탯</strong>을 영구히 보유. 동일 출신 항구 보너스는 중첩되지 않으므로 다양한 항구 방문이 최적 선원 구성의 핵심.</p>
+
+      <h3>항구별 출신 보너스 (예시)</h3>
+      <table>
+        <thead><tr><th>항구</th><th>출신 보너스</th></tr></thead>
+        <tbody>
+          <tr><td>런던</td><td>💰 거래 +5%</td></tr>
+          <tr><td>리스본</td><td>🛡️ 방어 +6%</td></tr>
+          <tr><td>알렉산드리아</td><td>이벤트 해결 시 정보 등급 +1단계 (귀띔→분석)</td></tr>
+          <tr><td>베이징</td><td>📦 적재 +4칸</td></tr>
+          <tr><td>캘리컷</td><td>⚡ 항속 +8%</td></tr>
+          <tr><td>카이로</td><td>🔧 정비 +6%</td></tr>
+        </tbody>
+      </table>
+
+      <h3>새로고침 시스템</h3>
+      <p>항구 정박 중 고용 가능 선원 목록을 갱신. 횟수마다 비용 증가. <strong>출항 시 초기화.</strong></p>
+      <table>
+        <thead><tr><th>횟수</th><th>기본 비용</th><th>프리미엄 비용</th></tr></thead>
+        <tbody>
+          <tr><td>1회</td><td>200금</td><td>💎 1개</td></tr>
+          <tr><td>2회</td><td>400금</td><td>💎 1개</td></tr>
+          <tr><td>3회</td><td>800금</td><td>💎 1개</td></tr>
+          <tr><td>4회</td><td>1,600금</td><td>💎 2개</td></tr>
+          <tr><td>5회+</td><td>3,200금 (상한)</td><td>💎 2개</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-blue">
+        <div class="callout-icon">ℹ️</div>
+        <p><strong>기본 새로고침</strong>: 일반/숙련 풀만 갱신 &nbsp;|&nbsp; <strong>프리미엄</strong>: 전문가+ 풀 포함</p>
+      </div>
+    </section>
+
+    <!-- 9. 세금 미납 -->
+    <section id="tax-default">
+      <div class="section-header">
+        <div class="section-num red">9</div>
+        <h2>세금 미납 처리 개편</h2>
+      </div>
+
+      <p>금화 부족 시 보석보다 먼저 <strong>배를 강제 매각</strong>. 가장 저렴한 배부터 구매가 50%에 처분. 배 1척 남으면 매각 중단.</p>
+
+      <div class="flow">
+        세금 납부 시도<br>
+        &darr; 금화 부족<br>
+        &darr; <strong>[1단계]</strong> 가장 저렴한 배부터 구매가 50%에 강제 매각 (납부액 충족될 때까지 반복)<br>
+        &darr; 배 1척만 남으면 매각 중단<br>
+        &darr; <strong>[2단계]</strong> 여전히 부족 → 보석 자동 대납 (보석 1개 = 세금 1회분)<br>
+        &darr; <strong>[3단계]</strong> 보석도 없음 → 미납 누적 (다음 납부 시 2배 징수)
+      </div>
+
+      <h3>매각 알림 UI</h3>
+      <pre>⚠️ 세금 납부 부족 — [슬루프 2호] 강제 매각
+   구매가 3,000금 → 매각가 1,500금 수령
+   잔여 세금: 0금 (완납)</pre>
+
+      <div class="callout callout-red">
+        <div class="callout-icon">⚠️</div>
+        <p>세금 4시간 전부터 헤더 빨강 전환. 1시간 전 "배 매각 위험" 배지 표시. 플레이어가 미리 수동 매각(50%)도 가능.</p>
+      </div>
+    </section>
+
+    <!-- 10. 배달 의뢰 -->
+    <section id="delivery">
+      <div class="section-header">
+        <div class="section-num green">10</div>
+        <h2>항구 배달 의뢰 시스템</h2>
+      </div>
+
+      <p>직접 매매가 아닌 <strong>화물칸을 빌려주는 방식</strong>. 빈 배로 이동할 때 손실 최소화 + 다양한 항구 방문 자연 유도. 보상은 직접 무역의 약 25~35% 수준.</p>
+
+      <h3>처리 흐름</h3>
+      <div class="flow">
+        항구 도착 → [배달 의뢰] 탭에서 목록 확인<br>
+        &darr; 의뢰 선택 (목적지 · 화물 종류 · 필요 칸 수 · 보상 표시)<br>
+        &darr; 출발 → 항해 중 의뢰 화물이 해당 칸 점유 (나머지 칸은 자유 무역 가능)<br>
+        &darr; 목적지 도착 시 자동 정산 + 30 XP 지급
+      </div>
+
+      <h3>의뢰 예시</h3>
+      <pre>[런던 → 리스본]  면화 15칸   보상: 320금   ⏱ 2h
+[런던 → 카이로]  목재 20칸   보상: 580금   ⏱ 6h
+[런던 → 베이징]  향신료 8칸  보상: 1,200금  ⏱ 10h  ★ 고수익</pre>
+
+      <h3>상세 규칙</h3>
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>보상</td><td>동일 루트 직접 무역 대비 25~35%</td></tr>
+          <tr><td>화물칸</td><td>의뢰 화물 점유, 나머지 칸 자유 무역 가능</td></tr>
+          <tr><td>실패 조건</td><td>목적지 변경 시 자동 취소 (보상 없음, 패널티 없음)</td></tr>
+          <tr><td>의뢰 갱신</td><td>항구 도착마다 0~3개 새 목록 생성</td></tr>
+          <tr><td>복수 의뢰</td><td>칸 수 허용 시 같은 목적지 의뢰 동시 수락 가능</td></tr>
+          <tr><td>이벤트 연동</td><td>강행 선택 시 의뢰 화물도 손실 포함. 우회/보석 회피 시 의뢰 유지.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 시스템 상호작용 -->
+    <section id="interactions">
+      <div class="section-header">
+        <div class="section-num blue">⇄</div>
+        <h2>시스템 상호작용 정리</h2>
+      </div>
+
+      <table>
+        <thead><tr><th>시스템 A</th><th>시스템 B</th><th>상호작용</th></tr></thead>
+        <tbody>
+          <tr><td>세금 레벨</td><td>해금 시스템</td><td>레벨 상승 시 품목·선원 풀 자동 해금</td></tr>
+          <tr><td>이벤트</td><td>정보 시스템</td><td>이벤트 해결 시 정보 자동 지급</td></tr>
+          <tr><td>이벤트</td><td>선원 방어 스탯</td><td>방어 스탯 합계만큼 발생률 감소</td></tr>
+          <tr><td>퀘스트 실패</td><td>세금</td><td>실패 누적 시 기본 세금 영구 증가</td></tr>
+          <tr><td>로그라이트</td><td>선원 고용</td><td>"선원 슬롯 +1" 업그레이드 → 배 전체 적용</td></tr>
+          <tr><td>배달 의뢰</td><td>이벤트</td><td>강행 선택 시 배달 화물도 손실 포함</td></tr>
+          <tr><td>항구 출신 보너스</td><td>로그라이트</td><td>"전체 선원 스탯 +N%" 업그레이드가 출신 보너스 포함 전체에 적용</td></tr>
+          <tr><td>알렉산드리아 선원</td><td>이벤트 정보 보상</td><td>해당 선원 탑승 시 이벤트 보상 정보 등급 +1 상승</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 성공 기준 -->
+    <section id="success">
+      <div class="section-header">
+        <div class="section-num green">✓</div>
+        <h2>성공 기준</h2>
+      </div>
+
+      <table>
+        <thead><tr><th>시스템</th><th>검증 기준</th></tr></thead>
+        <tbody>
+          <tr><td>세금 해금</td><td>세금 L3 도달 시 향신료·비단 거래 패널 표시, L5에서 전문가 선원 등장</td></tr>
+          <tr><td>정보 ROI</td><td>귀띔 1개 적중 시 평균 수익이 비용 300금 초과</td></tr>
+          <tr><td>이벤트 처리</td><td>오프라인 중 이벤트 발생 후 접속 시 선택지 팝업 정상 표시</td></tr>
+          <tr><td>이벤트 자동 처리</td><td>1시간 무선택 시 랜덤 처리 + 로그 기록 정상 동작</td></tr>
+          <tr><td>로그라이트</td><td>레벨업 시 카드 3장 표시, 선택 후 즉시 효과 적용</td></tr>
+          <tr><td>퀘스트 패널티</td><td>실패 시 taxPenaltyPct +2 증가, 상한 20 준수</td></tr>
+          <tr><td>선원 스탯</td><td>역할 레이블 없이 스탯 수치만 표시, 배정 시 선단에 정확 반영</td></tr>
+          <tr><td>항구 보너스</td><td>출신 항구 보너스가 이적 후에도 선원에 영구 귀속</td></tr>
+          <tr><td>새로고침 비용</td><td>횟수마다 비용 정확히 증가, 출항 시 초기화</td></tr>
+          <tr><td>세금 미납</td><td>배 강제 매각 → 보석 → 미납 순서 정확히 실행</td></tr>
+          <tr><td>배달 의뢰</td><td>목적지 도착 시 자동 정산, 화물칸 점유 정확히 처리</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // 사이드바 활성 항목 스크롤 추적
+  const sections = document.querySelectorAll('section[id]');
+  const navItems = document.querySelectorAll('.nav-item[href^="#"]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
