@@ -104,6 +104,18 @@ const PORT_INFO = [
 const infoCurrentCost = (info, bc, taxLevel = 1) =>
   Math.floor(info.baseCost * Math.pow(1.12, Math.max(0, taxLevel - 1)) * Math.pow(1.5, bc[info.id] || 0));
 
+// 선원 등급별 스탯 생성 규칙
+const CREW_GRADE_STATS = {
+  common:    { statCount: 1, ranges: { speed:[5,10],  cargo:[3,5],  trade:[5,10],  defense:[5,10],  repair:[5,10]  } },
+  skilled:   { statCount: 2, ranges: { speed:[10,18], cargo:[5,9],  trade:[10,18], defense:[10,18], repair:[10,18] } },
+  expert:    { statCount: 3, ranges: { speed:[18,28], cargo:[8,14], trade:[18,28], defense:[18,28], repair:[18,28] } },
+  legendary: { statCount: 4, ranges: { speed:[28,40], cargo:[12,20],trade:[28,40], defense:[28,40], repair:[28,40] } },
+};
+const STAT_KEYS   = ['speed', 'cargo', 'trade', 'defense', 'repair'];
+const STAT_LABELS = { speed:'항속', cargo:'적재', trade:'거래', defense:'방어', repair:'정비' };
+const STAT_ICONS  = { speed:'⚡', cargo:'📦', trade:'💰', defense:'🛡️', repair:'🔧' };
+const STAT_UNIT   = { speed:'%', cargo:'칸', trade:'%', defense:'%', repair:'%' };
+
 const SPECIAL_CREW_POOL = [
   { name: '이순신',       specialty: 'east_asia',     navBonus: 55, tradeBonus: 25, rarity: 'legendary', label: '🌟전설의 장군'     },
   { name: '정화 제독',    specialty: 'any',           navBonus: 45, tradeBonus: 45, rarity: 'legendary', label: '🌟대항해 제독'     },
