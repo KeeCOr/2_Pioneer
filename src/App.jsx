@@ -88,11 +88,13 @@ const calcBuyPrice  = (base, tradePct) => calcPrice(base);
 const calcSellPrice = (base, tradePct) => calcPrice(base);
 const getFeeRate    = (tradePct) => Math.max(0, TRADE_FEE_PCT - Math.floor((tradePct || 0) / 2));
 
-// 세금: 초반 거의 없다가 중반부터 급증 (지수 성장)
-const calcTax = (shipCount, taxLevel) => {
-  const base = 50 * Math.pow(1.3, Math.max(0, taxLevel - 1));
-  const shipBonus = shipCount * Math.max(20, Math.floor(20 * Math.pow(1.1, taxLevel - 1)));
-  return Math.floor(base + shipBonus);
+// 세금: 하루에 한 번 징수, 구간 돌파 시 급격한 상승
+// 레벨 상승 조건: 배 추가 구매(+1) / 누적 거래금액 마일스톤 돌파(+1)
+const TAX_INTERVAL = 24 * 60 * 60; // 86400초 = 1일
+const EARN_MILESTONES = [10000, 50000, 200000, 800000, 3000000]; // 누적 판매금 마일스톤
+const TAX_TABLE = [200, 600, 1000, 3000, 7000, 20000, 50000, 120000, 300000, 750000];
+const calcTax = (_shipCount, taxLevel) => {
+  return TAX_TABLE[Math.min(taxLevel - 1, TAX_TABLE.length - 1)];
 };
 
 const PORT_INFO = [
@@ -284,6 +286,7 @@ const OceanTycoon = () => {
       purchasedInfo: {}, predictions: [],
       infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
       taxLevel: 1,
+      totalEarned: 0,
       availableQuests: [], activeQuests: [],
       visitedPorts: ['lisbon'],
     };
@@ -311,13 +314,10 @@ const OceanTycoon = () => {
   const [showPortPrice, setShowPortPrice] = useState(null);
   const [selectedPortRes, setSelectedPortRes] = useState(null);
   const [paused,        setPaused]        = useState(false);
-  const [gameSpeed,     setGameSpeedRaw]  = useState(1);
-  const gameSpeedRef = useRef(1);
-  const setGameSpeed = (s) => { gameSpeedRef.current = s; setGameSpeedRaw(s); };
   const [lastPrice,     setLastPrice]     = useState(Date.now());
   const [nextUpd,       setNextUpd]       = useState(3600);
   const [lastTax,       setLastTax]       = useState(Date.now());
-  const [nextTax,       setNextTax]       = useState(600);
+  const [nextTax,       setNextTax]       = useState(TAX_INTERVAL);
   const [showMarket,    setShowMarket]    = useState(false);
   const [showSellModal, setShowSellModal] = useState(false);
   const [showInfo,      setShowInfo]      = useState(false);
@@ -565,6 +565,7 @@ const OceanTycoon = () => {
       gs: gsRef.current,
       dailyGoals: dailyGoals,
       dailyResetAt: dailyResetAt,
+      lastTaxAt: lastTax,
     };
     localStorage.setItem('pioneer_save', JSON.stringify(data));
     setLastSaved(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
@@ -589,6 +590,7 @@ const OceanTycoon = () => {
           setDailyResetAt(now + DAILY_RESET_INTERVAL);
         }
       }
+      if (data.lastTaxAt) setLastTax(data.lastTaxAt);
       const t = new Date(data.savedAt).toLocaleString('ko-KR');
       addLog(`📂 저장된 게임을 불러왔습니다. (${t})`);
     } catch { addLog('⚠️ 저장 파일 손상. 새 게임을 시작합니다.'); }
@@ -621,16 +623,7 @@ const OceanTycoon = () => {
     const h = {};
     Object.entries(p).forEach(([k, r]) => { h[k] = {}; Object.keys(r).forEach(res => { h[k][res] = [p[k][res]]; }); });
     setPriceHistory(h);
-    setGs(prev => {
-      const rumorInfo = PORT_INFO[0];
-      const portKeys = Object.keys(PORTS);
-      const startRumors = Array.from({ length: 3 }, () => {
-        const fromKey = portKeys[Math.floor(Math.random() * portKeys.length)];
-        const t = 1 + Math.floor(Math.random() * 3);
-        return makePrediction('rumor', 'basic', fromKey, PORTS[fromKey].name, rumorInfo.accuracy, rumorInfo.magMin, rumorInfo.magMax, t);
-      });
-      return { ...prev, availableQuests: generateQuests(), predictions: [...prev.predictions, ...startRumors] };
-    });
+    setGs(prev => ({ ...prev, availableQuests: generateQuests() }));
     // 일일 목표 초기화 (로드 시 덮어씌워짐)
     setDailyGoals(generateDailyGoals(1));
     const nextMidnight = new Date(); nextMidnight.setHours(24, 0, 0, 0);
@@ -715,7 +708,20 @@ const OceanTycoon = () => {
             return updated;
           });
         }
-        return { ...prev, ships, activeQuests, visitedPorts, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus };
+        // 새 항구 도착 시 20% 확률로 시장 소문 1개 입수
+        let newRumors = [];
+        if (ap.length > 0) {
+          ap.forEach(({ portKey: pk }) => {
+            const isNew = !(prev.visitedPorts || ['lisbon']).includes(pk);
+            if (isNew && Math.random() < 0.2) {
+              const ri = PORT_INFO[0];
+              newRumors.push(makePrediction('rumor', 'basic', pk, PORTS[pk].name, ri.accuracy, ri.magMin, ri.magMax, 1 + Math.floor(Math.random() * 3)));
+              addLog(`📰 ${PORTS[pk].name}에서 시장 소문을 입수했습니다!`);
+            }
+          });
+        }
+        return { ...prev, ships, activeQuests, visitedPorts, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus,
+          ...(newRumors.length > 0 && { predictions: [...prev.predictions, ...newRumors].slice(-30) }) };
       });
       // 일일 방문 목표 추적 (setGs 밖에서 처리 — arrivedPorts는 위에서 할당됨)
       if (arrivedPorts.length > 0) {
@@ -737,9 +743,9 @@ const OceanTycoon = () => {
           return updated;
         }));
       }
-    }, Math.max(16, Math.round(300 / gameSpeedRef.current)));
+    }, 300);
     return () => clearInterval(id);
-  }, [paused, pricesReady, gameSpeed, addLog]);
+  }, [paused, pricesReady, addLog]);
 
   // ── 이벤트 생성 (5초 간격) ──
   useEffect(() => {
@@ -749,11 +755,12 @@ const OceanTycoon = () => {
       setMapEvents(prev => prev.filter(e => now - e.createdAt < e.duration));
       const ships = gsRef.current.ships.filter(s => s.isMoving);
       ships.forEach(s => {
-        if (Math.random() > 0.12) return; // 12% per 5s per ship
+        if (Math.random() > 0.35) return; // 35% per 5s per ship — 강제 이벤트 빈도 증가
         const types  = ['wreck', 'storm', 'pirate', 'whale', 'treasure', 'current'];
         const icons  = ['🪵',    '⛈️',   '🏴‍☠️', '🐋',    '💰',       '🌊'    ];
-        const labels = ['난파선 발견!', '폭풍우 접근!', '해적 출몰!', '고래 목격!', '보물 발견!', '순조로운 해류!'];
-        const weights = [30, 25, 20, 15, 8, 12];
+        const labels = ['난파선 발견!', '폭풍우 접근!', '해적 출몰!', '고래 출몰!', '보물 발견!', '순조로운 해류!'];
+        // 강제 이벤트(storm/pirate/whale/current) 가중치 대폭 증가, 클릭형 축소
+        const weights   = [8, 35, 30, 20, 5, 25];
         const durations = [55000, 50000, 20000, 40000, 50000, 35000];
         const clickable = [true, false, false, false, true, false];
         const total = weights.reduce((a, b) => a + b, 0);
@@ -770,25 +777,32 @@ const OceanTycoon = () => {
           claimed: false, reward };
         // 즉각 효과
         if (type === 'storm') {
-          setGs(prev => ({ ...prev, ships: prev.ships.map(x => x.id === s.id ? { ...x, stormUntil: now + 60000 } : x) }));
-          addLog(`⛈️ ${s.name}에 폭풍우! 60초간 속도 60% 감소.`);
+          const stormDur = 45000 + Math.floor(Math.random() * 45000); // 45~90초 랜덤
+          setGs(prev => ({ ...prev, ships: prev.ships.map(x => x.id === s.id ? { ...x, stormUntil: now + stormDur } : x) }));
+          addLog(`⛈️ ${s.name}에 폭풍우! ${Math.round(stormDur/1000)}초간 속도 60% 감소.`);
         } else if (type === 'pirate') {
           setGs(prev => {
             const ship = prev.ships.find(x => x.id === s.id);
             if (!ship || Object.keys(ship.cargo).length === 0) return prev;
             const newCargo = {};
             Object.entries(ship.cargo).forEach(([rr, n]) => {
-              const lost = Math.ceil(n * (0.05 + Math.random() * 0.1));
+              const lost = Math.ceil(n * (0.08 + Math.random() * 0.12)); // 8~20% 약탈
               const remain = Math.max(0, n - lost);
               if (remain > 0) newCargo[rr] = remain;
             });
             return { ...prev, ships: prev.ships.map(x => x.id === s.id ? { ...x, cargo: newCargo } : x) };
           });
-          addLog(`🏴‍☠️ ${s.name}이 해적에게 습격당했습니다! 일부 화물 약탈.`);
+          addLog(`🏴‍☠️ ${s.name}이 해적에게 습격! 화물 일부 약탈.`);
         } else if (type === 'whale') {
-          addLog(`🐋 ${s.name} 근해에서 거대 고래 목격!`);
+          // 고래: 작은 금화 보상 (고래유 판매)
+          const whaleGold = 80 + Math.floor(Math.random() * 120);
+          setGs(prev => ({ ...prev, gold: prev.gold + whaleGold }));
+          addLog(`🐋 ${s.name} 고래 포획! +${whaleGold}금`);
         } else if (type === 'current') {
-          addLog(`🌊 ${s.name}에 순조로운 해류! 잠시 속도가 오릅니다.`);
+          // 해류: 연료 회복
+          const fuelGain = 8 + Math.floor(Math.random() * 10);
+          setGs(prev => ({ ...prev, ships: prev.ships.map(x => x.id === s.id ? { ...x, fuel: Math.min(100, (x.fuel ?? 100) + fuelGain) } : x) }));
+          addLog(`🌊 ${s.name}에 순조로운 해류! 연료 +${fuelGain}% 회복.`);
         }
         setMapEvents(prev => [...prev, evt]);
       });
@@ -801,20 +815,13 @@ const OceanTycoon = () => {
     if (paused) return;
     const id = setInterval(() => {
       const el = Math.floor((Date.now() - lastPrice) / 1000);
-      if (el >= Math.ceil(3600 / gameSpeedRef.current)) {
+      if (el >= 3600) {
         setPrices(p => {
           const n = { ...p };
           Object.entries(n).forEach(([k, r]) =>
             Object.entries(r).forEach(([res, v]) => { n[k][res] = Math.max(20, Math.floor(v + (Math.random() - 0.5) * 60)); })
           );
           setGs(prev => {
-            const rumorInfo = PORT_INFO[0]; // 거리 소문 (정확도 최하)
-            const portKeys = Object.keys(PORTS);
-            const freeRumors = Array.from({ length: 3 }, () => {
-              const fromKey = portKeys[Math.floor(Math.random() * portKeys.length)];
-              const t = 1 + Math.floor(Math.random() * 3); // 1~3턴 후
-              return makePrediction('rumor', 'basic', fromKey, PORTS[fromKey].name, rumorInfo.accuracy, rumorInfo.magMin, rumorInfo.magMax, t);
-            });
             const applied = prev.predictions.map(pred => {
               if (pred.applied) return pred;
               const remaining = (pred.turnsRemaining ?? 1) - 1;
@@ -826,7 +833,7 @@ const OceanTycoon = () => {
             return {
               ...prev,
               availableQuests: generateQuests(),
-              predictions: [...applied, ...freeRumors].slice(-30), // 최대 30개 보관
+              predictions: applied.slice(-30),
             };
           });
           return n;
@@ -843,34 +850,34 @@ const OceanTycoon = () => {
           return nh;
         });
         setLastPrice(Date.now());
-        addLog('📈 전세계 시세 변동! 💬 거리 소문 3개가 무료로 도착했습니다.');
+        addLog('📈 전세계 시세 변동!');
         saveGame(); // 자동 저장
-      } else setNextUpd(Math.ceil(3600 / gameSpeedRef.current) - el);
+      } else setNextUpd(3600 - el);
     }, 1000);
     return () => clearInterval(id);
   }, [paused, lastPrice, addLog]);
 
-  // ── 세금 (지수 성장 + 다이아몬드 대납) ──
+  // ── 세금 (하루 1회 징수, 급격한 지수 성장) ──
   useEffect(() => {
     if (paused) return;
     const id = setInterval(() => {
       const el = Math.floor((Date.now() - lastTax) / 1000);
-      if (el >= Math.ceil(600 / gameSpeedRef.current)) {
+      if (el >= TAX_INTERVAL) {
         setGs(prev => {
           const tax = calcTax(prev.ships.length, prev.taxLevel);
           if (prev.gold >= tax) {
-            addLog(`🏛️ 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
-            return { ...prev, gold: prev.gold - tax, taxLevel: prev.taxLevel + 1 };
+            addLog(`🏛️ 일일 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
+            return { ...prev, gold: prev.gold - tax };
           } else if (prev.gems >= 1) {
             addLog(`💎 금 부족! 다이아몬드 1개로 세금 대납 (Lv.${prev.taxLevel})`);
-            return { ...prev, gems: prev.gems - 1, taxLevel: prev.taxLevel + 1 };
+            return { ...prev, gems: prev.gems - 1 };
           } else {
             addLog(`🚨 세금 납부 불가! 세무관이 찾아옵니다... (Lv.${prev.taxLevel})`);
-            return { ...prev, taxLevel: prev.taxLevel + 1 };
+            return prev;
           }
         });
         setLastTax(Date.now());
-      } else setNextTax(Math.ceil(600 / gameSpeedRef.current) - el);
+      } else setNextTax(TAX_INTERVAL - el);
     }, 1000);
     return () => clearInterval(id);
   }, [paused, lastTax, addLog]);
@@ -956,6 +963,9 @@ const OceanTycoon = () => {
     const price = calcSellPrice(prices[portKey]?.[res] || 0, tradePct);
     const feeRate = getFeeRate(tradePct);
     const total = Math.floor(price * qty * (1 - feeRate / 100));
+    const prevEarned = gsRef.current?.totalEarned || 0;
+    const newEarned = prevEarned + total;
+    const milestoneCrossed = EARN_MILESTONES.filter(m => m > prevEarned && m <= newEarned).length;
     setGs(prev => {
       const cargo = { ...prev.ships.find(s => s.id === cur.id).cargo };
       cargo[res] = (cargo[res] || 0) - qty;
@@ -978,9 +988,12 @@ const OceanTycoon = () => {
         return q;
       });
       return { ...prev, gold: prev.gold + total + goldBonus, gems: prev.gems + gemBonus,
+        totalEarned: (prev.totalEarned || 0) + total,
+        taxLevel: prev.taxLevel + milestoneCrossed,
         ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo } : s), activeQuests: updatedQuests };
     });
     addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
+    if (milestoneCrossed > 0) addLog(`📊 무역 규모 성장! 세금 레벨 상승 (${EARN_MILESTONES.find(m => m > prevEarned && m <= newEarned)?.toLocaleString()}금 돌파)`);
     // 일일 목표 진행 추적
     setDailyGoals(goals => {
       let bonusGold = 0, bonusGems = 0;
@@ -1049,9 +1062,9 @@ const OceanTycoon = () => {
       targetX: null, targetY: null, startX: null, startY: null,
       isMoving: false, booster: false, stormUntil: null,
       cargo: {}, fuel: 100, hull: 100, upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 };
-    setGs(prev => ({ ...prev, gold: prev.gold - t.cost, ships: [...prev.ships, ns] }));
+    setGs(prev => ({ ...prev, gold: prev.gold - t.cost, ships: [...prev.ships, ns], taxLevel: prev.taxLevel + 1 }));
     setSelShip(nid); setShowBuy(false);
-    addLog(`⚓ ${t.icon} ${ns.name} 건조! 승무원 1명 배치 후 출항. -${t.cost}금`);
+    addLog(`⚓ ${t.icon} ${ns.name} 건조! 세금 레벨 상승. -${t.cost}금`);
   };
   const upgrade = (sid, key) => {
     const s = gs.ships.find(x => x.id === sid); if (!s) return;
@@ -1584,9 +1597,7 @@ const OceanTycoon = () => {
               <div className="mt-2 border-t border-gray-700 pt-2">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs font-bold text-blue-300">🔮 보유 예측</span>
-                  {gs.predictions.filter(p => !p.applied && p.infoId === 'rumor').length > 0 && (
-                    <span className="text-xs text-gray-400">💬 무료 소문 {gs.predictions.filter(p => !p.applied && p.infoId === 'rumor').length}개 대기 중</span>
-                  )}
+                  <span className="text-xs text-gray-500">{gs.predictions.filter(p => !p.applied).length}개 대기</span>
                 </div>
                 {[...gs.predictions].reverse().map(pred => {
                   const isPending = !pred.applied;
@@ -1701,7 +1712,7 @@ const OceanTycoon = () => {
             <div className={`text-sm font-bold ${gs.taxLevel >= 15 ? 'text-red-400' : gs.taxLevel >= 10 ? 'text-orange-300' : 'text-orange-300'}`}>
               🏛️ {nextTaxAmount.toLocaleString()}금
             </div>
-            <div className="text-xs text-gray-500">Lv.{gs.taxLevel} — {fmt(nextTax)}</div>
+            <div className="text-xs text-gray-500">Lv.{gs.taxLevel} — 일일 {fmt(nextTax)}</div>
           </div>
           <div className="border-l border-gold pl-3 text-center">
             <div className="text-lg font-bold text-blue-300">💎 {gs.gems}</div>
@@ -1801,13 +1812,6 @@ const OceanTycoon = () => {
                 📍 {followShip ? '추적 중' : '추적'}
               </button>
               <button onClick={() => setPaused(p => !p)} className={`px-2 py-0.5 rounded text-xs font-bold ml-1 ${paused?'bg-gold text-ocean-dark':'bg-ocean-light text-gold'}`}>{paused?'▶':'⏸'}</button>
-              {[1,2,5,10].map(s => (
-                <button key={s} onClick={() => setGameSpeed(s)}
-                  className={`px-1.5 py-0.5 rounded text-xs font-bold ml-0.5 transition-all
-                    ${gameSpeed===s?'bg-gold text-ocean-dark':'bg-ocean-dark border border-gold border-opacity-40 text-gold opacity-50 hover:opacity-100'}`}>
-                  {s}×
-                </button>
-              ))}
             </div>
           </div>
 
@@ -2155,41 +2159,114 @@ const OceanTycoon = () => {
                 )}
                 {tab==='crew'&&(!atPort?portGuard('승무원 관리'):(
                   <div className="space-y-3">
+                    {/* 탑승 승무원 */}
                     <div>
-                      <div className="text-xs font-bold text-gold mb-1">탑승 ({gs.crew.filter(c=>c.shipId===cur.id).length}/{st.maxCrew}) | 수리력: {st.totalRepair}</div>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-xs font-bold text-gold">탑승 ({gs.crew.filter(c=>c.shipId===cur.id).length}/{st.maxCrew})</span>
+                        <span className="text-xs text-green-400">🛠️ 수리력 {st.totalRepair}</span>
+                      </div>
                       {gs.crew.filter(c=>c.shipId===cur.id).length===0
-                        ?<div className="text-xs text-red-400 text-center py-1 border border-red-800 rounded">⚠️ 승무원 없음 — 출항 불가</div>
+                        ?<div className="text-xs text-red-400 text-center py-2 border border-red-800 rounded">⚠️ 승무원 없음 — 출항 불가</div>
                         :gs.crew.filter(c=>c.shipId===cur.id).map(c => (
-                          <div key={c.id} className="flex items-center justify-between bg-ocean-dark rounded px-2 py-1 text-xs mb-1">
-                            <div>
-                              <span className={`font-bold ${rarityColor(c.rarity)}`}>{c.name}</span>
-                              {c.label&&<span className={`ml-1 text-xs ${rarityColor(c.rarity)}`}>{c.label}</span>}
-                              <div className="text-gray-300">항:{c.navigation} 상:{c.trading} <span className={c.repair>0?'text-green-400':'text-gray-600'}>수:{c.repair}</span></div>
-                              {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'전항로 특화':REGION_STYLE[c.specialty]?.label+' 특화'}</div>}
+                          <div key={c.id} className="bg-ocean-dark border border-gray-700 rounded-lg p-2 mb-1.5">
+                            <div className="flex items-start justify-between mb-1.5">
+                              <div>
+                                <span className={`font-bold text-sm ${rarityColor(c.rarity)}`}>{c.name}</span>
+                                {c.label&&<div className={`text-xs ${rarityColor(c.rarity)} opacity-80`}>{c.label}</div>}
+                                {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
+                              </div>
+                              <button onClick={() => unassign(c.id)} className="text-red-400 hover:text-red-300 text-xs px-1.5 py-0.5 border border-red-900 rounded ml-2 flex-shrink-0">하선</button>
                             </div>
-                            <button onClick={() => unassign(c.id)} className="text-red-400 hover:text-red-300 ml-1">↩</button>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500']].map(([label,val,color])=>(
+                                <div key={label} className="flex items-center gap-1">
+                                  <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
+                                  <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${val}%`}}/></div>
+                                  <span className="text-xs text-gray-400 w-5 text-right">{val}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         ))}
                     </div>
+                    {/* 미배치 승무원 */}
                     {gs.crew.filter(c=>!c.shipId).length>0&&(
                       <div>
-                        <div className="text-xs font-bold text-gold mb-1">미배치</div>
+                        <div className="text-xs font-bold text-yellow-400 mb-1.5">⚠️ 미배치</div>
                         {gs.crew.filter(c=>!c.shipId).map(c => (
-                          <div key={c.id} className="flex items-center justify-between bg-ocean-dark rounded px-2 py-1 text-xs mb-1">
-                            <div><span className={`font-bold ${rarityColor(c.rarity)}`}>{c.name}</span>{c.label&&<span className={`ml-1 ${rarityColor(c.rarity)}`}>{c.label}</span>}<div className="text-gray-300">항:{c.navigation} 상:{c.trading} <span className={c.repair>0?'text-green-400':'text-gray-600'}>수:{c.repair}</span></div></div>
-                            <div className="flex gap-1 ml-1"><button onClick={() => assign(c.id,cur.id)} className="text-green-400 text-xs">↑탑승</button><button onClick={() => dismiss(c.id)} className="text-red-400 text-xs ml-1">✕</button></div>
+                          <div key={c.id} className="bg-ocean-dark border border-yellow-900 rounded-lg p-2 mb-1.5">
+                            <div className="flex items-start justify-between mb-1.5">
+                              <div>
+                                <span className={`font-bold text-sm ${rarityColor(c.rarity)}`}>{c.name}</span>
+                                {c.label&&<div className={`text-xs ${rarityColor(c.rarity)} opacity-80`}>{c.label}</div>}
+                                {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
+                              </div>
+                              <div className="flex gap-1 ml-2 flex-shrink-0">
+                                <button onClick={() => assign(c.id,cur.id)} className="text-green-400 text-xs px-1.5 py-0.5 border border-green-800 rounded">탑승</button>
+                                <button onClick={() => dismiss(c.id)} className="text-red-400 text-xs px-1.5 py-0.5 border border-red-900 rounded">해고</button>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500']].map(([label,val,color])=>(
+                                <div key={label} className="flex items-center gap-1">
+                                  <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
+                                  <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${val}%`}}/></div>
+                                  <span className="text-xs text-gray-400 w-5 text-right">{val}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         ))}
                       </div>
                     )}
+                    {/* 모집 가능 */}
                     <div>
-                      <div className="flex justify-between items-center mb-1"><div className="text-xs font-bold text-gold">모집 가능</div><button onClick={refreshCrew} className="text-xs text-gray-400 hover:text-gold">🔄 500금</button></div>
-                      {gs.availableCrew.map(c => (
-                        <div key={c.id} className="flex items-center justify-between bg-ocean-dark border border-gray-700 rounded px-2 py-1 text-xs mb-1">
-                          <div><span className={`font-bold ${rarityColor(c.rarity)}`}>{c.name}</span>{c.label&&<div className={rarityColor(c.rarity)}>{c.label}</div>}<div className="text-gray-400">항:{c.navigation} 상:{c.trading} <span className={c.repair>0?'text-green-400':'text-gray-600'}>수:{c.repair}</span></div></div>
-                          <button onClick={() => hireCrew(c.id)} className="text-yellow-300 font-bold text-xs whitespace-nowrap ml-1">고용 {c.hireCost}금</button>
-                        </div>
-                      ))}
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-xs font-bold text-gold">모집 가능</span>
+                        <button onClick={refreshCrew} className="text-xs text-gray-400 hover:text-gold border border-gray-700 rounded px-1.5 py-0.5">🔄 500금</button>
+                      </div>
+                      {gs.availableCrew.map(c => {
+                        // 이 배에 배치 시 속도 변화 미리보기
+                        const onBoard = gs.crew.filter(cc=>cc.shipId===cur.id);
+                        const curNavSum = onBoard.reduce((a,cc)=>a+cc.navigation,0);
+                        const newNavAvg = (curNavSum + c.navigation) / (onBoard.length + 1);
+                        const curNavAvg = onBoard.length ? curNavSum / onBoard.length : 50;
+                        const t2 = SHIP_TYPES[cur.type];
+                        const fm = (cur.fuel??100)<30?0.5:(cur.fuel??100)<60?0.75:1.0;
+                        const curSpd = t2.baseSpeed*(1+(curNavAvg-50)/200+cur.upgrades.speed*0.15)*fm;
+                        const newSpd = t2.baseSpeed*(1+(newNavAvg-50)/200+cur.upgrades.speed*0.15)*fm;
+                        const spdDiff = ((newSpd-curSpd)/Math.max(curSpd,0.0001)*100);
+                        const canAfford = gs.gold >= c.hireCost;
+                        return (
+                          <div key={c.id} className="bg-ocean-dark border border-gray-700 rounded-lg p-2 mb-1.5">
+                            <div className="flex items-start justify-between mb-1.5">
+                              <div>
+                                <span className={`font-bold text-sm ${rarityColor(c.rarity)}`}>{c.name}</span>
+                                {c.label&&<div className={`text-xs ${rarityColor(c.rarity)} opacity-80`}>{c.label}</div>}
+                                {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-1 mb-1.5">
+                              {[['항법',c.navigation+(c.navBonus||0),'bg-blue-500'],['거래',c.trading+(c.tradeBonus||0),'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500']].map(([label,val,color])=>(
+                                <div key={label} className="flex items-center gap-1">
+                                  <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
+                                  <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${Math.min(100,val)}%`}}/></div>
+                                  <span className="text-xs text-gray-400 w-5 text-right">{Math.min(100,val)}</span>
+                                </div>
+                              ))}
+                            </div>
+                            {Math.abs(spdDiff) >= 0.5 && (
+                              <div className={`text-xs mb-1.5 ${spdDiff>0?'text-green-400':'text-red-400'}`}>
+                                배치 시 속도 {spdDiff>0?'▲ +':'▼ '}{Math.abs(spdDiff).toFixed(1)}%
+                              </div>
+                            )}
+                            <button onClick={() => hireCrew(c.id)}
+                              className={`w-full py-1 rounded text-xs font-bold border transition-colors ${canAfford?'bg-yellow-900 hover:bg-yellow-700 text-yellow-200 border-yellow-700':'bg-gray-800 text-gray-600 border-gray-700 cursor-not-allowed'}`}>
+                              {canAfford?`⚓ 고용 ${c.hireCost.toLocaleString()}금`:`❌ 금 부족 (${c.hireCost.toLocaleString()}금)`}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
