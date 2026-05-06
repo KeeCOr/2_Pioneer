@@ -918,6 +918,27 @@ const OceanTycoon = () => {
           return updated;
         }));
       }
+      // Auto-resolve expired pending events
+      const now = Date.now();
+      const expiredEvents = (gsRef.current.pendingEvents || []).filter(pe => !pe.autoResolved && pe.expiresAt <= now);
+      if (expiredEvents.length > 0) {
+        setGs(prev => ({
+          ...prev,
+          pendingEvents: prev.pendingEvents.map(pe => {
+            const exp = expiredEvents.find(e => e.id === pe.id);
+            if (!exp) return pe;
+            const evtDef = EVENT_TABLE.find(e => e.id === pe.eventId);
+            const choices = evtDef?.choices || [];
+            const randomChoice = choices[Math.floor(Math.random() * choices.length)];
+            return { ...pe, autoResolved: true, autoChoiceId: randomChoice?.id || null };
+          }),
+        }));
+        expiredEvents.forEach(pe => {
+          const evtDef = EVENT_TABLE.find(e => e.id === pe.eventId);
+          const randomChoice = evtDef?.choices[Math.floor(Math.random() * (evtDef?.choices.length || 1))];
+          setLog(l => [`🎲 [자동처리] ${pe.shipName}: ${evtDef?.name || pe.eventId} — "${randomChoice?.label || '알 수 없음'}" 선택됨`, ...l]);
+        });
+      }
     }, Math.max(16, Math.round(300 / gameSpeedRef.current)));
     return () => clearInterval(id);
   }, [paused, pricesReady, gameSpeed, addLog]);
