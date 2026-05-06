@@ -620,6 +620,16 @@ const OceanTycoon = () => {
 
   const addLog = useCallback((m) => setLog(p => [m, ...p.slice(0, 29)]), []);
 
+  const rollEventForDeparture = (travelHours, defPct, gsState) => {
+    const baseProb = Math.min(0.80, travelHours * 0.08);
+    const reduction = (gsState?._eventRateReduction || 0) + (defPct || 0) / 100;
+    const adjustedProb = Math.max(0, baseProb - reduction);
+    if (Math.random() > adjustedProb) return null;
+    if (Math.random() < 0.10) return EVENT_TABLE.find(e => e.id === 'tailwind');
+    const nonTailwind = EVENT_TABLE.filter(e => e.id !== 'tailwind');
+    return nonTailwind[Math.floor(Math.random() * nonTailwind.length)];
+  };
+
   const onPtrUp = useCallback((e) => {
     const wasMoved = dragRef.current.moved || zoomDragRef.current.active;
     delete ptrsRef.current[e.pointerId];
@@ -675,6 +685,8 @@ const OceanTycoon = () => {
           if (portEntry) {
             const [pk] = portEntry;
             const sid = selShipRef.current;
+            const departingShip = gsRef.current.ships.find(x => x.id === sid);
+            const targetPort = PORTS[pk];
             setGs(prev => {
               const s = prev.ships.find(x => x.id === sid); if (!s) return prev;
               if (prev.crew.filter(c => c.shipId === sid).length < 1) { addLog('❌ 출항하려면 승무원이 최소 1명 필요!'); return prev; }
@@ -686,6 +698,34 @@ const OceanTycoon = () => {
             });
             setRouteMode(false);
             if (tutorialPhase === 'depart') setTutorialPhase('sailing');
+            // Event roll on departure
+            if (departingShip && targetPort) {
+              const depStats = calcStats(departingShip, gsRef.current.crew);
+              const travelDist = Math.hypot(targetPort.x - departingShip.x, targetPort.y - departingShip.y);
+              const travelHours = travelDist / Math.max(0.0001, depStats.speed * 3600);
+              const rolledEvent = rollEventForDeparture(travelHours, depStats.defPct || 0, gsRef.current);
+              if (rolledEvent) {
+                if (rolledEvent.autoResolve) {
+                  setLog(l => [`💨 순풍! ${departingShip.name || SHIP_TYPES[departingShip.type]?.name}: 항해 시간 단축`, ...l]);
+                } else {
+                  const expiresAt = Date.now() + travelHours * 3600 * 1000 + 3600 * 1000;
+                  const pending = {
+                    id: `evt_${Date.now()}_${departingShip.id}`,
+                    shipId: departingShip.id,
+                    shipName: departingShip.name || SHIP_TYPES[departingShip.type]?.name || '배',
+                    eventId: rolledEvent.id,
+                    expiresAt,
+                    autoResolved: false,
+                    autoChoiceId: null,
+                  };
+                  setGs(prev => ({
+                    ...prev,
+                    pendingEvents: [...(prev.pendingEvents || []), pending],
+                  }));
+                  setLog(l => [`${rolledEvent.icon} ${pending.shipName}: ${rolledEvent.name} 발생! 접속 후 1시간 내 선택하세요`, ...l]);
+                }
+              }
+            }
           } else {
             setRouteMode(false); // 빈 곳 클릭 → 항로 모드 취소
           }
