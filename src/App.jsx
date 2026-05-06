@@ -194,9 +194,9 @@ const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMa
 };
 
 const CREW_NAMES = ['김해룡','이바람','박정현','최강석','정승호','장민우','오선장','신무적','한파도','윤청해','임항해','서무역','조상인','강탐험','백용사','류대항','문원양','권북해','노선비','채항도'];
+const randInt = (min, max) => Math.floor(min + Math.random() * (max - min + 1));
 let _crewSeed = 100;
 const makeCrew = (grade = 'common', portBonus = null) => {
-  const randInt = (min, max) => Math.floor(min + Math.random() * (max - min + 1));
   const { statCount, ranges } = CREW_GRADE_STATS[grade] || CREW_GRADE_STATS.common;
   // Shuffle STAT_KEYS and pick statCount unique keys
   const shuffled = [...STAT_KEYS].sort(() => Math.random() - 0.5);
@@ -205,17 +205,16 @@ const makeCrew = (grade = 'common', portBonus = null) => {
   for (const key of STAT_KEYS) {
     stats[key] = picked.has(key) ? randInt(ranges[key][0], ranges[key][1]) : 0;
   }
-  // Apply port bonus if provided
+  // Port bonus applies even to unpicked stats (value 0) — intentional: gives origin-port flavor
   if (portBonus && portBonus.stat && stats[portBonus.stat] !== undefined) {
     stats[portBonus.stat] += portBonus.value;
   }
-  const id = Date.now() + Math.random();
   const nameIdx = _crewSeed++ % CREW_NAMES.length;
   return {
-    id,
+    id: `crew_${_crewSeed}`,
     name: CREW_NAMES[nameIdx],
     grade,
-    rarity: grade,
+    rarity: grade, // alias for legacy consumers; prefer grade
     stats,
     portBonus: portBonus || null,
     hired: false,
@@ -300,7 +299,7 @@ const OceanTycoon = () => {
         cargo: { '양털': 20 }, fuel: 100, hull: 100,
         upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 }],
       crew: [firstCrew],
-      availableCrew: Array.from({ length: 5 }, makeCrew),
+      availableCrew: Array.from({ length: 5 }, () => makeCrew()),
       purchasedInfo: {}, predictions: [],
       infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
       taxLevel: 1,
@@ -1056,7 +1055,7 @@ const OceanTycoon = () => {
   const dismiss   = (cid) => setGs(prev => ({ ...prev, crew: prev.crew.filter(x => x.id !== cid) }));
   const refreshCrew = () => {
     if (gs.gold < 500) { addLog('❌ 금 부족!'); return; }
-    setGs(prev => ({ ...prev, gold: prev.gold - 500, availableCrew: Array.from({ length: 5 }, makeCrew) }));
+    setGs(prev => ({ ...prev, gold: prev.gold - 500, availableCrew: Array.from({ length: 5 }, () => makeCrew()) }));
     addLog('🔄 승무원 새로고침 -500금');
   };
 
