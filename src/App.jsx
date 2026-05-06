@@ -127,6 +127,62 @@ const PORT_INFO = [
 ];
 const infoCurrentCost = (info) => info.cost; // fixed cost
 
+const EVENT_TABLE = [
+  {
+    id: 'storm', icon: '⛈️', name: '풍랑',
+    infoReward: 'hint',
+    choices: [
+      { id: 'detour',  label: '우회 항로',    desc: '추가 +2시간',        effect: { extraHours: 2 } },
+      { id: 'push',    label: '강행',          desc: '화물 10% 손실',      effect: { cargoLoss: 0.10 } },
+      { id: 'gem',     label: '💎 1개로 회피', desc: '이벤트 무효화',      effect: { avoidGems: 1 } },
+    ],
+  },
+  {
+    id: 'pirate', icon: '🏴‍☠️', name: '해적 출몰',
+    infoReward: 'analysis',
+    choices: [
+      { id: 'negotiate', label: '협상',          desc: '금화 500 지불',     effect: { goldLoss: 500 } },
+      { id: 'fight',     label: '저항',           desc: '화물 20% 손실',    effect: { cargoLoss: 0.20 } },
+      { id: 'gem',       label: '💎 2개로 회피',  desc: '이벤트 무효화',    effect: { avoidGems: 2 } },
+    ],
+  },
+  {
+    id: 'depression', icon: '📉', name: '대공황',
+    infoReward: 'analysis',
+    choices: [
+      { id: 'reroute', label: '목적지 변경',   desc: '가장 가까운 항구',  effect: { reroute: true } },
+      { id: 'accept',  label: '감수',           desc: '판매가 -30%',      effect: { sellPenalty: 0.30 } },
+      { id: 'gem',     label: '💎 3개로 회피', desc: '이벤트 무효화',    effect: { avoidGems: 3 } },
+    ],
+  },
+  {
+    id: 'iceberg', icon: '🧊', name: '빙하 충돌',
+    infoReward: 'hint',
+    choices: [
+      { id: 'slow',  label: '서행 항해',        desc: '추가 +3시간',      effect: { extraHours: 3 } },
+      { id: 'push',  label: '강행',             desc: '선체 -50',         effect: { hullDamage: 50 } },
+      { id: 'gem',   label: '💎 2개로 회피',   desc: '이벤트 무효화',    effect: { avoidGems: 2 } },
+    ],
+  },
+  {
+    id: 'plague', icon: '☠️', name: '역병 창궐',
+    infoReward: 'hint',
+    choices: [
+      { id: 'return', label: '회항',             desc: '출발 항구 복귀',   effect: { returnToOrigin: true } },
+      { id: 'accept', label: '감수',             desc: '목적지 입항 패스', effect: { portSkip: true } },
+      { id: 'gem',    label: '💎 2개로 회피',   desc: '이벤트 무효화',    effect: { avoidGems: 2 } },
+    ],
+  },
+  {
+    id: 'tailwind', icon: '💨', name: '순풍 행운',
+    infoReward: null,
+    choices: [
+      { id: 'auto', label: '자동 적용', desc: '항해 시간 -30%', effect: { speedBonus: 0.30 } },
+    ],
+    autoResolve: true,
+  },
+];
+
 // 선원 등급별 스탯 생성 규칙
 const CREW_GRADE_STATS = {
   common:    { statCount: 1, ranges: { speed:[5,10],  cargo:[3,5],  trade:[5,10],  defense:[5,10],  repair:[5,10]  } },
@@ -373,6 +429,7 @@ const OceanTycoon = () => {
       taxPenaltyPct: 0,
       availableQuests: [], activeQuests: [],
       visitedPorts: ['lisbon'],
+      pendingEvents: [],
     };
     gsRef.current = v;
     return v;
