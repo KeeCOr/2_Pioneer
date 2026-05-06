@@ -95,6 +95,30 @@ const calcTax = (shipCount, taxLevel) => {
   return Math.floor(base + shipBonus);
 };
 
+// 세금 레벨별 해금 정의
+const UNLOCK_TIERS = [
+  { minLevel: 1, resources: ['양털', '면직물', '쌀'],                    grades: ['common']                                   },
+  { minLevel: 3, resources: ['향신료', '비단', '도자기'],                 grades: ['common', 'skilled']                        },
+  { minLevel: 5, resources: ['와인', '해산물', '계피'],                   grades: ['common', 'skilled', 'expert']              },
+  { minLevel: 7, resources: ['다이아몬드'],                               grades: ['common', 'skilled', 'expert', 'legendary'] },
+];
+
+const getUnlockedResources = (taxLevel) => {
+  const unlocked = new Set();
+  UNLOCK_TIERS.forEach(tier => {
+    if (taxLevel >= tier.minLevel) tier.resources.forEach(r => unlocked.add(r));
+  });
+  return unlocked;
+};
+
+const getUnlockedGrades = (taxLevel) => {
+  const grades = new Set(['common']);
+  UNLOCK_TIERS.forEach(tier => {
+    if (taxLevel >= tier.minLevel) tier.grades.forEach(g => grades.add(g));
+  });
+  return grades;
+};
+
 const PORT_INFO = [
   { id: 'rumor',    tier: 'basic',   baseCost: 300,  name: '거리 소문',        desc: '귀동냥 시세 동향.',            accuracy: 0.30, magMin: 15,  magMax: 45,  repeat: true  },
   { id: 'hint',     tier: 'basic',   baseCost: 700,  name: '상인 귀띔',        desc: '상인에게 들은 시세 동향.',      accuracy: 0.40, magMin: 25,  magMax: 65,  repeat: true  },
@@ -231,6 +255,7 @@ const makeCrew = (grade = 'common', portBonus = null) => {
     stats[portBonus.stat] += portBonus.value;
   }
   const nameIdx = _crewSeed++ % CREW_NAMES.length;
+  const gradeHireCost = { common: 200, skilled: 500, expert: 1200, legendary: 3000 };
   return {
     id: `crew_${_crewSeed}`,
     name: CREW_NAMES[nameIdx],
@@ -239,7 +264,16 @@ const makeCrew = (grade = 'common', portBonus = null) => {
     stats,
     portBonus: portBonus || null,
     hired: false,
+    hireCost: gradeHireCost[grade] || 200,
   };
+};
+
+const generateAvailableCrew = (taxLevel, originPort = null, count = 5) => {
+  const allowedGrades = [...getUnlockedGrades(taxLevel)];
+  return Array.from({ length: count }, () => {
+    const grade = allowedGrades[Math.floor(Math.random() * allowedGrades.length)];
+    return makeCrew(grade, originPort);
+  });
 };
 
 let _questId = 1, _evtId = 1;
@@ -755,7 +789,10 @@ const OceanTycoon = () => {
             return updated;
           });
         }
-        return { ...prev, ships, activeQuests, visitedPorts, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus };
+        const newAvailableCrew = ap.length > 0
+          ? generateAvailableCrew(prev.taxLevel || 1, ap[0].portKey, 5)
+          : prev.availableCrew;
+        return { ...prev, ships, activeQuests, visitedPorts, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus, availableCrew: newAvailableCrew };
       });
       // 일일 방문 목표 추적 (setGs 밖에서 처리 — arrivedPorts는 위에서 할당됨)
       if (arrivedPorts.length > 0) {
@@ -1076,7 +1113,7 @@ const OceanTycoon = () => {
   const dismiss   = (cid) => setGs(prev => ({ ...prev, crew: prev.crew.filter(x => x.id !== cid) }));
   const refreshCrew = () => {
     if (gs.gold < 500) { addLog('❌ 금 부족!'); return; }
-    setGs(prev => ({ ...prev, gold: prev.gold - 500, availableCrew: Array.from({ length: 5 }, () => makeCrew()) }));
+    setGs(prev => ({ ...prev, gold: prev.gold - 500, availableCrew: generateAvailableCrew(prev.taxLevel || 1, portKey, 5) }));
     addLog('🔄 승무원 새로고침 -500금');
   };
 
@@ -1563,7 +1600,7 @@ const OceanTycoon = () => {
             <span className="text-xs text-gold font-bold">{cargoN(cur)}/{st?.capacity}</span>
           </div>
           <div className="overflow-y-auto flex-1 px-2 py-1">
-            {Object.entries(RESOURCES).map(([r, {icon}]) => {
+            {Object.entries(RESOURCES).filter(([name]) => getUnlockedResources(gs.taxLevel).has(name)).map(([r, {icon}]) => {
               const baseP = getBuy(r);
               const feeR = getFeeRate(st?.tradePct);
               const buyP = Math.ceil(baseP * (1 + feeR / 100));
@@ -1579,6 +1616,21 @@ const OceanTycoon = () => {
                 </div>
               );
             })}
+            {/* Locked resources hint */}
+            {Object.entries(RESOURCES)
+              .filter(([name]) => !getUnlockedResources(gs.taxLevel).has(name))
+              .map(([name]) => {
+                const neededTier = UNLOCK_TIERS.find(t => t.resources.includes(name));
+                return (
+                  <div key={name} className="opacity-30 flex items-center gap-2 p-2 rounded border border-gray-700 cursor-not-allowed"
+                       title={`세금 레벨 ${neededTier?.minLevel || '?'} 도달 시 해금`}>
+                    <span className="text-lg">🔒</span>
+                    <span className="text-sm text-gray-500">{name}</span>
+                    <span className="text-xs text-gray-600 ml-auto">Lv.{neededTier?.minLevel}</span>
+                  </div>
+                );
+              })
+            }
           </div>
           <div className="flex gap-1 px-2 py-2 border-t border-gold border-opacity-40 flex-shrink-0">
             <button onClick={refuel} className="flex-1 py-1 rounded text-xs bg-orange-900 hover:bg-orange-700 text-orange-200 border border-orange-700">⛽ 보충 ({Math.floor((100-(cur?.fuel??100))*2)}금)</button>
@@ -2224,12 +2276,33 @@ const OceanTycoon = () => {
                     )}
                     <div>
                       <div className="flex justify-between items-center mb-1"><div className="text-xs font-bold text-gold">모집 가능</div><button onClick={refreshCrew} className="text-xs text-gray-400 hover:text-gold">🔄 500금</button></div>
-                      {gs.availableCrew.map(c => (
-                        <div key={c.id} className="flex items-center justify-between bg-ocean-dark border border-gray-700 rounded px-2 py-1 text-xs mb-1">
-                          <div><span className={`font-bold ${rarityColor(c.rarity)}`}>{c.name}</span>{c.label&&<div className={rarityColor(c.rarity)}>{c.label}</div>}<div className="text-gray-400">항:{c.navigation} 상:{c.trading} <span className={c.repair>0?'text-green-400':'text-gray-600'}>수:{c.repair}</span></div></div>
-                          <button onClick={() => hireCrew(c.id)} className="text-yellow-300 font-bold text-xs whitespace-nowrap ml-1">고용 {c.hireCost}금</button>
-                        </div>
-                      ))}
+                      {gs.availableCrew.map(c => {
+                        const gradeColors = {
+                          common: 'border-gray-500',
+                          skilled: 'border-blue-400',
+                          expert: 'border-purple-400',
+                          legendary: 'border-yellow-400 shadow-yellow-400/50 shadow-lg',
+                        };
+                        const gradeLabels = { common:'일반', skilled:'숙련', expert:'전문가', legendary:'전설' };
+                        const activeStats = STAT_KEYS.filter(k => (c.stats?.[k] || 0) > 0);
+                        return (
+                          <div key={c.id} className={`bg-ocean-dark border ${gradeColors[c.grade] || 'border-gray-500'} rounded px-2 py-1.5 text-xs mb-1`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <div>
+                                <span className="font-bold text-white">{c.name}</span>
+                                <span className={`ml-1 text-xs ${c.grade==='legendary'?'text-yellow-400':c.grade==='expert'?'text-purple-400':c.grade==='skilled'?'text-blue-400':'text-gray-400'}`}>[{gradeLabels[c.grade]||c.grade}]</span>
+                                {c.portBonus && <span className="ml-1 text-xs text-green-400">+{c.portBonus.stat}</span>}
+                              </div>
+                              <button onClick={() => hireCrew(c.id)} className="text-yellow-300 font-bold text-xs whitespace-nowrap ml-1">고용 {c.hireCost}금</button>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {activeStats.map(k => (
+                                <span key={k} className="text-gray-300">{STAT_ICONS[k]}{STAT_LABELS[k]} {c.stats[k]}{STAT_UNIT[k]}</span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
