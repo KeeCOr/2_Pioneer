@@ -120,13 +120,12 @@ const getUnlockedGrades = (taxLevel) => {
 };
 
 const PORT_INFO = [
-  { id: 'rumor',    tier: 'basic',   baseCost: 300,  name: '거리 소문',        desc: '귀동냥 시세 동향.',            accuracy: 0.30, magMin: 15,  magMax: 45,  repeat: true  },
-  { id: 'hint',     tier: 'basic',   baseCost: 700,  name: '상인 귀띔',        desc: '상인에게 들은 시세 동향.',      accuracy: 0.40, magMin: 25,  magMax: 65,  repeat: true  },
-  { id: 'analysis', tier: 'premium', baseCost: 3000, name: '상업 분석 보고서', desc: '전문 분석가 예측. (1회)',       accuracy: 0.58, magMin: 60,  magMax: 130, repeat: false },
-  { id: 'route',    tier: 'premium', baseCost: 8000, name: '내부 정보',        desc: '항구 관리인 내부 정보. (1회)', accuracy: 0.72, magMin: 100, magMax: 200, repeat: false },
+  { id: 'rumor',    name: '소문',      cost: 0,    accuracy: 0.40, desc: '방향만 알 수 있는 귀동냥.',          free: true  },
+  { id: 'hint',     name: '귀띔',      cost: 300,  accuracy: 0.60, desc: '방향 + 대략적 변동폭.',             free: false },
+  { id: 'analysis', name: '분석',      cost: 1000, accuracy: 0.75, desc: '방향 + 구체적 폭 + 예상 시점.',     free: false },
+  { id: 'report',   name: '내부정보',  cost: 4000, accuracy: 0.90, desc: '방향 + 폭 + 시점 + 지속 시간.',     free: false },
 ];
-const infoCurrentCost = (info, bc, taxLevel = 1) =>
-  Math.floor(info.baseCost * Math.pow(1.12, Math.max(0, taxLevel - 1)) * Math.pow(1.5, bc[info.id] || 0));
+const infoCurrentCost = (info) => info.cost; // fixed cost
 
 // 선원 등급별 스탯 생성 규칙
 const CREW_GRADE_STATS = {
@@ -225,17 +224,30 @@ const calcStats = (s, crew) => {
 };
 
 let _predId = 1;
-const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMax, turnsUntil = 1) => {
+const makePrediction = (infoId) => {
+  const info = PORT_INFO.find(i => i.id === infoId);
   const resources = Object.keys(RESOURCES);
   const portKeys  = Object.keys(PORTS);
   const resource  = resources[Math.floor(Math.random() * resources.length)];
   const targetPort= portKeys[Math.floor(Math.random() * portKeys.length)];
   const direction = Math.random() < 0.5 ? 'up' : 'down';
-  const mag = Math.floor(magMin + Math.random() * (magMax - magMin));
-  return { id: _predId++, infoId, tier, resource, targetPort,
-    targetPortName: PORTS[targetPort].name, direction, accuracy, mag,
+  const magRanges = { rumor:[0,0], hint:[10,25], analysis:[15,35], report:[20,45] };
+  const [lo, hi] = magRanges[infoId] || [0,0];
+  const mag = lo === 0 ? 0 : Math.floor(lo + Math.random() * (hi - lo));
+  const turnsRanges = { rumor:[1,3], hint:[1,3], analysis:[1,2], report:[1,1] };
+  const [tlo, thi] = turnsRanges[infoId] || [1,3];
+  const turnsUntil = Math.floor(tlo + Math.random() * (thi - tlo + 1));
+  return {
+    id: _predId++, infoId,
+    accuracy: info?.accuracy || 0.4,
+    resource, targetPort,
+    targetPortName: PORTS[targetPort]?.name || targetPort,
+    direction, mag,
     turnsUntil, turnsRemaining: turnsUntil,
-    applied: false, hit: null, boughtAt: portName };
+    applied: false, hit: null,
+    showMag:   infoId !== 'rumor',
+    showTurns: infoId === 'analysis' || infoId === 'report',
+  };
 };
 
 const CREW_NAMES = ['김해룡','이바람','박정현','최강석','정승호','장민우','오선장','신무적','한파도','윤청해','임항해','서무역','조상인','강탐험','백용사','류대항','문원양','권북해','노선비','채항도'];
@@ -697,13 +709,7 @@ const OceanTycoon = () => {
     Object.entries(p).forEach(([k, r]) => { h[k] = {}; Object.keys(r).forEach(res => { h[k][res] = [p[k][res]]; }); });
     setPriceHistory(h);
     setGs(prev => {
-      const rumorInfo = PORT_INFO[0];
-      const portKeys = Object.keys(PORTS);
-      const startRumors = Array.from({ length: 3 }, () => {
-        const fromKey = portKeys[Math.floor(Math.random() * portKeys.length)];
-        const t = 1 + Math.floor(Math.random() * 3);
-        return makePrediction('rumor', 'basic', fromKey, PORTS[fromKey].name, rumorInfo.accuracy, rumorInfo.magMin, rumorInfo.magMax, t);
-      });
+      const startRumors = Array.from({ length: 3 }, () => makePrediction('rumor'));
       return { ...prev, availableQuests: generateQuests(), predictions: [...prev.predictions, ...startRumors] };
     });
     // 일일 목표 초기화 (로드 시 덮어씌워짐)
@@ -886,13 +892,7 @@ const OceanTycoon = () => {
             Object.entries(r).forEach(([res, v]) => { n[k][res] = Math.max(20, Math.floor(v + (Math.random() - 0.5) * 60)); })
           );
           setGs(prev => {
-            const rumorInfo = PORT_INFO[0]; // 거리 소문 (정확도 최하)
-            const portKeys = Object.keys(PORTS);
-            const freeRumors = Array.from({ length: 3 }, () => {
-              const fromKey = portKeys[Math.floor(Math.random() * portKeys.length)];
-              const t = 1 + Math.floor(Math.random() * 3); // 1~3턴 후
-              return makePrediction('rumor', 'basic', fromKey, PORTS[fromKey].name, rumorInfo.accuracy, rumorInfo.magMin, rumorInfo.magMax, t);
-            });
+            const freeRumors = Array.from({ length: 3 }, () => makePrediction('rumor'));
             const applied = prev.predictions.map(pred => {
               if (pred.applied) return pred;
               const remaining = (pred.turnsRemaining ?? 1) - 1;
@@ -1193,23 +1193,14 @@ const OceanTycoon = () => {
     addLog(`🔧 ${{ speed:'돛', cargo:'화물칸', crew:'선원숙소' }[key]} Lv.${lv+1} -${cost}금`);
   };
   const buyInfo = (info) => {
-    const cost = infoCurrentCost(info, gs.infoBuyCounts, gs.taxLevel);
+    const cost = infoCurrentCost(info);
     if (gs.gold < cost) { addLog(`❌ 금 부족! 필요: ${cost.toLocaleString()}금`); return; }
-    const premKey = !info.repeat ? info.id : null;
-    if (premKey && gs.purchasedInfo[premKey]) { addLog('❌ 이미 구매한 정보!'); return; }
-    const portKeys = Object.keys(PORTS);
-    const fromKey  = portKey || portKeys[Math.floor(Math.random() * portKeys.length)];
-    const turnsUntil = info.id === 'rumor' ? 1 + Math.floor(Math.random() * 3)
-                     : info.id === 'hint'   ? 1 + Math.floor(Math.random() * 2)
-                     : 1;
-    const pred = makePrediction(info.id, info.tier, fromKey, PORTS[fromKey].name, info.accuracy, info.magMin, info.magMax, turnsUntil);
+    const pred = makePrediction(info.id);
     setGs(prev => ({
       ...prev, gold: prev.gold - cost,
-      purchasedInfo: premKey ? { ...prev.purchasedInfo, [premKey]: true } : prev.purchasedInfo,
       predictions: [...prev.predictions, pred],
-      infoBuyCounts: info.repeat ? { ...prev.infoBuyCounts, [info.id]: (prev.infoBuyCounts[info.id] || 0) + 1 } : prev.infoBuyCounts,
     }));
-    addLog(`${info.tier==='premium'?'⭐':'💬'} [${pred.turnsUntil}턴 후] ${pred.resource} ${pred.targetPortName} ${pred.direction==='up'?'📈 상승':'📉 하락'} 예상 -${cost.toLocaleString()}금`);
+    addLog(`💬 [${pred.turnsUntil}턴 후] ${pred.resource} ${pred.targetPortName} ${pred.direction==='up'?'📈 상승':'📉 하락'} 예상 -${cost.toLocaleString()}금`);
   };
   const toggleBooster = useCallback((sid) => {
     const shipId = sid ?? cur?.id;
@@ -1706,26 +1697,18 @@ const OceanTycoon = () => {
             <button onClick={() => setShowInfo(false)} className="text-gray-400 hover:text-gold">✕</button>
           </div>
           <div className="overflow-y-auto flex-1 p-2">
-            {PORT_INFO.map(info => {
-              const cost = infoCurrentCost(info, gs.infoBuyCounts, gs.taxLevel);
-              const cnt  = gs.infoBuyCounts[info.id] || 0;
-              const premKey = !info.repeat ? info.id : null;
-              const bought  = premKey && gs.purchasedInfo[premKey];
-              return (
-                <div key={info.id} className="bg-ocean-blue rounded-lg p-2.5 mb-2 text-xs border border-gray-700">
-                  <div className="flex justify-between items-start mb-1">
-                    <span className={`font-bold ${info.tier==='premium'?'text-yellow-300':'text-gray-200'}`}>{info.tier==='premium'?'⭐':'💬'} {info.name}</span>
-                    <div className="text-right text-gray-500"><div>적중률 {Math.round(info.accuracy*100)}%</div>{info.repeat&&cnt>0&&<div className="text-orange-400">×{cnt}회</div>}</div>
-                  </div>
-                  <div className="text-gray-400 mb-1.5">{info.desc}</div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className={`font-bold text-sm ${bought?'text-gray-500':'text-yellow-300'}`}>{bought?'완료':cost.toLocaleString()+'금'}</span>
-                    {info.repeat&&cnt>0&&<span className="text-xs text-orange-400">+{Math.round((Math.pow(1.5,cnt)-1)*100)}%</span>}
-                  </div>
-                  <button onClick={() => buyInfo(info)} disabled={!!bought} className={`w-full py-1 rounded text-xs font-bold ${bought?'bg-gray-700 text-gray-500 cursor-not-allowed':'bg-blue-900 hover:bg-blue-700 text-blue-200 border border-blue-600'}`}>{bought?'구매 완료':'구매'}</button>
+            {PORT_INFO.filter(i => !i.free).map(info => (
+              <button key={info.id}
+                onClick={() => buyInfo(info)}
+                className="w-full text-left p-3 rounded-lg bg-[#1a2f4a] border border-yellow-900/40 hover:border-yellow-500/60 transition mb-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-yellow-300">{info.name}</span>
+                  <span className="text-yellow-400 text-sm">{info.cost.toLocaleString()}금</span>
                 </div>
-              );
-            })}
+                <div className="text-xs text-gray-400 mt-1">{info.desc}</div>
+                <div className="text-xs text-blue-300 mt-1">정확도 {Math.round(info.accuracy * 100)}%</div>
+              </button>
+            ))}
             {gs.predictions.length > 0 && (
               <div className="mt-2 border-t border-gray-700 pt-2">
                 <div className="flex items-center justify-between mb-1.5">
@@ -1734,32 +1717,19 @@ const OceanTycoon = () => {
                     <span className="text-xs text-gray-400">💬 무료 소문 {gs.predictions.filter(p => !p.applied && p.infoId === 'rumor').length}개 대기 중</span>
                   )}
                 </div>
-                {[...gs.predictions].reverse().map(pred => {
-                  const isPending = !pred.applied;
-                  const turns = pred.turnsRemaining ?? 0;
-                  return (
-                  <div key={pred.id} className={`rounded px-2 py-1.5 mb-1 text-xs ${isPending ? 'bg-gray-900 border border-gray-700' : 'bg-ocean-dark opacity-70'}`}>
-                    <div className="flex justify-between items-start mb-0.5">
-                      <span className="flex items-center gap-1 font-bold">
-                        {RESOURCES[pred.resource]?.icon}
-                        <span className="text-white">{pred.resource}</span>
-                        {pred.infoId==='rumor'&&isPending&&<span className="text-gray-600 font-normal">무료</span>}
-                      </span>
-                      <span className={pred.hit===null?'text-gray-400':pred.hit?'text-green-400':'text-red-400'}>
-                        {pred.hit===null?'⏳':pred.hit?'✅':'❌'} {pred.targetPortName}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className={pred.direction==='up'?'text-green-400':'text-red-400'}>
-                        {pred.direction==='up'?'📈 상승':'📉 하락'} ~{pred.mag}금
-                      </span>
-                      {isPending
-                        ? <span className={`font-bold px-1.5 py-0.5 rounded ${turns===1?'bg-red-950 text-red-400':'bg-gray-800 text-gray-400'}`}>{turns}턴 후 적용</span>
-                        : <span className="text-gray-600">{pred.hit?'적중':'빗나감'}</span>
-                      }
-                    </div>
+                {[...gs.predictions].reverse().map(pred => (
+                  <div key={pred.id} className="p-2 rounded bg-[#1a2f4a] border border-gray-700 text-xs mb-1">
+                    <span className={pred.direction === 'up' ? 'text-green-400' : 'text-red-400'}>
+                      {pred.direction === 'up' ? '📈' : '📉'} {pred.targetPortName} · {pred.resource}
+                    </span>
+                    <span className="text-gray-300 ml-1">
+                      {pred.direction === 'up' ? '상승' : '하락'} 예상
+                      {pred.showMag && pred.mag > 0 && ` (~${pred.mag}%)`}
+                      {pred.showTurns && ` / ${pred.turnsRemaining}시세 후`}
+                    </span>
+                    <span className="text-gray-500 ml-1">(정확도 {Math.round(pred.accuracy * 100)}%)</span>
                   </div>
-                )})}
+                ))}
               </div>
             )}
           </div>
