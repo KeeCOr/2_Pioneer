@@ -158,6 +158,8 @@ const calcStats = (s, crew) => {
   const fuelMult = fuel < 30 ? 0.5 : fuel < 60 ? 0.75 : 1.0;
   const hullMult = hull < 30 ? 0.6 : hull < 60 ? 0.8 : 1.0;
   const totalRepair = crewOnShip.reduce((a, c) => a + (c.repair || 0), 0);
+  const avgMorale = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.morale || 50), 0) / crewOnShip.length : 50;
+  const avgCombat = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.combat || 30), 0) / crewOnShip.length : 30;
   return {
     speed:      Math.max(0.0005, t.baseSpeed * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
     capacity:   t.baseCapacity + s.upgrades.cargo * 25,
@@ -165,6 +167,8 @@ const calcStats = (s, crew) => {
     tradePct:   Math.round((tr - 50) / 2 * hullMult),
     crewCnt:    crewOnShip.length,
     fuelMult, hullMult, totalRepair,
+    avgMorale: Math.round(avgMorale),
+    avgCombat: Math.round(avgCombat),
   };
 };
 
@@ -183,20 +187,33 @@ const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMa
 };
 
 const CREW_NAMES = ['김해룡','이바람','박정현','최강석','정승호','장민우','오선장','신무적','한파도','윤청해','임항해','서무역','조상인','강탐험','백용사','류대항','문원양','권북해','노선비','채항도'];
+// 지역별 승무원 스탯 보정
+const REGION_CREW_BIAS = {
+  europe:        { navigation: 5,  trading: 10, stamina: 5,  repair: 0,  morale: 5,  combat: 0  },
+  mediterranean: { navigation: 0,  trading: 5,  stamina: 5,  repair: 5,  morale: 15, combat: 5  },
+  arabian:       { navigation: -5, trading: 15, stamina: 10, repair: 0,  morale: 5,  combat: 10 },
+  south_asia:    { navigation: 5,  trading: 5,  stamina: 15, repair: 15, morale: 5,  combat: 0  },
+  east_asia:     { navigation: 15, trading: 5,  stamina: 5,  repair: 5,  morale: 0,  combat: 10 },
+};
+const MAJOR_PORTS = new Set(['london','lisbon','venice','istanbul','alexandria','dubai','mumbai','guangzhou','shanghai','singapore']);
 let _crewSeed = 100;
-const makeCrew = () => {
+const makeCrew = (region = null) => {
   const id = _crewSeed++;
   const roll = Math.random();
   let special = null;
   if (roll < 0.03)       special = SPECIAL_CREW_POOL.filter(c => c.rarity === 'legendary')[Math.floor(Math.random() * 2)];
   else if (roll < 0.12)  special = SPECIAL_CREW_POOL.filter(c => c.rarity === 'rare')[Math.floor(Math.random() * 2)];
   else if (roll < 0.35)  special = SPECIAL_CREW_POOL.filter(c => c.rarity === 'uncommon')[Math.floor(Math.random() * 5)];
+  const bias = REGION_CREW_BIAS[region] || { navigation: 0, trading: 0, stamina: 0, repair: 0, morale: 0, combat: 0 };
+  const clamp = (v) => Math.min(100, Math.max(0, v));
   return {
     id, name: special ? special.name : CREW_NAMES[id % CREW_NAMES.length],
-    navigation: Math.floor(30 + Math.random() * 70),
-    trading:    Math.floor(30 + Math.random() * 70),
-    stamina:    Math.floor(30 + Math.random() * 70),
-    repair:     Math.floor(Math.random() * 60),
+    navigation: clamp(Math.floor(30 + Math.random() * 70) + bias.navigation),
+    trading:    clamp(Math.floor(30 + Math.random() * 70) + bias.trading),
+    stamina:    clamp(Math.floor(20 + Math.random() * 60) + bias.stamina),
+    repair:     clamp(Math.floor(10 + Math.random() * 60) + bias.repair),
+    morale:     clamp(Math.floor(20 + Math.random() * 60) + bias.morale),
+    combat:     clamp(Math.floor(10 + Math.random() * 60) + bias.combat),
     hireCost:   special ? Math.floor(1500 + Math.random() * 5000) : Math.floor(500 + Math.random() * 1500),
     shipId: null,
     specialty: special?.specialty || null, navBonus: special?.navBonus || 0,
@@ -260,6 +277,35 @@ const generateDailyGoals = (taxLevel = 1) => {
   ];
 };
 
+// ── 배달 의뢰 시스템 ──
+const NPC_NAMES = {
+  europe:        ['토마스 그레이', '마르셀 뒤퐁', '한스 바우어', '윌리엄 드레이크', '피에르 모로'],
+  mediterranean: ['조반니 파올로', '카를로스 메디나', '알렉소스 파파스', '마르코 비스콘티'],
+  arabian:       ['아흐메드 알카심', '유수프 이브라힘', '파루크 알라시드', '오마르 하산'],
+  south_asia:    ['라제시 굽타', '아누프 싱', '비말 차우다리', '크리쉬나 무르티'],
+  east_asia:     ['왕광명', '다나카 켄지', '리우 웨이', '박명수', '야마모토 히로'],
+};
+let _deliveryId = 1;
+const generatePortDeliveries = (portKey) => {
+  const port = PORTS[portKey];
+  const region = port.region;
+  const names = NPC_NAMES[region] || NPC_NAMES.europe;
+  const portKeys = Object.keys(PORTS).filter(k => k !== portKey);
+  const resKeys = Object.keys(RESOURCES);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const count = MAJOR_PORTS.has(portKey) ? 3 : 2;
+  return Array.from({ length: count }, () => {
+    const toPort = pick(portKeys);
+    const res = pick(resKeys);
+    const qty = 5 + Math.floor(Math.random() * 20);
+    const dist = Math.hypot(port.x - PORTS[toPort].x, port.y - PORTS[toPort].y);
+    const reward = Math.floor(qty * 60 * (1 + dist / 30) + Math.random() * 500);
+    return { id: _deliveryId++, npc: pick(names), resource: res, qty,
+      fromPort: portKey, fromPortName: port.name, toPort, toPortName: PORTS[toPort].name,
+      reward, progress: 0, completed: false };
+  });
+};
+
 // ==================== 튜토리얼 단계 ====================
 const TUTORIAL_STEPS = {
   select:  { step: 1, total: 5, icon: '👆', title: '배 선택',    text: '왼쪽 함대 목록 또는 지도의 배 아이콘을 클릭해 배를 선택하세요.' },
@@ -282,13 +328,15 @@ const OceanTycoon = () => {
         cargo: { '양털': 20 }, fuel: 100, hull: 100,
         upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 }],
       crew: [firstCrew],
-      availableCrew: Array.from({ length: 5 }, makeCrew),
+      availableCrew: Array.from({ length: 6 }, () => makeCrew('europe')),
       purchasedInfo: {}, predictions: [],
       infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
       taxLevel: 1,
       totalEarned: 0,
       availableQuests: [], activeQuests: [],
       visitedPorts: ['lisbon'],
+      portDeliveries: { lisbon: generatePortDeliveries('lisbon') },
+      activeDeliveries: [],
     };
     gsRef.current = v;
     return v;
@@ -327,6 +375,7 @@ const OceanTycoon = () => {
   const [dailyResetAt,  setDailyResetAt]  = useState(0);
   const [dailyCountdown,setDailyCountdown]= useState('');
   const [showDailyGoals,setShowDailyGoals]= useState(false);
+  const [missionSubTab, setMissionSubTab] = useState('daily');
   const [mapEvents,     setMapEvents]     = useState([]);
   const [saveExists,    setSaveExists]    = useState(() => !!localStorage.getItem('pioneer_save'));
   const [saveDecided,   setSaveDecided]   = useState(false);
@@ -720,7 +769,20 @@ const OceanTycoon = () => {
             }
           });
         }
+        // 항구 도착 시: 승무원 풀 갱신 + 배달 의뢰 생성
+        let newAvailableCrew = prev.availableCrew;
+        let newPortDeliveries = { ...(prev.portDeliveries || {}) };
+        if (ap.length > 0) {
+          const lastPort = ap[ap.length - 1].portKey;
+          const region = PORTS[lastPort].region;
+          const poolSize = MAJOR_PORTS.has(lastPort) ? 6 : 4;
+          newAvailableCrew = Array.from({ length: poolSize }, () => makeCrew(region));
+          if (!newPortDeliveries[lastPort]) {
+            newPortDeliveries[lastPort] = generatePortDeliveries(lastPort);
+          }
+        }
         return { ...prev, ships, activeQuests, visitedPorts, gold: prev.gold + goldBonus, gems: prev.gems + gemBonus,
+          availableCrew: newAvailableCrew, portDeliveries: newPortDeliveries,
           ...(newRumors.length > 0 && { predictions: [...prev.predictions, ...newRumors].slice(-30) }) };
       });
       // 일일 방문 목표 추적 (setGs 밖에서 처리 — arrivedPorts는 위에서 할당됨)
@@ -987,10 +1049,19 @@ const OceanTycoon = () => {
         }
         return q;
       });
+      // 배달 의뢰 완료 체크
+      const updatedDeliveries = (prev.activeDeliveries || []).map(d => {
+        if (d.completed || d.resource !== res || d.toPort !== portKey) return d;
+        const np = Math.min(d.qty, (d.progress || 0) + qty);
+        const done = np >= d.qty;
+        if (done) { goldBonus += d.reward; addLog(`📦 배달 완료! ${d.npc}: ${RESOURCES[res].icon} ${res} → ${d.toPortName} +${d.reward.toLocaleString()}금!`); }
+        return { ...d, progress: np, completed: done };
+      });
       return { ...prev, gold: prev.gold + total + goldBonus, gems: prev.gems + gemBonus,
         totalEarned: (prev.totalEarned || 0) + total,
         taxLevel: prev.taxLevel + milestoneCrossed,
-        ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo } : s), activeQuests: updatedQuests };
+        ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo } : s),
+        activeQuests: updatedQuests, activeDeliveries: updatedDeliveries };
     });
     addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
     if (milestoneCrossed > 0) addLog(`📊 무역 규모 성장! 세금 레벨 상승 (${EARN_MILESTONES.find(m => m > prevEarned && m <= newEarned)?.toLocaleString()}금 돌파)`);
@@ -1049,7 +1120,9 @@ const OceanTycoon = () => {
   const dismiss   = (cid) => setGs(prev => ({ ...prev, crew: prev.crew.filter(x => x.id !== cid) }));
   const refreshCrew = () => {
     if (gs.gold < 500) { addLog('❌ 금 부족!'); return; }
-    setGs(prev => ({ ...prev, gold: prev.gold - 500, availableCrew: Array.from({ length: 5 }, makeCrew) }));
+    const region = portKey ? PORTS[portKey]?.region : null;
+    const poolSize = portKey && MAJOR_PORTS.has(portKey) ? 6 : 4;
+    setGs(prev => ({ ...prev, gold: prev.gold - 500, availableCrew: Array.from({ length: poolSize }, () => makeCrew(region)) }));
     addLog('🔄 승무원 새로고침 -500금');
   };
 
@@ -1123,6 +1196,29 @@ const OceanTycoon = () => {
     addLog('📋 퀘스트 수주!');
   };
   const dismissQuest = (qid) => setGs(prev => ({ ...prev, activeQuests: prev.activeQuests.filter(q => q.id !== qid) }));
+
+  const acceptDelivery = (delivId, dPortKey) => {
+    const delivery = gsRef.current.portDeliveries?.[dPortKey]?.find(d => d.id === delivId);
+    if (!delivery) return;
+    const ship = gsRef.current.ships.find(s => s.id === selShip);
+    if (!ship) return;
+    const st = calcStats(ship, gsRef.current.crew);
+    const used = Object.values(ship.cargo).reduce((a, n) => a + n, 0);
+    if (used + delivery.qty > st.capacity) { addLog(`❌ 화물 공간 부족! (배달 화물 ${delivery.qty}개 필요)`); return; }
+    setGs(prev => {
+      const ship2 = prev.ships.find(s => s.id === selShip);
+      if (!ship2) return prev;
+      const newCargo = { ...ship2.cargo, [delivery.resource]: (ship2.cargo[delivery.resource] || 0) + delivery.qty };
+      const newPortDel = { ...prev.portDeliveries };
+      newPortDel[dPortKey] = (newPortDel[dPortKey] || []).filter(d => d.id !== delivId);
+      return { ...prev,
+        ships: prev.ships.map(s => s.id === selShip ? { ...s, cargo: newCargo } : s),
+        portDeliveries: newPortDel,
+        activeDeliveries: [...(prev.activeDeliveries || []), { ...delivery, progress: 0, completed: false }],
+      };
+    });
+    addLog(`📦 배달 수락! ${delivery.npc}: ${RESOURCES[delivery.resource].icon} ${delivery.resource} ×${delivery.qty} → ${delivery.toPortName}`);
+  };
   const claimEvent = useCallback((evtId) => {
     const evt = mapEvents.find(e => e.id === evtId); if (!evt || evt.claimed || evt.reward <= 0) return;
     setGs(prev => ({ ...prev, gold: prev.gold + evt.reward }));
@@ -2117,7 +2213,7 @@ const OceanTycoon = () => {
                 <button onClick={() => setRouteMode(!routeMode)} className={`px-2 py-0.5 rounded text-xs font-bold ${routeMode?'bg-gold text-ocean-dark animate-pulse':'bg-ocean-blue text-gray-300 hover:text-gold'}`}>{routeMode?'🎯 항로중':'🗺️ 항로'}</button>
               </div>
               <div className="flex gap-0.5 mb-2">
-                {[['info','현황'],['crew','승무원'],['cargo','화물'],['upgrade','업그레이드']].map(([k,l]) => (
+                {[['info','현황'],['crew','승무원'],['cargo','화물'],['upgrade','강화'],['mission','임무']].map(([k,l]) => (
                   <button key={k} onClick={() => setTab(k)} className={`flex-1 py-0.5 rounded text-xs font-bold ${tab===k?'bg-gold text-ocean-dark':'bg-ocean-blue hover:bg-ocean-light'}`}>{l}</button>
                 ))}
               </div>
@@ -2178,7 +2274,7 @@ const OceanTycoon = () => {
                               <button onClick={() => unassign(c.id)} className="text-red-400 hover:text-red-300 text-xs px-1.5 py-0.5 border border-red-900 rounded ml-2 flex-shrink-0">하선</button>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500']].map(([label,val,color])=>(
+                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500']].map(([label,val,color])=>(
                                 <div key={label} className="flex items-center gap-1">
                                   <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
                                   <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${val}%`}}/></div>
@@ -2207,7 +2303,7 @@ const OceanTycoon = () => {
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500']].map(([label,val,color])=>(
+                              {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500']].map(([label,val,color])=>(
                                 <div key={label} className="flex items-center gap-1">
                                   <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
                                   <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${val}%`}}/></div>
@@ -2247,7 +2343,7 @@ const OceanTycoon = () => {
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1 mb-1.5">
-                              {[['항법',c.navigation+(c.navBonus||0),'bg-blue-500'],['거래',c.trading+(c.tradeBonus||0),'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500']].map(([label,val,color])=>(
+                              {[['항법',c.navigation+(c.navBonus||0),'bg-blue-500'],['거래',c.trading+(c.tradeBonus||0),'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500']].map(([label,val,color])=>(
                                 <div key={label} className="flex items-center gap-1">
                                   <span className="text-xs text-gray-500 w-9 flex-shrink-0">{label}</span>
                                   <div className="flex-1 bg-gray-800 rounded-full h-1.5"><div className={`${color} rounded-full h-1.5`} style={{width:`${Math.min(100,val)}%`}}/></div>
@@ -2285,6 +2381,122 @@ const OceanTycoon = () => {
                           </div>;
                         })}
                     {atPort&&cargoN(cur)>0&&<button onClick={() => setShowSellModal(true)} className="w-full mt-2 py-1.5 rounded text-xs font-bold bg-green-900 hover:bg-green-700 text-green-200 border border-green-600">💰 판매하기</button>}
+                  </div>
+                )}
+                {tab==='mission'&&(
+                  <div className="space-y-2">
+                    <div className="flex gap-0.5">
+                      {[['daily','일일목표'],['quest','퀘스트'],['delivery','배달']].map(([k,l])=>(
+                        <button key={k} onClick={()=>setMissionSubTab(k)}
+                          className={`flex-1 py-0.5 rounded text-xs font-bold ${missionSubTab===k?'bg-gold text-ocean-dark':'bg-ocean-blue hover:bg-ocean-light'}`}>{l}</button>
+                      ))}
+                    </div>
+                    {missionSubTab==='daily'&&(
+                      <div className="space-y-1.5">
+                        <div className="text-xs text-gray-500 text-right">리셋: {dailyCountdown}</div>
+                        {dailyGoals.map(g => {
+                          const pct = Math.min(100,(g.progress/g.target)*100);
+                          const pt = g.type==='dg_gold'?`${Math.floor(g.progress).toLocaleString()}/${g.target.toLocaleString()}금`:`${g.progress}/${g.target}`;
+                          return (
+                            <div key={g.id} className={`rounded-lg p-2.5 border ${g.completed?'border-green-600 bg-green-950':'border-gray-700 bg-ocean-dark'}`}>
+                              <div className="flex justify-between items-start mb-1">
+                                <span className={`font-bold text-xs ${g.completed?'text-green-400':'text-yellow-300'}`}>{g.completed?'✅ ':''}{g.title}</span>
+                                <span className="text-xs text-yellow-200 ml-2 whitespace-nowrap">+{g.rewardGold.toLocaleString()}금{g.rewardGems?` +${g.rewardGems}💎`:''}</span>
+                              </div>
+                              <div className="text-xs text-gray-400 mb-1.5">{g.desc}</div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 bg-ocean-blue rounded-full h-1.5"><div className={`${g.completed?'bg-green-400':'bg-yellow-400'} rounded-full h-1.5`} style={{width:`${pct}%`}}/></div>
+                                <span className="text-xs text-yellow-300 font-bold whitespace-nowrap">{pt}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {missionSubTab==='quest'&&(
+                      <div className="space-y-1.5">
+                        {gs.activeQuests.length>0&&(
+                          <div>
+                            <div className="text-xs font-bold text-gold mb-1">진행 중 ({gs.activeQuests.length}/3)</div>
+                            {gs.activeQuests.map(q=>{
+                              const pct=q.type==='trade'||q.type==='deliver'?Math.min(100,(q.progress/q.target)*100):q.visitedPorts?Math.min(100,(q.visitedPorts.length/q.target)*100):0;
+                              return (
+                                <div key={q.id} className={`rounded-lg p-2.5 border mb-1 ${q.completed?'border-green-600 bg-green-950':'border-yellow-900 bg-ocean-dark'}`}>
+                                  <div className="flex justify-between items-start mb-1">
+                                    <span className={`font-bold text-xs ${q.completed?'text-green-400':'text-gold'}`}>{q.completed?'✅ ':''}{q.title}</span>
+                                    <span className="text-xs text-yellow-200 ml-2">+{q.rewardGold.toLocaleString()}금</span>
+                                  </div>
+                                  <div className="text-xs text-gray-400 mb-1.5">{q.desc}</div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 bg-ocean-blue rounded-full h-1.5"><div className={`${q.completed?'bg-green-400':'bg-gold'} rounded-full h-1.5`} style={{width:`${pct}%`}}/></div>
+                                    <button onClick={()=>dismissQuest(q.id)} className="text-red-500 text-xs hover:text-red-300">✕</button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                        <div className="text-xs font-bold text-gold mb-1">수주 가능</div>
+                        {gs.availableQuests.length===0
+                          ?<div className="text-xs text-gray-500 text-center py-2">퀘스트 로딩 중...</div>
+                          :gs.availableQuests.map(q=>(
+                            <div key={q.id} className="rounded-lg p-2.5 border border-gray-700 bg-ocean-dark mb-1.5">
+                              <div className="flex justify-between items-start mb-1">
+                                <span className="font-bold text-xs text-gold">{q.title}</span>
+                                <span className="text-xs text-yellow-200 ml-2">+{q.rewardGold.toLocaleString()}금{q.rewardGems?` +${q.rewardGems}💎`:''}</span>
+                              </div>
+                              <div className="text-xs text-gray-400 mb-1.5">{q.desc}</div>
+                              <button onClick={()=>acceptQuest(q.id)} disabled={gs.activeQuests.length>=3}
+                                className="px-2 py-0.5 rounded text-xs font-bold bg-gold text-ocean-dark hover:bg-yellow-300 disabled:bg-gray-700 disabled:text-gray-500">
+                                {gs.activeQuests.length>=3?'슬롯 가득':'수주'}
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                    {missionSubTab==='delivery'&&(
+                      <div className="space-y-1.5">
+                        {(gs.activeDeliveries||[]).filter(d=>!d.completed).length>0&&(
+                          <div>
+                            <div className="text-xs font-bold text-blue-400 mb-1">🚚 진행 중</div>
+                            {(gs.activeDeliveries||[]).filter(d=>!d.completed).map(d=>(
+                              <div key={d.id} className="rounded-lg p-2.5 border border-blue-800 bg-blue-950 mb-1.5">
+                                <div className="flex justify-between items-start mb-0.5">
+                                  <span className="font-bold text-xs text-blue-300">{RESOURCES[d.resource].icon} {d.resource} ×{d.qty}</span>
+                                  <span className="text-xs text-yellow-200">+{d.reward.toLocaleString()}금</span>
+                                </div>
+                                <div className="text-xs text-gray-400">{d.npc} | {d.fromPortName} → {d.toPortName}</div>
+                                <div className="text-xs text-blue-400 mt-1">📍 {d.toPortName}에서 판매 시 완료</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {!atPort
+                          ?<div className="text-xs text-gray-500 text-center py-4">⚓ 항구에 정박해야 의뢰를 볼 수 있습니다.</div>
+                          :(gs.portDeliveries?.[portKey]||[]).length===0
+                          ?<div className="text-xs text-gray-500 text-center py-4">이 항구에 배달 의뢰가 없습니다.</div>
+                          :(
+                            <div>
+                              <div className="text-xs font-bold text-gold mb-1">📋 {PORTS[portKey].name} 의뢰</div>
+                              {(gs.portDeliveries[portKey]||[]).map(d=>(
+                                <div key={d.id} className="rounded-lg p-2.5 border border-gray-700 bg-ocean-dark mb-1.5">
+                                  <div className="flex justify-between items-start mb-0.5">
+                                    <span className="font-bold text-xs text-gold">{RESOURCES[d.resource].icon} {d.resource} ×{d.qty}</span>
+                                    <span className="text-xs text-yellow-200">+{d.reward.toLocaleString()}금</span>
+                                  </div>
+                                  <div className="text-xs text-gray-400 mb-0.5">의뢰인: {d.npc}</div>
+                                  <div className="text-xs text-gray-400 mb-1.5">목적지: 📍 {d.toPortName}</div>
+                                  <button onClick={()=>acceptDelivery(d.id,portKey)}
+                                    className="px-2 py-0.5 rounded text-xs font-bold bg-blue-700 hover:bg-blue-500 text-white border border-blue-500">
+                                    📦 수락 (+{d.qty}개 적재)
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        }
+                      </div>
+                    )}
                   </div>
                 )}
                 {tab==='upgrade'&&(!atPort?portGuard('업그레이드'):(
