@@ -368,7 +368,7 @@ const OceanTycoon = () => {
       crew: [firstCrew],
       availableCrew: generateAvailableCrew(1, null, 5),
       purchasedInfo: {}, predictions: [],
-      infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
+      infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, report: 0 },
       taxLevel: 1,
       taxPenaltyPct: 0,
       availableQuests: [], activeQuests: [],
