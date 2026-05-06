@@ -959,13 +959,9 @@ const OceanTycoon = () => {
           const baseTax = calcTax(prev.ships.length, prev.taxLevel);
           const penalty = prev.taxPenaltyPct || 0;
           const tax = Math.floor(baseTax * (1 + penalty / 100));
-          const newTaxLevel = prev.taxLevel + 1;
           if (prev.gold >= tax) {
             addLog(`🏛️ 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
-            const newUnlocked = UNLOCK_TIERS.find(t => t.minLevel === newTaxLevel)?.resources || [];
-            if (newUnlocked.length > 0) addLog(`🔓 새 품목 해금: ${newUnlocked.join(', ')}`);
-            addLog('🆙 세금 레벨 상승! 패널티 초기화됨');
-            return { ...prev, gold: prev.gold - tax, taxLevel: newTaxLevel, taxPenaltyPct: 0 };
+            return { ...prev, gold: prev.gold - tax };
           } else {
             // Priority 1: force-sell cheapest ships (keep at least 1)
             let newGold = prev.gold;
@@ -987,19 +983,13 @@ const OceanTycoon = () => {
             }
             if (newGold >= tax) {
               addLog(`🏛️ 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
-              const newUnlocked = UNLOCK_TIERS.find(t => t.minLevel === newTaxLevel)?.resources || [];
-              if (newUnlocked.length > 0) addLog(`🔓 새 품목 해금: ${newUnlocked.join(', ')}`);
-              addLog('🆙 세금 레벨 상승! 패널티 초기화됨');
-              return { ...prev, gold: newGold - tax, ships: newShips, crew: newCrew, taxLevel: newTaxLevel, taxPenaltyPct: 0 };
+              return { ...prev, gold: newGold - tax, ships: newShips, crew: newCrew };
             } else if (prev.gems >= 1) {
               addLog(`💎 금 부족! 다이아몬드 1개로 세금 대납 (Lv.${prev.taxLevel})`);
-              const newUnlocked = UNLOCK_TIERS.find(t => t.minLevel === newTaxLevel)?.resources || [];
-              if (newUnlocked.length > 0) addLog(`🔓 새 품목 해금: ${newUnlocked.join(', ')}`);
-              addLog('🆙 세금 레벨 상승! 패널티 초기화됨');
-              return { ...prev, gems: prev.gems - 1, ships: newShips, crew: newCrew, taxLevel: newTaxLevel, taxPenaltyPct: 0 };
+              return { ...prev, gems: prev.gems - 1, ships: newShips, crew: newCrew };
             } else {
               addLog(`🚨 세금 납부 불가! 세무관이 찾아옵니다... (Lv.${prev.taxLevel})`);
-              return { ...prev, ships: newShips, crew: newCrew, taxLevel: newTaxLevel };
+              return { ...prev, ships: newShips, crew: newCrew };
             }
           }
         });
@@ -1183,7 +1173,13 @@ const OceanTycoon = () => {
       targetX: null, targetY: null, startX: null, startY: null,
       isMoving: false, booster: false, stormUntil: null,
       cargo: {}, fuel: 100, hull: 100, upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 };
-    setGs(prev => ({ ...prev, gold: prev.gold - t.cost, ships: [...prev.ships, ns] }));
+    setGs(prev => {
+      const newTaxLevel = prev.taxLevel + 1;
+      addLog('🆙 세금 레벨 상승! 패널티 초기화됨');
+      const newUnlocked = UNLOCK_TIERS.find(t => t.minLevel === newTaxLevel)?.resources || [];
+      if (newUnlocked.length > 0) addLog(`🔓 새 품목 해금: ${newUnlocked.join(', ')}`);
+      return { ...prev, gold: prev.gold - t.cost, ships: [...prev.ships, ns], taxLevel: newTaxLevel, taxPenaltyPct: 0 };
+    });
     setSelShip(nid); setShowBuy(false);
     addLog(`⚓ ${t.icon} ${ns.name} 건조! 승무원 1명 배치 후 출항. -${t.cost}금`);
   };
