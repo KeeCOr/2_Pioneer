@@ -183,6 +183,29 @@ const EVENT_TABLE = [
   },
 ];
 
+const UPGRADE_POOL = [
+  // 함대
+  { id: 'fleet_speed_1',   category: 'fleet',    label: '⚡ 항속 +5%',        desc: '모든 배 기본 속도 +5%',        apply: gs => ({ ...gs, _fleetSpeedBonus: (gs._fleetSpeedBonus||0) + 0.05 }) },
+  { id: 'fleet_cargo_1',   category: 'fleet',    label: '📦 화물칸 +3',        desc: '모든 배 화물칸 +3개',           apply: gs => ({ ...gs, _fleetCargoBonus: (gs._fleetCargoBonus||0) + 3 }) },
+  { id: 'fleet_fuel_1',    category: 'fleet',    label: '⛽ 연료 소모 -8%',    desc: '모든 배 연료 효율 향상',        apply: gs => ({ ...gs, _fleetFuelBonus: (gs._fleetFuelBonus||0) + 0.08 }) },
+  // 경제
+  { id: 'econ_fee_1',      category: 'economy',  label: '💸 수수료 -2%',       desc: '거래 수수료 2%p 감소',          apply: gs => ({ ...gs, _feeDelta: (gs._feeDelta||0) - 2 }) },
+  { id: 'econ_buy_1',      category: 'economy',  label: '🛒 구매가 -3%',       desc: '모든 구매가 3% 할인',           apply: gs => ({ ...gs, _buyDiscount: (gs._buyDiscount||0) + 0.03 }) },
+  { id: 'econ_sell_1',     category: 'economy',  label: '💰 판매가 +3%',       desc: '모든 판매가 3% 보너스',         apply: gs => ({ ...gs, _sellBonus: (gs._sellBonus||0) + 0.03 }) },
+  // 생존
+  { id: 'surv_event_1',    category: 'survival', label: '🛡️ 이벤트율 -3%',   desc: '전체 이벤트 발생률 -3%',        apply: gs => ({ ...gs, _eventRateReduction: (gs._eventRateReduction||0) + 0.03 }) },
+  { id: 'surv_grace_1',    category: 'survival', label: '⏰ 세금 유예 +2h',    desc: '세금 납부 유예 시간 +2시간',    apply: gs => ({ ...gs, _taxGraceHours: (gs._taxGraceHours||0) + 2 }) },
+  { id: 'surv_repair_1',   category: 'survival', label: '🔧 수리비 -10%',      desc: '항구 수리 비용 10% 할인',       apply: gs => ({ ...gs, _repairDiscount: (gs._repairDiscount||0) + 0.10 }) },
+  // 선원
+  { id: 'crew_slot_1',     category: 'crew',     label: '👤 선원 슬롯 +1',     desc: '모든 배 최대 선원 +1',          apply: gs => ({ ...gs, _crewSlotBonus: (gs._crewSlotBonus||0) + 1 }) },
+  { id: 'crew_hire_1',     category: 'crew',     label: '💵 고용비 -10%',      desc: '선원 고용 비용 10% 할인',       apply: gs => ({ ...gs, _hireDiscount: (gs._hireDiscount||0) + 0.10 }) },
+  { id: 'crew_stat_1',     category: 'crew',     label: '📊 선원 스탯 +3%',    desc: '전체 선원 스탯 수치 3% 증폭',   apply: gs => ({ ...gs, _crewStatMult: (gs._crewStatMult||1) * 1.03 }) },
+  // 정보
+  { id: 'info_rumor_1',    category: 'info',     label: '📰 소문 +1/시세',     desc: '시세 갱신마다 소문 1개 추가',   apply: gs => ({ ...gs, _extraRumors: (gs._extraRumors||0) + 1 }) },
+  { id: 'info_accuracy_1', category: 'info',     label: '🔍 정보 정확도 +5%',  desc: '구매한 정보 정확도 +5%p',       apply: gs => ({ ...gs, _infoAccBonus: (gs._infoAccBonus||0) + 0.05 }) },
+  { id: 'info_cost_1',     category: 'info',     label: '📉 정보 비용 -15%',   desc: '정보 구매 비용 15% 할인',       apply: gs => ({ ...gs, _infoCostDisc: (gs._infoCostDisc||0) + 0.15 }) },
+];
+
 // 선원 등급별 스탯 생성 규칙
 const CREW_GRADE_STATS = {
   common:    { statCount: 1, ranges: { speed:[5,10],  cargo:[3,5],  trade:[5,10],  defense:[5,10],  repair:[5,10]  } },
@@ -304,6 +327,17 @@ const makePrediction = (infoId) => {
     showMag:   infoId !== 'rumor',
     showTurns: infoId === 'analysis' || infoId === 'report',
   };
+};
+
+const XP_TO_NEXT_LEVEL = (level) => level * 500;
+
+const applyXP = (gs, amount) => {
+  const newXP = (gs.playerXP || 0) + amount;
+  const needed = XP_TO_NEXT_LEVEL(gs.playerLevel || 1);
+  if (newXP >= needed) {
+    return { gs: { ...gs, playerXP: newXP - needed, playerLevel: (gs.playerLevel || 1) + 1, _pendingLevelUp: true }, leveled: true };
+  }
+  return { gs: { ...gs, playerXP: newXP }, leveled: false };
 };
 
 const CREW_NAMES = ['김해룡','이바람','박정현','최강석','정승호','장민우','오선장','신무적','한파도','윤청해','임항해','서무역','조상인','강탐험','백용사','류대항','문원양','권북해','노선비','채항도'];
@@ -533,6 +567,14 @@ const OceanTycoon = () => {
       availableQuests: [], activeQuests: [],
       visitedPorts: ['lisbon'],
       pendingEvents: [],
+      playerXP: 0,
+      playerLevel: 1,
+      permanentUpgrades: [],
+      _fleetSpeedBonus: 0, _fleetCargoBonus: 0, _fleetFuelBonus: 0,
+      _feeDelta: 0, _buyDiscount: 0, _sellBonus: 0,
+      _eventRateReduction: 0, _taxGraceHours: 0, _repairDiscount: 0,
+      _crewSlotBonus: 0, _hireDiscount: 0, _crewStatMult: 1,
+      _extraRumors: 0, _infoAccBonus: 0, _infoCostDisc: 0,
     };
     gsRef.current = v;
     return v;
@@ -1026,7 +1068,7 @@ const OceanTycoon = () => {
               const done = np >= updated.target;
               if (done && !updated.completed) {
                 addLog(`🌟 일일 목표 완료: ${updated.title} +${updated.rewardGold.toLocaleString()}금 +${updated.rewardGems}💎`);
-                setGsRaw(prev => ({ ...prev, gold: prev.gold + updated.rewardGold, gems: prev.gems + updated.rewardGems }));
+                setGsRaw(prev => { let next = { ...prev, gold: prev.gold + updated.rewardGold, gems: prev.gems + updated.rewardGems }; const { gs: gsXP } = applyXP(next, 50); return gsXP; });
               }
               updated = { ...updated, progress: np, visitedToday: newVisited, completed: done };
             }
@@ -1197,7 +1239,10 @@ const OceanTycoon = () => {
           const tax = Math.floor(baseTax * (1 + penalty / 100));
           if (prev.gold >= tax) {
             addLog(`🏛️ 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
-            return { ...prev, gold: prev.gold - tax };
+            let next = { ...prev, gold: prev.gold - tax };
+            const taxXp = applyXP(next, Math.floor(tax * 0.2));
+            next = taxXp.gs;
+            return next;
           } else {
             // Priority 1: force-sell cheapest ships (keep at least 1)
             let newGold = prev.gold;
@@ -1219,7 +1264,10 @@ const OceanTycoon = () => {
             }
             if (newGold >= tax) {
               addLog(`🏛️ 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
-              return { ...prev, gold: newGold - tax, ships: newShips, crew: newCrew };
+              let next = { ...prev, gold: newGold - tax, ships: newShips, crew: newCrew };
+              const taxXp = applyXP(next, Math.floor(tax * 0.2));
+              next = taxXp.gs;
+              return next;
             } else if (prev.gems >= 1) {
               addLog(`💎 금 부족! 다이아몬드 1개로 세금 대납 (Lv.${prev.taxLevel})`);
               return { ...prev, gold: newGold, gems: prev.gems - 1, ships: newShips, crew: newCrew };
@@ -1302,8 +1350,13 @@ const OceanTycoon = () => {
     if (gsRef.current.gold < total) { addLog(`❌ 금 부족! 필요: ${total.toLocaleString()}금`); return; }
     const cap = calcStats(cur, gs.crew).capacity;
     if (cargoN(cur) + n > cap) { addLog(`❌ 화물 공간 부족! 여유: ${cap - cargoN(cur)}개`); return; }
-    setGs(prev => ({ ...prev, gold: prev.gold - total,
-      ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo: { ...s.cargo, [res]: (s.cargo[res] || 0) + n } } : s) }));
+    setGs(prev => {
+      let nextGs = { ...prev, gold: prev.gold - total,
+        ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo: { ...s.cargo, [res]: (s.cargo[res] || 0) + n } } : s) };
+      const xpResult = applyXP(nextGs, Math.floor(total * 0.05));
+      nextGs = xpResult.gs;
+      return nextGs;
+    });
     addLog(`✅ ${RESOURCES[res].icon} ${res} ×${n} 구매 -${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
   }, [cur, portKey, prices, setGs, gs.crew, addLog]);
 
@@ -1321,29 +1374,33 @@ const OceanTycoon = () => {
       cargo[res] = (cargo[res] || 0) - qty;
       if (cargo[res] <= 0) delete cargo[res];
       let goldBonus = 0, gemBonus = 0;
+      let questXP = 0;
       const updatedQuests = prev.activeQuests.map(q => {
         if (q.completed) return q;
         if (q.type === 'deliver' && q.resource === res && portKey === q.targetPort) {
           const np = Math.min(q.target, q.progress + qty);
           const done = np >= q.target;
-          if (done) { goldBonus += q.rewardGold; addLog(`✅ 퀘스트 완료: ${q.title} +${q.rewardGold.toLocaleString()}금!`); }
+          if (done) { goldBonus += q.rewardGold; questXP += 200; addLog(`✅ 퀘스트 완료: ${q.title} +${q.rewardGold.toLocaleString()}금!`); }
           return { ...q, progress: np, completed: done };
         }
         if (q.type === 'trade') {
           const np = q.progress + total;
           const done = np >= q.target;
-          if (done && !q.completed) { goldBonus += q.rewardGold; gemBonus += q.rewardGems || 0; addLog(`✅ 퀘스트 완료: ${q.title} +${q.rewardGold.toLocaleString()}금!`); }
+          if (done && !q.completed) { goldBonus += q.rewardGold; gemBonus += q.rewardGems || 0; questXP += 200; addLog(`✅ 퀘스트 완료: ${q.title} +${q.rewardGold.toLocaleString()}금!`); }
           return { ...q, progress: np, completed: done };
         }
         return q;
       });
-      return { ...prev, gold: prev.gold + total + goldBonus, gems: prev.gems + gemBonus,
+      let nextGs = { ...prev, gold: prev.gold + total + goldBonus, gems: prev.gems + gemBonus,
         ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo } : s), activeQuests: updatedQuests };
+      const xpResult = applyXP(nextGs, Math.floor(total * 0.1) + questXP);
+      nextGs = xpResult.gs;
+      return nextGs;
     });
     addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
     // 일일 목표 진행 추적
     setDailyGoals(goals => {
-      let bonusGold = 0, bonusGems = 0;
+      let bonusGold = 0, bonusGems = 0, bonusXP = 0;
       const next = goals.map(g => {
         if (g.completed) return g;
         let np = g.progress, done = false;
@@ -1352,12 +1409,16 @@ const OceanTycoon = () => {
         else if (g.type === 'dg_deliver' && g.resource === res && portKey === g.targetPort) { np = Math.min(g.target, g.progress + qty); done = np >= g.target; }
         else return g;
         if (done && !g.completed) {
-          bonusGold += g.rewardGold; bonusGems += g.rewardGems || 0;
+          bonusGold += g.rewardGold; bonusGems += g.rewardGems || 0; bonusXP += 50;
           addLog(`🌟 일일 목표 완료: ${g.title} +${g.rewardGold.toLocaleString()}금${g.rewardGems ? ` +${g.rewardGems}💎` : ''}`);
         }
         return { ...g, progress: np, completed: done };
       });
-      if (bonusGold > 0 || bonusGems > 0) setGsRaw(prev => ({ ...prev, gold: prev.gold + bonusGold, gems: prev.gems + bonusGems }));
+      if (bonusGold > 0 || bonusGems > 0 || bonusXP > 0) setGsRaw(prev => {
+        let next = { ...prev, gold: prev.gold + bonusGold, gems: prev.gems + bonusGems };
+        if (bonusXP > 0) { const { gs: gsXP } = applyXP(next, bonusXP); next = gsXP; }
+        return next;
+      });
       return next;
     });
   }, [cur, portKey, prices, setGs, gs.crew, addLog]);
