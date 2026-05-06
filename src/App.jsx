@@ -169,7 +169,7 @@ const calcStats = (s, crew) => {
 
   // Diminishing returns stacking: effective = (1 - product(1 - v/100)) * 100
   const dimReturns = (vals) =>
-    vals.length === 0 ? 0 : (1 - vals.reduce((acc, v) => acc * (1 - v / 100), 1)) * 100;
+    vals.length === 0 ? 0 : (1 - vals.reduce((acc, v) => acc * (1 - Math.min(100, Math.max(0, v)) / 100), 1)) * 100;
 
   // cargo is additive (slot count)
   const crewCargoSum = statVals.cargo.reduce((a, v) => a + v, 0);
@@ -188,7 +188,7 @@ const calcStats = (s, crew) => {
 
   // Legacy aliases so existing call sites keep working
   const capacity    = cargo;
-  const tradePct    = Math.round((trade - 50) / 2);  // map to old ±% display centred at 50
+  const tradePct    = Math.max(0, Math.round((trade - 50) / 2));  // clamped to 0 min: negative would penalise getFeeRate callers
   const totalRepair = repair;
   const maxCrew     = Math.min(14, t.maxCrew + s.upgrades.crew);
   const crewCnt     = crewOnShip.length;
