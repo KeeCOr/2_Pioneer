@@ -111,6 +111,7 @@ const CREW_GRADE_STATS = {
   expert:    { statCount: 3, ranges: { speed:[18,28], cargo:[8,14], trade:[18,28], defense:[18,28], repair:[18,28] } },
   legendary: { statCount: 4, ranges: { speed:[28,40], cargo:[12,20],trade:[28,40], defense:[28,40], repair:[28,40] } },
 };
+// canonical stat order — must match CREW_GRADE_STATS.ranges keys; also defines pick/display order
 const STAT_KEYS   = ['speed', 'cargo', 'trade', 'defense', 'repair'];
 const STAT_LABELS = { speed:'항속', cargo:'적재', trade:'거래', defense:'방어', repair:'정비' };
 const STAT_ICONS  = { speed:'⚡', cargo:'📦', trade:'💰', defense:'🛡️', repair:'🔧' };
@@ -194,23 +195,30 @@ const makePrediction = (infoId, tier, portKey, portName, accuracy, magMin, magMa
 
 const CREW_NAMES = ['김해룡','이바람','박정현','최강석','정승호','장민우','오선장','신무적','한파도','윤청해','임항해','서무역','조상인','강탐험','백용사','류대항','문원양','권북해','노선비','채항도'];
 let _crewSeed = 100;
-const makeCrew = () => {
-  const id = _crewSeed++;
-  const roll = Math.random();
-  let special = null;
-  if (roll < 0.03)       special = SPECIAL_CREW_POOL.filter(c => c.rarity === 'legendary')[Math.floor(Math.random() * 2)];
-  else if (roll < 0.12)  special = SPECIAL_CREW_POOL.filter(c => c.rarity === 'rare')[Math.floor(Math.random() * 2)];
-  else if (roll < 0.35)  special = SPECIAL_CREW_POOL.filter(c => c.rarity === 'uncommon')[Math.floor(Math.random() * 5)];
+const makeCrew = (grade = 'common', portBonus = null) => {
+  const randInt = (min, max) => Math.floor(min + Math.random() * (max - min + 1));
+  const { statCount, ranges } = CREW_GRADE_STATS[grade] || CREW_GRADE_STATS.common;
+  // Shuffle STAT_KEYS and pick statCount unique keys
+  const shuffled = [...STAT_KEYS].sort(() => Math.random() - 0.5);
+  const picked = new Set(shuffled.slice(0, statCount));
+  const stats = {};
+  for (const key of STAT_KEYS) {
+    stats[key] = picked.has(key) ? randInt(ranges[key][0], ranges[key][1]) : 0;
+  }
+  // Apply port bonus if provided
+  if (portBonus && portBonus.stat && stats[portBonus.stat] !== undefined) {
+    stats[portBonus.stat] += portBonus.value;
+  }
+  const id = Date.now() + Math.random();
+  const nameIdx = _crewSeed++ % CREW_NAMES.length;
   return {
-    id, name: special ? special.name : CREW_NAMES[id % CREW_NAMES.length],
-    navigation: Math.floor(30 + Math.random() * 70),
-    trading:    Math.floor(30 + Math.random() * 70),
-    stamina:    Math.floor(30 + Math.random() * 70),
-    repair:     Math.floor(Math.random() * 60),
-    hireCost:   special ? Math.floor(1500 + Math.random() * 5000) : Math.floor(500 + Math.random() * 1500),
-    shipId: null,
-    specialty: special?.specialty || null, navBonus: special?.navBonus || 0,
-    tradeBonus: special?.tradeBonus || 0, rarity: special?.rarity || 'common', label: special?.label || null,
+    id,
+    name: CREW_NAMES[nameIdx],
+    grade,
+    rarity: grade,
+    stats,
+    portBonus: portBonus || null,
+    hired: false,
   };
 };
 
