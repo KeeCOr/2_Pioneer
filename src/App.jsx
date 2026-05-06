@@ -409,6 +409,88 @@ const TUTORIAL_STEPS = {
   buy:     { step: 5, total: 5, icon: '🛍️', title: '화물 매입', text: '화물을 다 팔았어요! 이 항구에서 싼 물건을 사서 비싼 곳에 파는 게 핵심입니다.\n🏪 시장 → [매입] 탭을 이용하세요.' },
 };
 
+// ==================== 이벤트 선택 오버레이 ====================
+const EventChoiceOverlay = ({ pendingEvent, gs, setGs, setLog, addLog }) => {
+  const evtDef = EVENT_TABLE.find(e => e.id === pendingEvent.eventId);
+  if (!evtDef) return null;
+  const timeLeft = Math.max(0, Math.ceil((pendingEvent.expiresAt - Date.now()) / 60000));
+
+  const handleChoice = (choice) => {
+    setGs(prev => {
+      let next = { ...prev };
+      const eff = choice.effect || {};
+      if (eff.avoidGems != null) {
+        if (prev.gems < eff.avoidGems) return prev;
+        next = { ...next, gems: next.gems - eff.avoidGems };
+      }
+      if (eff.goldLoss) next = { ...next, gold: Math.max(0, next.gold - eff.goldLoss) };
+      if (eff.hullDamage) {
+        next = { ...next, ships: next.ships.map(s =>
+          s.id === pendingEvent.shipId ? { ...s, hull: Math.max(0, (s.hull ?? 100) - eff.hullDamage) } : s
+        )};
+      }
+      if (eff.sellPenalty) {
+        next = { ...next, ships: next.ships.map(s =>
+          s.id === pendingEvent.shipId ? { ...s, sellPenalty: eff.sellPenalty } : s
+        )};
+      }
+      if (eff.cargoLoss) {
+        next = { ...next, ships: next.ships.map(s => {
+          if (s.id !== pendingEvent.shipId) return s;
+          const newCargo = {};
+          Object.entries(s.cargo || {}).forEach(([k, v]) => { newCargo[k] = Math.floor(v * (1 - eff.cargoLoss)); });
+          return { ...s, cargo: newCargo };
+        })};
+      }
+      if (eff.returnToOrigin) {
+        next = { ...next, ships: next.ships.map(s =>
+          s.id === pendingEvent.shipId ? { ...s, targetX: s.startX || s.x, targetY: s.startY || s.y } : s
+        )};
+      }
+      // Info reward (not on gem-avoid)
+      if (evtDef.infoReward && !eff.avoidGems) {
+        const infoPred = makePrediction(evtDef.infoReward);
+        next = { ...next, predictions: [infoPred, ...(next.predictions || [])] };
+      }
+      // Remove from pendingEvents
+      next = { ...next, pendingEvents: next.pendingEvents.filter(pe => pe.id !== pendingEvent.id) };
+      return next;
+    });
+    (addLog || setLog)(l => [`${evtDef.icon} ${pendingEvent.shipName}: "${choice.label}" 선택 — ${choice.desc}`, ...l]);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+      <div className="bg-[#1a2f4a] border-2 border-yellow-500/50 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+        <div className="text-3xl text-center mb-2">{evtDef.icon}</div>
+        <h3 className="text-lg font-bold text-white text-center mb-1">{evtDef.name}</h3>
+        <p className="text-sm text-gray-400 text-center mb-1">{pendingEvent.shipName}</p>
+        <p className="text-xs text-orange-400 text-center mb-4">선택 만료: {timeLeft}분 후</p>
+        <div className="flex flex-col gap-2">
+          {evtDef.choices.map(choice => {
+            const gemCost = choice.effect?.avoidGems;
+            const canAfford = !gemCost || (gs.gems >= gemCost);
+            return (
+              <button key={choice.id}
+                onClick={() => canAfford && handleChoice(choice)}
+                disabled={!canAfford}
+                className={`p-3 rounded-xl text-left transition border ${
+                  canAfford
+                    ? 'bg-[#243d5e] border-blue-600/40 hover:border-blue-400'
+                    : 'bg-gray-800 border-gray-700 opacity-50 cursor-not-allowed'
+                }`}>
+                <div className="font-semibold text-white text-sm">{choice.label}</div>
+                <div className="text-xs text-gray-400">{choice.desc}</div>
+                {gemCost && !canAfford && <div className="text-xs text-red-400">💎 보석 부족</div>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ==================== 컴포넌트 ====================
 const OceanTycoon = () => {
   const gsRef = useRef(null);
@@ -546,6 +628,19 @@ const OceanTycoon = () => {
     const ship = gs.ships.find(s => s.id === selShip);
     if (!ship?.isMoving) setFollowShip(false);
   }, [followShip, gs.ships, selShip]);
+
+  // 마운트 시: 자동처리된 이벤트 로그 출력 후 제거
+  useEffect(() => {
+    const autoResolved = (gs.pendingEvents || []).filter(pe => pe.autoResolved);
+    if (autoResolved.length > 0) {
+      autoResolved.forEach(pe => {
+        const evtDef = EVENT_TABLE.find(e => e.id === pe.eventId);
+        const choice = evtDef?.choices.find(c => c.id === pe.autoChoiceId);
+        setLog(l => [`📋 [자동처리됨] ${pe.shipName}: ${evtDef?.name || pe.eventId} → "${choice?.label || '알 수 없음'}"`, ...l]);
+      });
+      setGs(prev => ({ ...prev, pendingEvents: prev.pendingEvents.filter(pe => !pe.autoResolved) }));
+    }
+  }, []); // mount only
 
   const onPtrDown = useCallback((e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -1413,6 +1508,17 @@ const OceanTycoon = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Event choice overlay — show oldest unresolved pending event */}
+      {(gs.pendingEvents || []).filter(pe => !pe.autoResolved).length > 0 && (
+        <EventChoiceOverlay
+          pendingEvent={(gs.pendingEvents || []).filter(pe => !pe.autoResolved)[0]}
+          gs={gs}
+          setGs={setGs}
+          setLog={setLog}
+          addLog={setLog}
+        />
       )}
 
       {/* 전체 승무원 모달 */}
