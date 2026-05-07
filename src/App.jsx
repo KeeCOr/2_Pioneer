@@ -47,6 +47,35 @@ const RESOURCES = {
   '면직물': { icon: '📦' }, '양털':   { icon: '🧶' }, '계피':   { icon: '🌰' }, '쌀':  { icon: '🍚' },
 };
 
+// ==================== 날씨 시스템 ====================
+const WEATHER_TYPES = {
+  sunny:     { icon: '☀️',  name: '맑음',      desc: '항해하기 좋은 날씨',            speedMult: 1.05,  fuelMult: 1.00, hullDmg: 0.000 },
+  cloudy:    { icon: '🌤️', name: '흐림',      desc: '무난한 날씨',                   speedMult: 1.00,  fuelMult: 1.00, hullDmg: 0.000 },
+  rainy:     { icon: '🌧️', name: '비',        desc: '속도↓ 연료소모↑',              speedMult: 0.90,  fuelMult: 1.10, hullDmg: 0.001 },
+  windy:     { icon: '💨',  name: '강풍',      desc: '속도↑ 내구도 소모',             speedMult: 1.12,  fuelMult: 0.90, hullDmg: 0.002 },
+  foggy:     { icon: '🌫️', name: '안개',      desc: '시야 불량, 속도↓↓',            speedMult: 0.78,  fuelMult: 1.00, hullDmg: 0.000 },
+  fairwind:  { icon: '🌈',  name: '순풍',      desc: '최적 항해 조건, 연료 절감',     speedMult: 1.22,  fuelMult: 0.82, hullDmg: 0.000 },
+  roughsea:  { icon: '🌊',  name: '거친 바다', desc: '파도 심함, 속도↓ 내구도↓↓',   speedMult: 0.73,  fuelMult: 1.22, hullDmg: 0.004 },
+  blizzard:  { icon: '❄️',  name: '눈보라',    desc: '극한 악천후, 모든 능력↓↓',     speedMult: 0.58,  fuelMult: 1.32, hullDmg: 0.005 },
+  tradewind: { icon: '🌴',  name: '무역풍',    desc: '열대 순풍, 연료↓↓ 속도↑',      speedMult: 1.18,  fuelMult: 0.78, hullDmg: 0.000 },
+  heatwave:  { icon: '🌵',  name: '열파',      desc: '고온 건조, 연료 과소모',        speedMult: 0.85,  fuelMult: 1.28, hullDmg: 0.002 },
+};
+// 위도(Y좌표)별 날씨 풀 — Y가 낮을수록 북쪽(한랭), 높을수록 적도(열대)
+const WEATHER_POOL = (y) => {
+  if (y < 15) return ['blizzard','blizzard','foggy','cloudy','rainy','windy'];
+  if (y < 30) return ['cloudy','rainy','windy','sunny','foggy','cloudy'];
+  if (y < 50) return ['sunny','windy','fairwind','cloudy','rainy','sunny'];
+  if (y < 65) return ['sunny','tradewind','roughsea','rainy','heatwave','fairwind'];
+  return ['tradewind','tradewind','rainy','roughsea','sunny','heatwave'];
+};
+// 배 위치 + 3분 주기 시드로 날씨 결정 (순수 함수, 상태 불필요)
+const getShipWeather = (ship) => {
+  const timeSeed = Math.floor(Date.now() / 180000);
+  const pool = WEATHER_POOL(ship.y);
+  const hash = Math.abs(Math.round(Math.sin(ship.id * 1.7 + ship.y * 0.31 + timeSeed * 2.13) * 10000)) % pool.length;
+  return pool[hash];
+};
+
 const PORT_SHIPS = {
   london:['sloop','brigantine','merchant','galleon'], bristol:['rowboat','sloop'],
   lisbon:['sloop','caravel','merchant','galleon'], hamburg:['rowboat','sloop','brigantine'],
@@ -143,47 +172,50 @@ const calcStats = (s, crew) => {
   const t = SHIP_TYPES[s.type];
   const crewOnShip = crew.filter(c => c.shipId === s.id);
   const region = routeRegionOf(s);
+  // 날씨 — 배 위치 기반, 선원 선호 날씨 매칭 시 +40% 보너스
+  const weatherId  = getShipWeather(s);
+  const weather    = WEATHER_TYPES[weatherId];
+  const wm = (c) => (c.favoriteWeather && c.favoriteWeather === weatherId) ? 1.4 : 1.0;
   let navSum = 0, trSum = 0;
   crewOnShip.forEach(c => {
+    const w = wm(c);
     let nav = c.navigation, tr = c.trading;
     if (c.specialty && (c.specialty === 'any' || c.specialty === region)) {
       nav = Math.min(100, c.navigation + (c.navBonus  || 0));
       tr  = Math.min(100, c.trading   + (c.tradeBonus || 0));
     }
-    navSum += nav; trSum += tr;
+    navSum += Math.min(100, nav * w); trSum += Math.min(100, tr * w);
   });
   const n  = crewOnShip.length ? navSum / crewOnShip.length : 50;
   const tr = crewOnShip.length ? trSum  / crewOnShip.length : 50;
   const fuel = s.fuel ?? 100, hull = s.hull ?? 100;
   const fuelMult = fuel < 30 ? 0.5 : fuel < 60 ? 0.75 : 1.0;
   const hullMult = hull < 30 ? 0.6 : hull < 60 ? 0.8 : 1.0;
-  const totalRepair = crewOnShip.reduce((a, c) => a + (c.repair || 0), 0);
-  const avgMorale   = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.morale    || 50), 0) / crewOnShip.length : 50;
-  const avgCombat   = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.combat    || 30), 0) / crewOnShip.length : 30;
-  const avgFuelEff  = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.fuelEff   || 30), 0) / crewOnShip.length : 30;
-  const avgHullEff  = crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.hullEff   || 30), 0) / crewOnShip.length : 30;
-  const avgLogistics= crewOnShip.length ? crewOnShip.reduce((a, c) => a + (c.logistics || 30), 0) / crewOnShip.length : 30;
-  // fuelEff: 0→0%, 100→20% 연료 절감
-  const fuelEffMult = 1 - avgFuelEff * 0.002;
-  // hullEff: 회복 보너스 & 항해 중 내구도 손상 경감
-  const hullEffBonus = avgHullEff * 0.003;     // 수리량 ×(1+0~0.3)
-  const hullDmgMult  = 1 - avgHullEff * 0.002; // 손상 0→0%, 100→20% 경감
-  // logistics: 0-100 → 최대 +20 화물 슬롯
+  const totalRepair  = crewOnShip.reduce((a, c) => a + (c.repair || 0) * wm(c), 0);
+  const avgMorale    = crewOnShip.length ? crewOnShip.reduce((a, c) => a + Math.min(100, (c.morale    || 50) * wm(c)), 0) / crewOnShip.length : 50;
+  const avgCombat    = crewOnShip.length ? crewOnShip.reduce((a, c) => a + Math.min(100, (c.combat    || 30) * wm(c)), 0) / crewOnShip.length : 30;
+  const avgFuelEff   = crewOnShip.length ? crewOnShip.reduce((a, c) => a + Math.min(100, (c.fuelEff   || 30) * wm(c)), 0) / crewOnShip.length : 30;
+  const avgHullEff   = crewOnShip.length ? crewOnShip.reduce((a, c) => a + Math.min(100, (c.hullEff   || 30) * wm(c)), 0) / crewOnShip.length : 30;
+  const avgLogistics = crewOnShip.length ? crewOnShip.reduce((a, c) => a + Math.min(100, (c.logistics || 30) * wm(c)), 0) / crewOnShip.length : 30;
+  const fuelEffMult  = 1 - avgFuelEff * 0.002;
+  const hullEffBonus = avgHullEff * 0.003;
+  const hullDmgMult  = 1 - avgHullEff * 0.002;
   const extraCargo   = Math.floor(avgLogistics * 0.2);
   return {
-    speed:       Math.max(0.0005, t.baseSpeed * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
-    capacity:    t.baseCapacity + s.upgrades.cargo * 25 + extraCargo,
-    maxCrew:     Math.min(14, t.maxCrew + s.upgrades.crew),
-    tradePct:    Math.round((tr - 50) / 2 * hullMult),
-    crewCnt:     crewOnShip.length,
+    speed:        Math.max(0.0005, t.baseSpeed * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
+    capacity:     t.baseCapacity + s.upgrades.cargo * 25 + extraCargo,
+    maxCrew:      Math.min(14, t.maxCrew + s.upgrades.crew),
+    tradePct:     Math.round((tr - 50) / 2 * hullMult),
+    crewCnt:      crewOnShip.length,
     fuelMult, hullMult, totalRepair,
-    avgMorale:   Math.round(avgMorale),
-    avgCombat:   Math.round(avgCombat),
+    avgMorale:    Math.round(avgMorale),
+    avgCombat:    Math.round(avgCombat),
     fuelEffMult, hullEffBonus, hullDmgMult,
-    avgFuelEff:  Math.round(avgFuelEff),
-    avgHullEff:  Math.round(avgHullEff),
-    avgLogistics:Math.round(avgLogistics),
+    avgFuelEff:   Math.round(avgFuelEff),
+    avgHullEff:   Math.round(avgHullEff),
+    avgLogistics: Math.round(avgLogistics),
     extraCargo,
+    weatherId, weather,
   };
 };
 
@@ -232,7 +264,8 @@ const makeCrew = (region = null) => {
     fuelEff:    clamp(Math.floor(10 + Math.random() * 60) + (bias.fuelEff  || 0)),
     hullEff:    clamp(Math.floor(10 + Math.random() * 60) + (bias.hullEff  || 0)),
     logistics:  clamp(Math.floor(10 + Math.random() * 60) + (bias.logistics|| 0)),
-    hireCost:   special ? Math.floor(1500 + Math.random() * 5000) : Math.floor(500 + Math.random() * 1500),
+    hireCost:        special ? Math.floor(1500 + Math.random() * 5000) : Math.floor(500 + Math.random() * 1500),
+    favoriteWeather: Object.keys(WEATHER_TYPES)[Math.floor(Math.random() * Object.keys(WEATHER_TYPES).length)],
     shipId: null,
     specialty: special?.specialty || null, navBonus: special?.navBonus || 0,
     tradeBonus: special?.tradeBonus || 0, rarity: special?.rarity || 'common', label: special?.label || null,
@@ -727,13 +760,10 @@ const OceanTycoon = () => {
       setGs(prev => {
         const ap = [];
         const ships = prev.ships.map(s => {
-          const crewRepair = prev.crew.filter(c => c.shipId === s.id).reduce((a, c) => a + (c.repair || 0), 0);
-          const hullRecovery = crewRepair * 0.0002;
+          const st = calcStats(s, prev.crew);
+          const hullRepairBase = st.totalRepair * 0.0002 * (1 + st.hullEffBonus);
           if (!s.isMoving || s.targetX === null) {
-            if (hullRecovery <= 0) return s;
-            const dockedSt = calcStats(s, prev.crew);
-            const dockedRepair = hullRecovery * (1 + dockedSt.hullEffBonus);
-            return { ...s, hull: Math.min(100, (s.hull ?? 100) + dockedRepair) };
+            return hullRepairBase > 0 ? { ...s, hull: Math.min(100, (s.hull ?? 100) + hullRepairBase) } : s;
           }
           const dx = s.targetX - s.x, dy = s.targetY - s.y;
           const d  = Math.hypot(dx, dy);
@@ -743,19 +773,17 @@ const OceanTycoon = () => {
             if (arrivedPk) ap.push({ shipId: s.id, portKey: arrivedPk });
             return { ...s, x: s.targetX, y: s.targetY, isMoving: false, targetX: null, targetY: null,
               startX: null, startY: null, booster: false, stormUntil: null,
-              hull: Math.min(100, (s.hull ?? 100) + hullRecovery) };
+              hull: Math.min(100, (s.hull ?? 100) + hullRepairBase) };
           }
           const isStormed = s.stormUntil && Date.now() < s.stormUntil;
           const effectiveBooster = s.booster && (s.fuel ?? 100) > 5;
-          const st = calcStats(s, prev.crew);
-          const sp = st.speed * (effectiveBooster ? 1.43 : 1.0) * (isStormed ? 0.4 : 1.0);
+          const sp = st.speed * (effectiveBooster ? 1.43 : 1.0) * (isStormed ? 0.4 : 1.0) * st.weather.speedMult;
           const baseFuel = effectiveBooster ? 0.030 : 0.015;
-          const fuelCost = baseFuel * st.fuelEffMult;
+          const fuelCost = baseFuel * st.fuelEffMult * st.weather.fuelMult;
           const a  = Math.atan2(dy, dx);
           const newFuel = Math.max(0, (s.fuel ?? 100) - fuelCost);
-          const hullRepair = hullRecovery * (1 + st.hullEffBonus);
-          const hullDmg = 0.005 * st.hullDmgMult;
-          const newHull = Math.min(100, Math.max(0, (s.hull ?? 100) - hullDmg + hullRepair));
+          const hullDmg = 0.005 * st.hullDmgMult + st.weather.hullDmg;
+          const newHull = Math.min(100, Math.max(0, (s.hull ?? 100) - hullDmg + hullRepairBase));
           return { ...s, x: s.x + sp * Math.cos(a), y: s.y + sp * Math.sin(a),
             fuel: newFuel, hull: newHull, booster: effectiveBooster && newFuel > 5 };
         });
@@ -2256,6 +2284,22 @@ const OceanTycoon = () => {
                         </div>
                         {cur.stormUntil&&Date.now()<cur.stormUntil&&<div className="text-purple-400 font-bold">⛈️ 폭풍우 영향 중! 속도 60% 감소</div>}
                       </>}
+                      {(() => {
+                          const w = st.weather;
+                          const wCrew = gs.crew.filter(c => c.shipId===cur.id && c.favoriteWeather===st.weatherId);
+                          const effPct = Math.round((w.speedMult-1)*100);
+                          const fuelPct = Math.round((w.fuelMult-1)*100);
+                          return (
+                            <div className={`rounded px-1 py-0.5 ${wCrew.length>0?'bg-yellow-900/40 border border-yellow-600/40':''}`}>
+                              <div className="flex justify-between items-center">
+                                <span>날씨</span>
+                                <span className="font-bold">{w.icon} {w.name}</span>
+                              </div>
+                              <div className="text-xs text-gray-400 text-right">{effPct>=0?`+${effPct}`:effPct}% 속도{fuelPct!==0?` / 연료${fuelPct>0?'+':''}${fuelPct}%`:''}{w.hullDmg>0?' / 내구↓':''}</div>
+                              {wCrew.length>0&&<div className="text-xs text-yellow-300 font-bold">★ {wCrew.map(c=>c.name).join(', ')} 날씨 보너스 +40%</div>}
+                            </div>
+                          );
+                        })()}
                       <div className="flex justify-between"><span>승무원</span><span className={st.crewCnt===0?'text-red-400 font-bold':'text-gold'}>{st.crewCnt===0?'⚠️ 없음 (출항 불가)':`${st.crewCnt}/${st.maxCrew}명`}</span></div>
                       <div className="flex justify-between"><span>화물</span><span className="text-gold">{cargoN(cur)}/{st.capacity}</span></div>
                       <div>
@@ -2295,6 +2339,7 @@ const OceanTycoon = () => {
                                 <span className={`font-bold text-sm ${rarityColor(c.rarity)}`}>{c.name}</span>
                                 {c.label&&<div className={`text-xs ${rarityColor(c.rarity)} opacity-80`}>{c.label}</div>}
                                 {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
+                                {c.favoriteWeather&&(()=>{const fw=WEATHER_TYPES[c.favoriteWeather];const active=st.weatherId===c.favoriteWeather;return<div className={`text-xs font-bold ${active?'text-yellow-300':'text-gray-500'}`}>{fw.icon} {fw.name} 특화{active?' ★+40%':''}</div>;})()}
                               </div>
                               <button onClick={() => unassign(c.id)} className="text-red-400 hover:text-red-300 text-xs px-1.5 py-0.5 border border-red-900 rounded ml-2 flex-shrink-0">하선</button>
                             </div>
@@ -2321,6 +2366,7 @@ const OceanTycoon = () => {
                                 <span className={`font-bold text-sm ${rarityColor(c.rarity)}`}>{c.name}</span>
                                 {c.label&&<div className={`text-xs ${rarityColor(c.rarity)} opacity-80`}>{c.label}</div>}
                                 {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
+                                {c.favoriteWeather&&(()=>{const fw=WEATHER_TYPES[c.favoriteWeather];const active=getShipWeather(cur)===c.favoriteWeather;return<div className={`text-xs font-bold ${active?'text-yellow-300':'text-gray-500'}`}>{fw.icon} {fw.name} 특화{active?' ★+40%':''}</div>;})()}
                               </div>
                               <div className="flex gap-1 ml-2 flex-shrink-0">
                                 <button onClick={() => assign(c.id,cur.id)} className="text-green-400 text-xs px-1.5 py-0.5 border border-green-800 rounded">탑승</button>
@@ -2365,6 +2411,7 @@ const OceanTycoon = () => {
                                 <span className={`font-bold text-sm ${rarityColor(c.rarity)}`}>{c.name}</span>
                                 {c.label&&<div className={`text-xs ${rarityColor(c.rarity)} opacity-80`}>{c.label}</div>}
                                 {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
+                                {c.favoriteWeather&&(()=>{const fw=WEATHER_TYPES[c.favoriteWeather];const active=getShipWeather(cur)===c.favoriteWeather;return<div className={`text-xs font-bold ${active?'text-yellow-300':'text-gray-500'}`}>{fw.icon} {fw.name} 특화{active?' ★+40%':''}</div>;})()}
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1 mb-1.5">
