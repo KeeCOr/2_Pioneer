@@ -389,6 +389,7 @@ const OceanTycoon = () => {
       portDeliveries: { lisbon: generatePortDeliveries('lisbon') },
       activeDeliveries: [],
       taxExemptNext: false,
+      taxExemptCount: 0,
     };
     gsRef.current = v;
     return v;
@@ -982,7 +983,7 @@ const OceanTycoon = () => {
         setGs(prev => {
           if (prev.taxExemptNext) {
             addLog(`🛡️ 세금 면제 적용! 이번 세금 ${calcTax(prev.ships.length, prev.taxLevel).toLocaleString()}금 면제.`);
-            return { ...prev, taxExemptNext: false };
+            return { ...prev, taxExemptNext: false, taxExemptCount: (prev.taxExemptCount || 0) + 1 };
           }
           const tax = calcTax(prev.ships.length, prev.taxLevel);
           if (prev.gold >= tax) {
@@ -1257,9 +1258,10 @@ const OceanTycoon = () => {
 
   const exemptTax = () => {
     if (gsRef.current.taxExemptNext) { addLog('🛡️ 이미 세금 면제가 예약되어 있습니다!'); return; }
-    if (gsRef.current.gems < 2) { addLog('❌ 보석 부족! (💎2 필요)'); return; }
-    setGs(prev => ({ ...prev, gems: prev.gems - 2, taxExemptNext: true }));
-    addLog('🛡️ 다음 세금 1회 면제 예약! (💎2 소비)');
+    const cost = 2 + (gsRef.current.taxExemptCount || 0);
+    if (gsRef.current.gems < cost) { addLog(`❌ 보석 부족! (💎${cost} 필요)`); return; }
+    setGs(prev => ({ ...prev, gems: prev.gems - cost, taxExemptNext: true }));
+    addLog(`🛡️ 다음 세금 1회 면제 예약! (💎${cost} 소비)`);
   };
 
   const RARITY_ORDER = ['common', 'uncommon', 'rare', 'legendary'];
@@ -1899,7 +1901,7 @@ const OceanTycoon = () => {
             </div>
             <div className="text-xs text-gray-500 flex items-center gap-1">
               <span>Lv.{gs.taxLevel} — {fmt(nextTax)}</span>
-              {!gs.taxExemptNext && <button onClick={exemptTax} className="text-blue-400 hover:text-blue-200 border border-blue-800 rounded px-1 leading-none" title="💎2로 다음 세금 1회 면제">💎2</button>}
+              {!gs.taxExemptNext && <button onClick={exemptTax} className="text-blue-400 hover:text-blue-200 border border-blue-800 rounded px-1 leading-none" title="보석으로 다음 세금 1회 면제">💎{2+(gs.taxExemptCount||0)}</button>}
             </div>
           </div>
           <div className="border-l border-gold pl-3 text-center">
