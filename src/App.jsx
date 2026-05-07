@@ -428,6 +428,7 @@ const OceanTycoon = () => {
   const [dailyResetAt,  setDailyResetAt]  = useState(0);
   const [dailyCountdown,setDailyCountdown]= useState('');
   const [showDailyGoals,setShowDailyGoals]= useState(false);
+  const [taxCrisisInfo, setTaxCrisisInfo] = useState(null); // { tax, exemptCost } | null
   const [missionSubTab, setMissionSubTab] = useState('daily');
   const [mapEvents,     setMapEvents]     = useState([]);
   const [saveExists,    setSaveExists]    = useState(() => !!localStorage.getItem('pioneer_save'));
@@ -994,6 +995,8 @@ const OceanTycoon = () => {
             return { ...prev, gems: prev.gems - 1 };
           } else {
             addLog(`🚨 세금 납부 불가! 세무관이 찾아옵니다... (Lv.${prev.taxLevel})`);
+            const exemptCost = 2 + (prev.taxExemptCount || 0);
+            setTaxCrisisInfo({ tax, exemptCost, canExempt: prev.gems >= exemptCost });
             return prev;
           }
         });
@@ -1427,6 +1430,40 @@ const OceanTycoon = () => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 세금 위기 팝업 */}
+      {taxCrisisInfo && (
+        <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
+          <div className="bg-ocean-dark border-2 border-red-500 rounded-2xl w-full max-w-sm shadow-lg shadow-red-900/50">
+            <div className="px-5 py-4 border-b border-red-700 flex items-center gap-2">
+              <span className="text-2xl">🚨</span>
+              <span className="text-lg font-bold text-red-400">세금 납부 불가!</span>
+            </div>
+            <div className="px-5 py-4 space-y-3">
+              <p className="text-sm text-gray-300">
+                세금 <span className="text-red-300 font-bold">{taxCrisisInfo.tax.toLocaleString()}금</span>을 낼 금화가 부족합니다.<br/>
+                세무관이 조만간 화물을 압류할 수 있습니다!
+              </p>
+              {taxCrisisInfo.canExempt ? (
+                <button
+                  onClick={() => { exemptTax(); setTaxCrisisInfo(null); }}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold bg-blue-700 hover:bg-blue-500 text-white border border-blue-400">
+                  🛡️ 💎{taxCrisisInfo.exemptCost}로 다음 세금 면제 예약
+                </button>
+              ) : (
+                <div className="text-xs text-gray-500 text-center border border-gray-700 rounded-lg py-2">
+                  보석도 부족합니다 (필요: 💎{taxCrisisInfo.exemptCost}). 빠르게 무역하세요!
+                </div>
+              )}
+              <button
+                onClick={() => setTaxCrisisInfo(null)}
+                className="w-full py-2 rounded-xl text-sm text-gray-400 hover:text-gray-200 border border-gray-700">
+                닫기 (위험 감수)
+              </button>
             </div>
           </div>
         </div>
