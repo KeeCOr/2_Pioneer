@@ -388,6 +388,7 @@ const OceanTycoon = () => {
       visitedPorts: ['lisbon'],
       portDeliveries: { lisbon: generatePortDeliveries('lisbon') },
       activeDeliveries: [],
+      taxExemptNext: false,
     };
     gsRef.current = v;
     return v;
@@ -979,6 +980,10 @@ const OceanTycoon = () => {
       const el = Math.floor((Date.now() - lastTax) / 1000);
       if (el >= TAX_INTERVAL) {
         setGs(prev => {
+          if (prev.taxExemptNext) {
+            addLog(`🛡️ 세금 면제 적용! 이번 세금 ${calcTax(prev.ships.length, prev.taxLevel).toLocaleString()}금 면제.`);
+            return { ...prev, taxExemptNext: false };
+          }
           const tax = calcTax(prev.ships.length, prev.taxLevel);
           if (prev.gold >= tax) {
             addLog(`🏛️ 일일 세금 ${tax.toLocaleString()}금 납부 (Lv.${prev.taxLevel})`);
@@ -1249,6 +1254,37 @@ const OceanTycoon = () => {
     addLog('📋 퀘스트 수주!');
   };
   const dismissQuest = (qid) => setGs(prev => ({ ...prev, activeQuests: prev.activeQuests.filter(q => q.id !== qid) }));
+
+  const exemptTax = () => {
+    if (gsRef.current.taxExemptNext) { addLog('🛡️ 이미 세금 면제가 예약되어 있습니다!'); return; }
+    if (gsRef.current.gems < 2) { addLog('❌ 보석 부족! (💎2 필요)'); return; }
+    setGs(prev => ({ ...prev, gems: prev.gems - 2, taxExemptNext: true }));
+    addLog('🛡️ 다음 세금 1회 면제 예약! (💎2 소비)');
+  };
+
+  const RARITY_ORDER = ['common', 'uncommon', 'rare', 'legendary'];
+  const UPGRADE_GEM_COST = { common: 1, uncommon: 2, rare: 3 };
+  const upgradeCrew = (crewId) => {
+    const c = gsRef.current.crew.find(x => x.id === crewId);
+    if (!c) return;
+    const idx = RARITY_ORDER.indexOf(c.rarity);
+    if (idx < 0 || idx >= RARITY_ORDER.length - 1) { addLog('❌ 이미 최고 등급입니다!'); return; }
+    const cost = UPGRADE_GEM_COST[c.rarity] || 1;
+    if (gsRef.current.gems < cost) { addLog(`❌ 보석 부족! (💎${cost} 필요)`); return; }
+    const nextRarity = RARITY_ORDER[idx + 1];
+    const clamp = v => Math.min(100, v + 10);
+    setGs(prev => ({
+      ...prev, gems: prev.gems - cost,
+      crew: prev.crew.map(x => x.id === crewId ? {
+        ...x, rarity: nextRarity,
+        navigation: clamp(x.navigation), trading: clamp(x.trading),
+        stamina: clamp(x.stamina), repair: clamp(x.repair),
+        morale: clamp(x.morale), combat: clamp(x.combat),
+        fuelEff: clamp(x.fuelEff||0), hullEff: clamp(x.hullEff||0), logistics: clamp(x.logistics||0),
+      } : x),
+    }));
+    addLog(`💎 ${c.name} 등급 업그레이드! ${c.rarity} → ${nextRarity} (+전 스탯 10)`);
+  };
 
   const acceptDelivery = (delivId, dPortKey) => {
     const delivery = gsRef.current.portDeliveries?.[dPortKey]?.find(d => d.id === delivId);
@@ -1858,10 +1894,13 @@ const OceanTycoon = () => {
             <div className="text-xs text-gray-400">시세: <span className="text-yellow-300">{fmt(nextUpd)}</span></div>
           </div>
           <div className="border-l border-gold pl-3">
-            <div className={`text-sm font-bold ${gs.taxLevel >= 15 ? 'text-red-400' : gs.taxLevel >= 10 ? 'text-orange-300' : 'text-orange-300'}`}>
-              🏛️ {nextTaxAmount.toLocaleString()}금
+            <div className={`text-sm font-bold ${gs.taxLevel >= 15 ? 'text-red-400' : 'text-orange-300'}`}>
+              {gs.taxExemptNext ? '🛡️ 면제 예약' : `🏛️ ${nextTaxAmount.toLocaleString()}금`}
             </div>
-            <div className="text-xs text-gray-500">Lv.{gs.taxLevel} — 일일 {fmt(nextTax)}</div>
+            <div className="text-xs text-gray-500 flex items-center gap-1">
+              <span>Lv.{gs.taxLevel} — {fmt(nextTax)}</span>
+              {!gs.taxExemptNext && <button onClick={exemptTax} className="text-blue-400 hover:text-blue-200 border border-blue-800 rounded px-1 leading-none" title="💎2로 다음 세금 1회 면제">💎2</button>}
+            </div>
           </div>
           <div className="border-l border-gold pl-3 text-center">
             <div className="text-lg font-bold text-blue-300">💎 {gs.gems}</div>
@@ -2341,7 +2380,14 @@ const OceanTycoon = () => {
                                 {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
                                 {c.favoriteWeather&&(()=>{const fw=WEATHER_TYPES[c.favoriteWeather];const active=st.weatherId===c.favoriteWeather;return<div className={`text-xs font-bold ${active?'text-yellow-300':'text-gray-500'}`}>{fw.icon} {fw.name} 특화{active?' ★+40%':''}</div>;})()}
                               </div>
-                              <button onClick={() => unassign(c.id)} className="text-red-400 hover:text-red-300 text-xs px-1.5 py-0.5 border border-red-900 rounded ml-2 flex-shrink-0">하선</button>
+                              <div className="flex flex-col gap-1 ml-2 flex-shrink-0">
+                                {RARITY_ORDER.indexOf(c.rarity) < 3 && (
+                                  <button onClick={() => upgradeCrew(c.id)} className="text-blue-300 text-xs px-1.5 py-0.5 border border-blue-800 rounded whitespace-nowrap" title={`💎${UPGRADE_GEM_COST[c.rarity]}로 등급 업`}>
+                                    💎{UPGRADE_GEM_COST[c.rarity]} ↑
+                                  </button>
+                                )}
+                                <button onClick={() => unassign(c.id)} className="text-red-400 hover:text-red-300 text-xs px-1.5 py-0.5 border border-red-900 rounded">하선</button>
+                              </div>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                               {[['항법',c.navigation,'bg-blue-500'],['거래',c.trading,'bg-yellow-500'],['스태미나',c.stamina,'bg-green-500'],['수리',c.repair,'bg-orange-500'],['사기',c.morale||0,'bg-pink-500'],['전투',c.combat||0,'bg-red-500'],['연료',c.fuelEff||0,'bg-cyan-500'],['내구',c.hullEff||0,'bg-lime-500'],['선적',c.logistics||0,'bg-violet-500']].map(([label,val,color])=>(
@@ -2368,9 +2414,16 @@ const OceanTycoon = () => {
                                 {c.specialty&&<div className="text-blue-400 text-xs">{c.specialty==='any'?'🌐 전항로 특화':`${REGION_STYLE[c.specialty]?.icon||''} ${REGION_STYLE[c.specialty]?.label} 특화`}</div>}
                                 {c.favoriteWeather&&(()=>{const fw=WEATHER_TYPES[c.favoriteWeather];const active=getShipWeather(cur)===c.favoriteWeather;return<div className={`text-xs font-bold ${active?'text-yellow-300':'text-gray-500'}`}>{fw.icon} {fw.name} 특화{active?' ★+40%':''}</div>;})()}
                               </div>
-                              <div className="flex gap-1 ml-2 flex-shrink-0">
-                                <button onClick={() => assign(c.id,cur.id)} className="text-green-400 text-xs px-1.5 py-0.5 border border-green-800 rounded">탑승</button>
-                                <button onClick={() => dismiss(c.id)} className="text-red-400 text-xs px-1.5 py-0.5 border border-red-900 rounded">해고</button>
+                              <div className="flex flex-col gap-1 ml-2 flex-shrink-0">
+                                <div className="flex gap-1">
+                                  <button onClick={() => assign(c.id,cur.id)} className="text-green-400 text-xs px-1.5 py-0.5 border border-green-800 rounded">탑승</button>
+                                  <button onClick={() => dismiss(c.id)} className="text-red-400 text-xs px-1.5 py-0.5 border border-red-900 rounded">해고</button>
+                                </div>
+                                {RARITY_ORDER.indexOf(c.rarity) < 3 && (
+                                  <button onClick={() => upgradeCrew(c.id)} className="text-blue-300 text-xs px-1.5 py-0.5 border border-blue-800 rounded whitespace-nowrap">
+                                    💎{UPGRADE_GEM_COST[c.rarity]} 등급 ↑
+                                  </button>
+                                )}
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
