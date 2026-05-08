@@ -39,6 +39,12 @@ const PORTS = {
   guangzhou: { name: '광저우',       region: 'east_asia',     country: '🇨🇳', x: 87, y: 43 },
   shanghai:  { name: '상하이',       region: 'east_asia',     country: '🇨🇳', x: 90, y: 30 },
   yokohama:  { name: '요코하마',     region: 'east_asia',     country: '🇯🇵', x: 96, y: 18 },
+  busan:     { name: '부산',         region: 'east_asia',     country: '🇰🇷', x: 93, y: 24 },
+  incheon:   { name: '인천',         region: 'east_asia',     country: '🇰🇷', x: 91, y: 20 },
+  boston:    { name: '보스턴',       region: 'americas',      country: '🇺🇸', x: 2,  y: 12 },
+  newyork:   { name: '뉴욕',         region: 'americas',      country: '🇺🇸', x: 3,  y: 20 },
+  neworleans:{ name: '뉴올리언스',   region: 'americas',      country: '🇺🇸', x: 5,  y: 40 },
+  havana:    { name: '하바나',       region: 'americas',      country: '🇨🇺', x: 6,  y: 50 },
 };
 
 const RESOURCES = {
@@ -96,6 +102,7 @@ const REGION_STYLE = {
   arabian:      { icon: '🕌', color: '#fb923c', border: 'border-orange-400', label: '아라비아' },
   south_asia:   { icon: '🛕', color: '#34d399', border: 'border-green-400',  label: '남아시아' },
   east_asia:    { icon: '🏯', color: '#f87171', border: 'border-red-400',    label: '동아시아' },
+  americas:     { icon: '🗽', color: '#38bdf8', border: 'border-sky-400',    label: '아메리카' },
 };
 
 const RESOURCE_REGIONS = {
@@ -106,9 +113,9 @@ const RESOURCE_REGIONS = {
   '도자기':    { cheap: ['east_asia'],                 expensive: ['europe', 'mediterranean']        },
   '비단':      { cheap: ['east_asia'],                 expensive: ['europe', 'arabian']              },
   '해산물':    { cheap: ['mediterranean', 'europe'],   expensive: ['east_asia', 'arabian']           },
-  '면직물':    { cheap: ['south_asia'],                expensive: ['europe', 'east_asia']            },
+  '면직물':    { cheap: ['south_asia', 'americas'],    expensive: ['europe', 'east_asia']            },
   '계피':      { cheap: ['south_asia'],                expensive: ['europe', 'arabian', 'mediterranean'] },
-  '쌀':        { cheap: ['east_asia', 'south_asia'],   expensive: ['europe', 'arabian']              },
+  '쌀':        { cheap: ['east_asia', 'south_asia'],   expensive: ['europe', 'arabian', 'americas']  },
 };
 
 const TRADE_FEE_PCT = 10; // 기본 수수료 10%
@@ -241,6 +248,7 @@ const REGION_CREW_BIAS = {
   arabian:       { navigation: -5, trading: 15, stamina: 10, repair: 0,  morale: 5,  combat: 10, fuelEff: 15, hullEff: 0,  logistics: 5  },
   south_asia:    { navigation: 5,  trading: 5,  stamina: 15, repair: 15, morale: 5,  combat: 0,  fuelEff: 5,  hullEff: 10, logistics: 5  },
   east_asia:     { navigation: 15, trading: 5,  stamina: 5,  repair: 5,  morale: 0,  combat: 10, fuelEff: 10, hullEff: 0,  logistics: 10 },
+  americas:      { navigation: 10, trading: 10, stamina: 10, repair: 5,  morale: 10, combat: 5,  fuelEff: 5,  hullEff: 5,  logistics: 5  },
 };
 const MAJOR_PORTS = new Set(['london','lisbon','venice','istanbul','alexandria','dubai','mumbai','guangzhou','shanghai','singapore']);
 let _crewSeed = 100;
@@ -335,6 +343,7 @@ const NPC_NAMES = {
   arabian:       ['아흐메드 알카심', '유수프 이브라힘', '파루크 알라시드', '오마르 하산'],
   south_asia:    ['라제시 굽타', '아누프 싱', '비말 차우다리', '크리쉬나 무르티'],
   east_asia:     ['왕광명', '다나카 켄지', '리우 웨이', '박명수', '야마모토 히로'],
+  americas:      ['존 스미스', '토마스 제퍼슨', '제임스 무어', '헨리 클레이', '윌리엄 애덤스'],
 };
 let _deliveryId = 1;
 const generatePortDeliveries = (portKey) => {
@@ -384,7 +393,7 @@ const OceanTycoon = () => {
       infoBuyCounts: { rumor: 0, hint: 0, analysis: 0, route: 0 },
       taxLevel: 1,
       totalEarned: 0,
-      availableQuests: [], activeQuests: [],
+      availableQuests: generateQuests(), activeQuests: [],
       visitedPorts: ['lisbon'],
       portDeliveries: { lisbon: generatePortDeliveries('lisbon') },
       activeDeliveries: [],
@@ -933,7 +942,8 @@ const OceanTycoon = () => {
     if (paused) return;
     const id = setInterval(() => {
       const el = Math.floor((Date.now() - lastPrice) / 1000);
-      if (el >= 3600) {
+      const priceInterval = Math.max(300, 3600 - (gsRef.current.taxLevel - 1) * 300); // Lv.1=1h, Lv.5=20min, Lv.11+=5min
+      if (el >= priceInterval) {
         setPrices(p => {
           const n = { ...p };
           Object.entries(n).forEach(([k, r]) =>
@@ -970,7 +980,7 @@ const OceanTycoon = () => {
         setLastPrice(Date.now());
         addLog('📈 전세계 시세 변동!');
         saveGame(); // 자동 저장
-      } else setNextUpd(3600 - el);
+      } else setNextUpd(priceInterval - el);
     }, 1000);
     return () => clearInterval(id);
   }, [paused, lastPrice, addLog]);
@@ -1253,7 +1263,11 @@ const OceanTycoon = () => {
     if (gs.activeQuests.length >= 3) { addLog('❌ 퀘스트 슬롯 가득! (최대 3개)'); return; }
     setGs(prev => {
       const q = prev.availableQuests.find(x => x.id === qid); if (!q) return prev;
-      return { ...prev, availableQuests: prev.availableQuests.filter(x => x.id !== qid), activeQuests: [...prev.activeQuests, q] };
+      const remaining = prev.availableQuests.filter(x => x.id !== qid);
+      return { ...prev,
+        availableQuests: remaining.length > 0 ? remaining : generateQuests(),
+        activeQuests: [...prev.activeQuests, q],
+      };
     });
     addLog('📋 퀘스트 수주!');
   };
@@ -2043,17 +2057,15 @@ const OceanTycoon = () => {
           </div>
 
           <div className="flex-1 relative min-h-0">
+            {/* 지도 버튼 — overflow-hidden 바깥에 배치해 모달 위에 표시 */}
+            <div className="absolute top-2 right-2 z-[60] flex flex-col gap-1 pointer-events-auto">
+              {atPort && !cur?.isMoving && <button onClick={() => setShowMarket(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
+              <button onClick={() => setShowInfo(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showInfo?'bg-ocean-dark text-blue-300 border border-blue-500':'bg-blue-800 text-blue-200 hover:bg-blue-700 border border-blue-600'}`}>{showInfo?'✕ 정보':'📰 정보'}</button>
+            </div>
             <div ref={mapRef} className="absolute inset-0 rounded border-2 border-gold overflow-hidden bg-gradient-to-b from-blue-950 to-black"
               style={{ cursor: grabbing?'grabbing':routeMode?'crosshair':'grab', touchAction:'none' }}
               onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp} onPointerLeave={onPtrUp}>
               {routeMode && <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-gold text-ocean-dark px-4 py-1 rounded-full text-xs font-bold animate-pulse pointer-events-none">🎯 목적지 항구를 클릭하세요</div>}
-
-              {/* 지도 버튼 */}
-              <div className="absolute top-2 right-2 z-30 flex flex-col gap-1">
-                {atPort && !cur?.isMoving && <button onClick={() => setShowMarket(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
-                <button onClick={() => setShowInfo(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showInfo?'bg-ocean-dark text-blue-300 border border-blue-500':'bg-blue-800 text-blue-200 hover:bg-blue-700 border border-blue-600'}`}>{showInfo?'✕ 정보':'📰 정보'}</button>
-              </div>
-
 
               {/* 화물 인벤토리 — 지도 우측 하단 */}
               {cur && (
@@ -2150,15 +2162,28 @@ const OceanTycoon = () => {
                       const rs = REGION_STYLE[p.region];
                       const isTutTarget = tutorialPhase==='depart'&&(k==='london'||k==='antwerp');
                       return (
-                        <div key={k} className="absolute" style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:10}}>
+                        <div key={k} className="absolute" style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:10}}
+                          onClick={e => {
+                            if (routeMode) return;
+                            e.stopPropagation();
+                            const selS = gsRef.current.ships.find(s => s.id === selShipRef.current);
+                            const dockedHere = selS && !selS.isMoving && Math.hypot(selS.x - p.x, selS.y - p.y) < 3.5;
+                            if (dockedHere) { setShowMarket(prev => !prev); }
+                            else if ((gsRef.current.visitedPorts||['lisbon']).includes(k)) { setShowPortPrice(k); }
+                            else { addLog(`🔒 ${p.name}은 미개척 항구입니다. 직접 항해해서 개척하세요!`); }
+                          }}>
                           {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:52,height:52,top:-26,left:-26,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 select-none ${routeMode?'animate-bounce':''} ${rs.border}`}
-                            style={{backgroundColor:rs.color+'22',boxShadow:(routeMode||isTutTarget)?`0 0 12px ${rs.color}`:'none'}}>
-                            {rs.icon}
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 select-none cursor-pointer hover:scale-110 transition-transform ${routeMode?'animate-bounce':''} ${rs.border}`}
+                            style={{
+                              backgroundColor: (gs.visitedPorts||['lisbon']).includes(k) ? rs.color+'22' : '#1a1a2e',
+                              boxShadow:(routeMode||isTutTarget)?`0 0 12px ${rs.color}`:'none',
+                              opacity: (gs.visitedPorts||['lisbon']).includes(k) ? 1 : 0.55,
+                            }}>
+                            {(gs.visitedPorts||['lisbon']).includes(k) ? rs.icon : '🔒'}
                           </div>
                           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 pointer-events-none whitespace-nowrap font-bold"
-                            style={{color:rs.color, textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.55rem'}}>
-                            {p.country} {p.name}
+                            style={{color: (gs.visitedPorts||['lisbon']).includes(k) ? rs.color : '#6b7280', textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.55rem'}}>
+                            {(gs.visitedPorts||['lisbon']).includes(k) ? `${p.country} ${p.name}` : '???'}
                           </div>
                         </div>
                       );
