@@ -52,6 +52,20 @@ const RESOURCES = {
   '와인':   { icon: '🍷' }, '다이아몬드': { icon: '💎' }, '해산물': { icon: '🦐' },
   '면직물': { icon: '📦' }, '양털':   { icon: '🧶' }, '계피':   { icon: '🌰' }, '쌀':  { icon: '🍚' },
 };
+// 자원 해금 티어 (1=기본, 2=초급, 3=중급, 4=고급)
+const RESOURCE_TIER = {
+  '양털': 1, '쌀': 1,
+  '와인': 2, '면직물': 2, '해산물': 2,
+  '향신료': 3, '도자기': 3, '비단': 3, '계피': 3,
+  '다이아몬드': 4,
+};
+const TIER_GOLD_REQ = { 1: 0, 2: 1000, 3: 8000, 4: 30000 };
+const TIER_LABEL    = { 2: '1,000금', 3: '8,000금', 4: '30,000금' };
+// 지역별 기본 자원 — 항상 해금 상태
+const REGION_NATIVE_RES = {
+  europe: '양털', mediterranean: '와인', arabian: '계피',
+  south_asia: '면직물', east_asia: '쌀', americas: '해산물',
+};
 
 // ==================== 날씨 시스템 ====================
 const WEATHER_TYPES = {
@@ -1757,47 +1771,104 @@ const OceanTycoon = () => {
         );
       })()}
 
-      {/* 시장 팝업 — 매입 전용 (루트 레벨, 맵 이벤트 간섭 없음) */}
-      {atPort && showMarket && cur && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowMarket(false)}>
-        <div className="w-80 max-h-[85vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+      {/* 시장 팝업 — 매입+판매 통합 (루트 레벨, 맵 이벤트 간섭 없음) */}
+      {atPort && showMarket && cur && (() => {
+        const portRegion = PORTS[portKey]?.region;
+        const nativeRes  = REGION_NATIVE_RES[portRegion];
+        const feeR       = getFeeRate(st?.tradePct);
+        const spaceLeft  = (st?.capacity || 0) - cargoN(cur);
+        return (
+        <div key="market-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowMarket(false)}>
+        <div className="w-[360px] max-h-[88vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+          {/* 헤더 */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-gold flex-shrink-0">
-            <div className="text-sm font-bold text-gold">🏪 {PORTS[portKey]?.name} — 매입</div>
+            <div className="text-sm font-bold text-gold">🏪 {PORTS[portKey]?.name} 시장</div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">{gs.gold.toLocaleString()}금</span>
+              <span className="text-xs text-gray-400">{gs.gold.toLocaleString()}금</span>
               <button onClick={() => setShowMarket(false)} className="text-gray-400 hover:text-gold">✕</button>
             </div>
           </div>
-          <div className="px-3 py-1.5 border-b border-gold border-opacity-40 flex-shrink-0 flex items-center gap-2">
+          {/* 화물 바 */}
+          <div className="px-3 py-1.5 border-b border-gold/30 flex-shrink-0 flex items-center gap-2">
             <span className="text-xs text-gray-400">화물</span>
             <div className="flex-1 bg-ocean-blue rounded-full h-1.5"><div className="bg-gold rounded-full h-1.5" style={{width:`${Math.min(100,cargoN(cur)/(st?.capacity||1)*100)}%`}}/></div>
             <span className="text-xs text-gold font-bold">{cargoN(cur)}/{st?.capacity}</span>
           </div>
+          {/* 컬럼 헤더 */}
+          <div className="grid grid-cols-[1fr_auto_auto] gap-1 px-2 py-1 text-[10px] text-gray-500 border-b border-gray-800 flex-shrink-0">
+            <span>자원</span><span className="text-yellow-600 text-right">매입</span><span className="text-green-700 text-right">판매 (보유)</span>
+          </div>
+          {/* 자원 목록 */}
           <div className="overflow-y-auto flex-1 px-2 py-1">
             {Object.entries(RESOURCES).map(([r, {icon}]) => {
+              const tier = RESOURCE_TIER[r] || 1;
+              const isNative = r === nativeRes;
+              const unlocked = isNative || tier === 1 || (gs.totalEarned || 0) >= (TIER_GOLD_REQ[tier] || 0);
               const baseP = getBuy(r);
-              const feeR = getFeeRate(st?.tradePct);
               const buyP = Math.ceil(baseP * (1 + feeR / 100));
-              const canAfford = gs.gold >= buyP; const spaceLeft = (st?.capacity||0)-cargoN(cur);
+              const sellP = Math.floor(baseP * (1 - feeR / 100));
+              const owned = cur.cargo[r] || 0;
+              const canAfford = gs.gold >= buyP;
+              if (!unlocked) {
+                return (
+                  <div key={r} className="flex items-center gap-1 py-1 border-b border-gray-800 last:border-0 opacity-50 cursor-pointer group"
+                    title={`누적 ${TIER_LABEL[tier]} 판매 시 해금`}>
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <span className="text-sm">{icon}</span>
+                      <span className="text-xs text-gray-500 truncate">{r}</span>
+                      <span className="text-xs text-gray-600">🔒</span>
+                    </div>
+                    <span className="text-[10px] text-gray-600 flex-shrink-0">누적 {TIER_LABEL[tier]} 해금</span>
+                  </div>
+                );
+              }
               return (
-                <div key={r} className="flex items-center gap-1 py-1 border-b border-gray-800 last:border-0">
-                  <div className="w-20 text-xs flex items-center gap-1 flex-shrink-0"><span>{icon}</span><span className="truncate">{r}</span></div>
-                  <div className="flex-1 text-right"><span className={`text-xs font-bold ${canAfford?'text-yellow-300':'text-gray-600'}`}>{buyP.toLocaleString()}금</span></div>
-                  <div className="flex gap-0.5 ml-1">
-                    {[1,5,10].map(n => <button key={n} onClick={() => doBuy(r,n)} disabled={!canAfford||spaceLeft<1} className={`px-1.5 py-0.5 rounded text-xs font-bold border ${canAfford&&spaceLeft>=n?'border-gold text-gold hover:bg-gold hover:text-ocean-dark':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>+{n}</button>)}
-                    <button onClick={() => doBuy(r, Math.min(spaceLeft, Math.floor(gs.gold/buyP)))} disabled={!canAfford||spaceLeft<1} className={`px-1.5 py-0.5 rounded text-xs font-bold border ${canAfford&&spaceLeft>=1?'border-yellow-500 text-yellow-400 hover:bg-yellow-900':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>최대</button>
+                <div key={r} className="py-1 border-b border-gray-800 last:border-0">
+                  {/* 자원 이름 + 가격 */}
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <span className="text-sm">{icon}</span>
+                    <span className="text-xs font-bold text-gray-200 flex-1">{r}{isNative && <span className="text-[9px] text-emerald-500 ml-1">★지역</span>}</span>
+                    <span className="text-[10px] text-yellow-400">매입 {buyP.toLocaleString()}</span>
+                    <span className="text-[10px] text-gray-500 mx-1">·</span>
+                    <span className="text-[10px] text-green-400">판매 {sellP.toLocaleString()}</span>
+                  </div>
+                  {/* 매입 버튼 */}
+                  <div className="flex gap-0.5">
+                    <span className="text-[10px] text-yellow-600 w-7 flex-shrink-0 self-center">매입</span>
+                    {[1,5,10].map(n => <button key={n} onClick={() => doBuy(r,n)} disabled={!canAfford||spaceLeft<n}
+                      className={`flex-1 py-0.5 rounded text-[10px] font-bold border ${canAfford&&spaceLeft>=n?'border-gold/60 text-yellow-400 hover:bg-gold hover:text-ocean-dark':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>+{n}</button>)}
+                    <button onClick={() => doBuy(r, Math.min(spaceLeft, Math.floor(gs.gold/buyP)))} disabled={!canAfford||spaceLeft<1}
+                      className={`flex-1 py-0.5 rounded text-[10px] font-bold border ${canAfford&&spaceLeft>=1?'border-yellow-600 text-yellow-500 hover:bg-yellow-900':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>최대</button>
+                  </div>
+                  {/* 판매 버튼 */}
+                  <div className="flex gap-0.5 mt-0.5">
+                    <span className="text-[10px] text-green-700 w-7 flex-shrink-0 self-center">판매<span className="text-gray-500">×{owned}</span></span>
+                    {[1,5,10].map(n => <button key={n} onClick={() => doSell(r,n)} disabled={owned<n}
+                      className={`flex-1 py-0.5 rounded text-[10px] font-bold border ${owned>=n?'border-green-800 text-green-400 hover:bg-green-900':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>-{n}</button>)}
+                    <button onClick={() => doSell(r, owned)} disabled={owned<1}
+                      className={`flex-1 py-0.5 rounded text-[10px] font-bold border ${owned>=1?'border-green-600 text-green-300 hover:bg-green-800':'border-gray-700 text-gray-600 cursor-not-allowed'}`}>전량</button>
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="flex gap-1 px-2 py-2 border-t border-gold border-opacity-40 flex-shrink-0">
-            <button onClick={refuel} className="flex-1 py-1 rounded text-xs bg-orange-900 hover:bg-orange-700 text-orange-200 border border-orange-700">⛽ 보충 ({Math.floor((100-(cur?.fuel??100))*2)}금)</button>
-            <button onClick={doRepair} className="flex-1 py-1 rounded text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600">🔧 수리 ({Math.floor((100-(cur?.hull??100))*5)}금)</button>
+          {/* 전체 판매 + 정비 버튼 */}
+          <div className="px-2 py-1.5 border-t border-gold/30 flex-shrink-0 space-y-1">
+            {cargoN(cur) > 0 && (
+              <button onClick={() => Object.entries(cur.cargo).forEach(([r,n]) => doSell(r,n))}
+                className="w-full py-1 rounded text-xs font-bold bg-green-800 hover:bg-green-600 text-green-200 border border-green-600">
+                💰 전체 판매 ({cargoSellTotal(cur, portKey).toLocaleString()}금)
+              </button>
+            )}
+            <div className="flex gap-1">
+              <button onClick={refuel} className="flex-1 py-1 rounded text-xs bg-orange-900 hover:bg-orange-700 text-orange-200 border border-orange-700">⛽ 보충 ({Math.floor((100-(cur?.fuel??100))*2)}금)</button>
+              <button onClick={doRepair} className="flex-1 py-1 rounded text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600">🔧 수리 ({Math.floor((100-(cur?.hull??100))*5)}금)</button>
+            </div>
           </div>
         </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* 정보 팝업 (루트 레벨) */}
       {showInfo && (
@@ -1870,70 +1941,7 @@ const OceanTycoon = () => {
         </div>
       )}
 
-      {/* 판매 모달 */}
-      {showSellModal && atPort && cur && (
-        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4" onClick={() => setShowSellModal(false)}>
-          <div className="bg-gray-900 border-2 border-green-600 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
-            {/* 헤더 */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-green-700">
-              <div>
-                <div className="text-lg font-bold text-green-400">💰 화물 판매</div>
-                <div className="text-xs text-gray-400">{PORTS[portKey].country} {PORTS[portKey].name}{st?.tradePct !== 0 && <span className={`ml-2 ${st.tradePct>0?'text-green-400':'text-red-400'}`}>상술{st.tradePct>0?'+':''}{st.tradePct}%</span>}</div>
-              </div>
-              <button onClick={() => setShowSellModal(false)} className="text-gray-400 hover:text-white text-2xl leading-none">✕</button>
-            </div>
-            {/* 화물 목록 */}
-            <div className="overflow-y-auto flex-1 px-4 py-3 space-y-3">
-              {Object.keys(cur.cargo).length === 0 ? (
-                <div className="text-center text-gray-500 py-8">판매할 화물이 없습니다.</div>
-              ) : Object.entries(cur.cargo).map(([r, n]) => {
-                const sellP = getSell(r);
-                const total = sellP * n;
-                return (
-                  <div key={r} className="bg-gray-800 border border-gray-700 rounded-xl p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-4xl">{RESOURCES[r].icon}</span>
-                      <div className="flex-1">
-                        <div className="font-bold text-white text-base">{r}</div>
-                        <div className="text-sm text-gray-400">보유 <span className="text-white font-bold">×{n}</span> · <span className="text-yellow-300">{sellP.toLocaleString()}금/개</span></div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-green-400 font-bold text-lg">{total.toLocaleString()}<span className="text-sm text-gray-400">금</span></div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {[1, 5, 10].map(k => (
-                        <button key={k} onClick={() => doSell(r, k)} disabled={n < k}
-                          className={`flex-1 py-2 rounded-lg text-sm font-bold border transition-colors
-                            ${n >= k ? 'bg-gray-700 hover:bg-green-800 border-gray-600 hover:border-green-500 text-white' : 'bg-gray-900 border-gray-800 text-gray-700 cursor-not-allowed'}`}>
-                          -{k}개
-                        </button>
-                      ))}
-                      <button onClick={() => doSell(r, n)}
-                        className="flex-1 py-2 rounded-lg text-sm font-bold bg-green-700 hover:bg-green-500 border border-green-500 text-white transition-colors">
-                        전량
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {/* 하단 합계 + 전체 판매 */}
-            {cargoN(cur) > 0 && (
-              <div className="px-4 py-4 border-t border-green-800 flex items-center gap-3">
-                <div className="flex-1">
-                  <div className="text-xs text-gray-400">전체 예상</div>
-                  <div className="text-xl font-bold text-green-400">{cargoSellTotal(cur, portKey).toLocaleString()}<span className="text-sm text-gray-400 ml-1">금</span></div>
-                </div>
-                <button onClick={() => { Object.entries(cur.cargo).forEach(([r, n]) => doSell(r, n)); setShowSellModal(false); }}
-                  className="px-6 py-3 rounded-xl text-base font-bold bg-green-600 hover:bg-green-400 text-white border border-green-400 transition-colors shadow-lg">
-                  💰 전체 판매
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* 판매 모달 — 시장으로 통합됨 */}
 
       {/* 헤더 */}
       <div className="flex justify-between items-center px-4 py-2 border-b border-gold border-opacity-30">
@@ -2064,7 +2072,8 @@ const OceanTycoon = () => {
             </div>
             <div ref={mapRef} className="absolute inset-0 rounded border-2 border-gold overflow-hidden bg-gradient-to-b from-blue-950 to-black"
               style={{ cursor: grabbing?'grabbing':routeMode?'crosshair':'grab', touchAction:'none' }}
-              onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp} onPointerLeave={onPtrUp}>
+              onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp}
+              onPointerLeave={(e) => { if (e.buttons === 0 && e.pointerType === 'mouse') onPtrUp(e); }}>
               {routeMode && <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-gold text-ocean-dark px-4 py-1 rounded-full text-xs font-bold animate-pulse pointer-events-none">🎯 목적지 항구를 클릭하세요</div>}
 
               {/* 화물 인벤토리 — 지도 우측 하단 */}
@@ -2101,9 +2110,9 @@ const OceanTycoon = () => {
                         <span className="text-xs text-gray-400">합계</span>
                         <span className="text-xs font-bold text-green-400">{cargoSellTotal(cur,portKey).toLocaleString()}금</span>
                       </div>
-                      <button onClick={() => setShowSellModal(true)}
+                      <button onClick={() => setShowMarket(true)}
                         className="w-full py-1.5 rounded-lg text-sm font-bold bg-green-700 hover:bg-green-500 text-white border border-green-500 transition-colors">
-                        💰 판매하기
+                        🏪 시장 (판매/매입)
                       </button>
                     </div>
                   )}
@@ -2172,17 +2181,17 @@ const OceanTycoon = () => {
                             else if ((gsRef.current.visitedPorts||['lisbon']).includes(k)) { setShowPortPrice(k); }
                             else { addLog(`🔒 ${p.name}은 미개척 항구입니다. 직접 항해해서 개척하세요!`); }
                           }}>
-                          {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:52,height:52,top:-26,left:-26,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg border-2 select-none cursor-pointer hover:scale-110 transition-transform ${routeMode?'animate-bounce':''} ${rs.border}`}
+                          {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:72,height:72,top:-36,left:-36,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl border-2 select-none cursor-pointer hover:scale-110 transition-transform ${routeMode?'animate-bounce':''} ${rs.border}`}
                             style={{
                               backgroundColor: (gs.visitedPorts||['lisbon']).includes(k) ? rs.color+'22' : '#1a1a2e',
-                              boxShadow:(routeMode||isTutTarget)?`0 0 12px ${rs.color}`:'none',
+                              boxShadow:(routeMode||isTutTarget)?`0 0 16px ${rs.color}`:'none',
                               opacity: (gs.visitedPorts||['lisbon']).includes(k) ? 1 : 0.55,
                             }}>
                             {(gs.visitedPorts||['lisbon']).includes(k) ? rs.icon : '🔒'}
                           </div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 pointer-events-none whitespace-nowrap font-bold"
-                            style={{color: (gs.visitedPorts||['lisbon']).includes(k) ? rs.color : '#6b7280', textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.55rem'}}>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 pointer-events-none whitespace-nowrap font-bold"
+                            style={{color: (gs.visitedPorts||['lisbon']).includes(k) ? rs.color : '#6b7280', textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.65rem'}}>
                             {(gs.visitedPorts||['lisbon']).includes(k) ? `${p.country} ${p.name}` : '???'}
                           </div>
                         </div>
@@ -2227,7 +2236,7 @@ const OceanTycoon = () => {
                           // 3척 초과면 두 번째 열 사용
                           const col = Math.floor(idx / 3);
                           const row = idx % 3;
-                          const ox = 42 + col * 30;
+                          const ox = 54 + col * 30;
                           const oy = Math.round((row - (Math.min(n, 3) - 1) / 2) * 26);
                           return { ox, oy };
                         }
@@ -2569,7 +2578,7 @@ const OceanTycoon = () => {
                             <div className="text-right"><span className="text-gold font-bold">×{n}</span>{sellP&&<div className="text-green-400">{sellP.toLocaleString()}금/개 = {(sellP*n).toLocaleString()}금</div>}</div>
                           </div>;
                         })}
-                    {atPort&&cargoN(cur)>0&&<button onClick={() => setShowSellModal(true)} className="w-full mt-2 py-1.5 rounded text-xs font-bold bg-green-900 hover:bg-green-700 text-green-200 border border-green-600">💰 판매하기</button>}
+                    {atPort&&cargoN(cur)>0&&<button onClick={() => setShowMarket(true)} className="w-full mt-2 py-1.5 rounded text-xs font-bold bg-green-900 hover:bg-green-700 text-green-200 border border-green-600">🏪 시장 (판매/매입)</button>}
                   </div>
                 )}
                 {tab==='mission'&&(

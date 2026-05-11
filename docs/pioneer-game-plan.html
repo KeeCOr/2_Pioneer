@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pioneer — 게임 기획서 v1.11</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2128;
+      --border: #30363d;
+      --accent: #d4a843;
+      --accent2: #58a6ff;
+      --accent3: #3fb950;
+      --accent4: #f85149;
+      --accent5: #bc8cff;
+      --text: #e6edf3;
+      --text2: #8b949e;
+      --text3: #c9d1d9;
+      --success-bg: #0d2a1a;
+      --warning-bg: #2a1f0d;
+      --info-bg: #0d1f2a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1a2235 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 48px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 80% 50%, rgba(212,168,67,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(212,168,67,0.15);
+      border: 1px solid rgba(212,168,67,0.4);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #d4a843, #f0c87a, #a07830);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text2);
+      margin-top: 10px;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .meta-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+    .meta-value { font-size: 14px; color: var(--text); font-weight: 600; }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 200px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 0 20px 12px;
+    }
+    .nav-item {
+      display: block;
+      padding: 7px 20px;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-item:hover {
+      color: var(--text);
+      background: var(--surface2);
+      border-left-color: var(--accent);
+    }
+    .nav-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .content {
+      padding: 48px 56px;
+      max-width: 960px;
+    }
+
+    section { margin-bottom: 64px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-num {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: #0d1117;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-num.blue { background: var(--accent2); }
+    .section-num.green { background: var(--accent3); }
+    .section-num.red { background: var(--accent4); }
+    .section-num.purple { background: var(--accent5); }
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 12px;
+    }
+    h3:first-child { margin-top: 0; }
+    p { color: var(--text3); margin-bottom: 12px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 6px;
+    }
+
+    /* ── TABLE ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin-bottom: 20px;
+    }
+    thead th {
+      background: var(--surface2);
+      color: var(--text2);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+      transition: background 0.1s;
+    }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td {
+      padding: 10px 14px;
+      color: var(--text3);
+      vertical-align: top;
+    }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      line-height: 1.6;
+    }
+    .badge-gold   { background: rgba(212,168,67,0.15); color: var(--accent);  border: 1px solid rgba(212,168,67,0.3); }
+    .badge-blue   { background: rgba(88,166,255,0.12); color: var(--accent2); border: 1px solid rgba(88,166,255,0.3); }
+    .badge-green  { background: rgba(63,185,80,0.12);  color: var(--accent3); border: 1px solid rgba(63,185,80,0.3); }
+    .badge-red    { background: rgba(248,81,73,0.12);  color: var(--accent4); border: 1px solid rgba(248,81,73,0.3); }
+    .badge-purple { background: rgba(188,140,255,0.12);color: var(--accent5); border: 1px solid rgba(188,140,255,0.3); }
+    .badge-gray   { background: rgba(139,148,158,0.12);color: var(--text2);   border: 1px solid rgba(139,148,158,0.3); }
+
+    /* ── CODE ── */
+    pre, code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+    }
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      color: var(--text3);
+      margin: 12px 0 20px;
+      line-height: 1.6;
+    }
+    code {
+      background: rgba(139,148,158,0.12);
+      border: 1px solid rgba(139,148,158,0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #f0c87a;
+      font-size: 12.5px;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* ── CALLOUT ── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .callout-body { color: var(--text3); }
+    .callout-body strong { color: var(--text); }
+    .callout-info    { background: var(--info-bg);    border-left: 3px solid var(--accent2); }
+    .callout-success { background: var(--success-bg); border-left: 3px solid var(--accent3); }
+    .callout-warning { background: var(--warning-bg); border-left: 3px solid var(--accent); }
+
+    /* ── VERSION TIMELINE ── */
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 28px; }
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 5px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      z-index: 1;
+    }
+    .timeline-dot.current { background: var(--accent3); box-shadow: 0 0 0 3px rgba(63,185,80,0.2); }
+    .timeline-dot.future  { background: var(--accent5); }
+    .timeline-version {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .timeline-version.current { color: var(--accent3); }
+    .timeline-version.future  { color: var(--accent5); }
+    .timeline-desc { font-size: 13.5px; color: var(--text3); }
+
+    /* ── SUCCESS FACTORS ── */
+    .success-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .success-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .success-card:hover { border-color: rgba(212,168,67,0.4); }
+    .success-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent);
+    }
+    .success-card.blue::before   { background: var(--accent2); }
+    .success-card.green::before  { background: var(--accent3); }
+    .success-card.purple::before { background: var(--accent5); }
+    .success-card.red::before    { background: var(--accent4); }
+    .success-icon { font-size: 28px; margin-bottom: 10px; }
+    .success-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .success-body { font-size: 13.5px; color: var(--text2); line-height: 1.6; }
+
+    /* ── UI DIAGRAM ── */
+    .ui-diagram {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 13px;
+      color: var(--text3);
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+
+    /* ── STATUS PILL ── */
+    .status-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .pill-done   { background: rgba(63,185,80,0.12);   color: var(--accent3); border-color: rgba(63,185,80,0.3); }
+    .pill-wip    { background: rgba(212,168,67,0.12);  color: var(--accent);  border-color: rgba(212,168,67,0.3); }
+    .pill-todo   { background: rgba(139,148,158,0.10); color: var(--text2);   border-color: rgba(139,148,158,0.25); }
+    .pill-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 56px;
+      font-size: 12.5px;
+      color: var(--text2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Game Design Document</div>
+  <h1>Pioneer</h1>
+  <p class="hero-subtitle">대항해시대 무역 전략 게임 — 기획서 (현행 구현 기준)</p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <span class="meta-label">현행 버전</span>
+      <span class="meta-value">v1.11 포터블 exe</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">문서 갱신</span>
+      <span class="meta-value">2026-04-29</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">구현 파일</span>
+      <span class="meta-value">src/App.jsx (~1,700줄)</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">플랫폼</span>
+      <span class="meta-value">Electron 33 / Windows x64</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">다음 목표</span>
+      <span class="meta-value">v2.0 모듈 분리</span>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-title">목차</div>
+  <a class="nav-item" href="#overview">1. 게임 개요</a>
+  <a class="nav-item" href="#world">2. 세계 &amp; 항구</a>
+  <a class="nav-item" href="#ships">3. 선박</a>
+  <a class="nav-item" href="#crew">4. 승무원</a>
+  <a class="nav-item" href="#trade">5. 무역 시스템</a>
+  <a class="nav-item" href="#port-panel">6. 항구 시세 패널</a>
+  <a class="nav-item" href="#market">7. 시장 팝업</a>
+  <a class="nav-item" href="#info">8. 정보 시스템</a>
+  <a class="nav-item" href="#quests">9. 퀘스트</a>
+  <a class="nav-item" href="#tax">10. 세금 시스템</a>
+  <a class="nav-item" href="#save">11. 저장/불러오기</a>
+  <a class="nav-item" href="#events">12. 이벤트</a>
+  <a class="nav-item" href="#speed">13. 게임 속도</a>
+  <a class="nav-item" href="#ui">14. UI 구조</a>
+  <a class="nav-item" href="#tech">15. 기술 스택</a>
+  <a class="nav-item" href="#history">16. 버전 히스토리</a>
+  <a class="nav-item" href="#roadmap">17. 향후 로드맵</a>
+  <div class="nav-section">
+    <div class="sidebar-title">분석</div>
+    <a class="nav-item" href="#success">18. 성공 요인 분석</a>
+    <a class="nav-item" href="#bm">19. 비즈니스 모델</a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+  <!-- 1. OVERVIEW -->
+  <section id="overview">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>게임 개요</h2>
+    </div>
+
+    <p>
+      대항해시대를 배경으로 한 무역 전략 게임. 리스본에서 출발해 유럽·지중해·아라비아·남아시아·동아시아
+      24개 항구를 탐험하며 상품을 사고팔아 부를 쌓는 것이 목표.
+    </p>
+    <p>
+      <strong>핵심 긴장감</strong>은 지수적으로 오르는 세금에 맞서 함대를 키우고 무역 루트를 최적화하며
+      얼마나 오래 살아남느냐에 있다.
+    </p>
+
+    <div class="card-grid" style="margin-top:24px;">
+      <div class="stat-card">
+        <div class="stat-num">24</div>
+        <div class="stat-label">항구</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">11</div>
+        <div class="stat-label">선종</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">10</div>
+        <div class="stat-label">거래 상품</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">4</div>
+        <div class="stat-label">일일 목표</div>
+      </div>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-icon">&#9654;</div>
+      <div class="callout-body">
+        <strong>코어 루프:</strong> 배 출발 &rarr; 항해(방치) &rarr; 도착 &rarr; 거래·퀘스트·이벤트 처리 &rarr; 다음 항해 출발
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. WORLD -->
+  <section id="world">
+    <div class="section-header">
+      <div class="section-num blue">2</div>
+      <h2>세계 &amp; 항구</h2>
+    </div>
+
+    <h3>2.1 지도</h3>
+    <table>
+      <thead><tr><th>기능</th><th>상세</th></tr></thead>
+      <tbody>
+        <tr><td>맵 좌표계</td><td>100×100 논리 좌표 (스크린 좌표로 직접 렌더링)</td></tr>
+        <tr><td>줌/패닝</td><td>마우스 휠 줌 / 우클릭 드래그 줌 / 좌클릭 드래그 패닝</td></tr>
+        <tr><td>터치</td><td>핀치 줌 지원</td></tr>
+        <tr><td>배 추적</td><td>Follow 버튼 클릭 → 선택 배 중심 5× 줌</td></tr>
+        <tr><td>항구 클릭</td><td>시세 패널 오픈</td></tr>
+        <tr><td>배 클릭 (정박)</td><td>배 선택 (항구보다 우선 판정, 반경 2.5)</td></tr>
+        <tr><td>배 클릭 (항해중)</td><td>배 선택 (반경 2.5)</td></tr>
+        <tr><td>드래그 구현</td><td>Pointer Events API + <code>setPointerCapture</code>로 맵 밖에서도 끊김 없는 드래그</td></tr>
+      </tbody>
+    </table>
+
+    <h3>2.2 항구 목록 (24개)</h3>
+    <table>
+      <thead><tr><th>지역</th><th>항구</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-gold">유럽</span></td><td>런던, 브리스톨, 리스본, 함부르크, 앤트워프</td></tr>
+        <tr><td><span class="badge badge-blue">지중해</span></td><td>마르세유, 제노바, 베니스, 트리폴리, 이스탄불</td></tr>
+        <tr><td><span class="badge badge-green">아라비아</span></td><td>알렉산드리아, 아덴, 두바이</td></tr>
+        <tr><td><span class="badge badge-red">남아시아</span></td><td>뭄바이, 고아, 칼리컷, 콜롬보</td></tr>
+        <tr><td><span class="badge badge-purple">동아시아</span></td><td>말라카, 싱가포르, 방콕, 광저우, 상하이, 요코하마</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 3. SHIPS -->
+  <section id="ships">
+    <div class="section-header">
+      <div class="section-num green">3</div>
+      <h2>선박</h2>
+    </div>
+
+    <h3>3.1 선종 (11종)</h3>
+    <table>
+      <thead><tr><th>선종</th><th>기본속도</th><th>적재</th><th>최대 승무원</th><th>구매가</th></tr></thead>
+      <tbody>
+        <tr><td>통통배</td><td><span class="badge badge-green">빠름</span></td><td>25</td><td>2</td><td>1,000</td></tr>
+        <tr><td>슬루프</td><td><span class="badge badge-green">빠름</span></td><td>55</td><td>4</td><td>3,000</td></tr>
+        <tr><td>카라벨</td><td><span class="badge badge-green">빠름</span></td><td>80</td><td>6</td><td>8,000</td></tr>
+        <tr><td>브리간틴</td><td><span class="badge badge-blue">중간</span></td><td>100</td><td>7</td><td>12,000</td></tr>
+        <tr><td>갤리</td><td><span class="badge badge-blue">중간</span></td><td>90</td><td>12</td><td>14,000</td></tr>
+        <tr><td>다우</td><td><span class="badge badge-blue">중간</span></td><td>85</td><td>6</td><td>16,000</td></tr>
+        <tr><td>상인선</td><td><span class="badge badge-blue">중간</span></td><td>140</td><td>9</td><td>20,000</td></tr>
+        <tr><td>플루트</td><td><span class="badge badge-gray">느림</span></td><td>200</td><td>8</td><td>28,000</td></tr>
+        <tr><td>정크선</td><td><span class="badge badge-gray">느림</span></td><td>220</td><td>10</td><td>32,000</td></tr>
+        <tr><td>갤리온</td><td><span class="badge badge-gray">느림</span></td><td>280</td><td>12</td><td>45,000</td></tr>
+        <tr><td>프리깃</td><td><span class="badge badge-red">매우빠름</span></td><td>120</td><td>12</td><td>65,000</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3.2 능력치 계산식</h3>
+    <pre>속도     = baseSpeed × (1 + (항법평균-50)/200 + 속도업그레이드×0.15) × 연료보정
+적재     = baseCapacity + 화물업그레이드×25
+최대승무원 = min(14, t.maxCrew + 승무원업그레이드)
+상술%    = round((거래평균-50)/2 × 선체보정)
+
+연료보정: 연료 &lt;30% → 0.5×  /  &lt;60% → 0.75×  /  이상 → 1.0×
+선체보정: 선체 &lt;30% → 0.6×  /  &lt;60% → 0.8×   /  이상 → 1.0×</pre>
+
+    <h3>3.3 업그레이드 (3종)</h3>
+    <table>
+      <thead><tr><th>종류</th><th>효과</th><th>비용</th></tr></thead>
+      <tbody>
+        <tr><td>속도 업그레이드</td><td>항속 +15% / 레벨</td><td>레벨 × 지수 증가</td></tr>
+        <tr><td>화물 업그레이드</td><td>적재 +25개 / 레벨</td><td>레벨 × 지수 증가</td></tr>
+        <tr><td>승무원 업그레이드</td><td>최대 승무원 +1 / 레벨 (최대 14)</td><td>레벨 × 지수 증가</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-info">
+      <div class="callout-icon">&#9432;</div>
+      <div class="callout-body">업그레이드 패널에서 <strong>현재 수치 → 다음 레벨 수치 미리보기</strong>가 실시간 표시됨.</div>
+    </div>
+  </section>
+
+  <!-- 4. CREW -->
+  <section id="crew">
+    <div class="section-header">
+      <div class="section-num purple">4</div>
+      <h2>승무원</h2>
+    </div>
+
+    <h3>4.1 기본 속성</h3>
+    <table>
+      <thead><tr><th>속성</th><th>범위</th><th>역할</th></tr></thead>
+      <tbody>
+        <tr><td>항법</td><td>30~100</td><td>항해 속도에 영향</td></tr>
+        <tr><td>거래</td><td>30~100</td><td>수수료 감소에 영향</td></tr>
+        <tr><td>스태미나</td><td>30~100</td><td>폭풍 화물 손실 완화</td></tr>
+        <tr><td>수리</td><td>0~60</td><td>자동 선체 수리</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 특수 승무원 (희귀도 시스템)</h3>
+    <table>
+      <thead><tr><th>희귀도</th><th>출현율</th><th>특징</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gold">전설</span></td>
+          <td>3%</td>
+          <td>navBonus +55 또는 tradeBonus +55</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">희귀</span></td>
+          <td>9%</td>
+          <td>navBonus +50 또는 tradeBonus +55</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">고급</span></td>
+          <td>23%</td>
+          <td>지역 전문화 — 해당 지역 항로에서 보너스 추가 적용</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gray">일반</span></td>
+          <td>65%</td>
+          <td>기본</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card">
+      <div class="card-title">고용 비용</div>
+      <p style="margin:0; color:var(--text3); font-size:13.5px;">
+        일반 승무원: <strong>500 ~ 2,000금</strong> &nbsp;/&nbsp;
+        특수 승무원: <strong>1,500 ~ 6,500금</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- 5. TRADE -->
+  <section id="trade">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>무역 시스템</h2>
+    </div>
+
+    <h3>5.1 상품 (10종)</h3>
+    <table>
+      <thead><tr><th>상품</th><th>저렴한 지역</th><th>비싼 지역</th></tr></thead>
+      <tbody>
+        <tr><td>향신료</td><td>남아시아, 동아시아</td><td>유럽, 지중해</td></tr>
+        <tr><td>도자기</td><td>동아시아</td><td>유럽, 지중해</td></tr>
+        <tr><td>비단</td><td>동아시아</td><td>유럽, 아라비아</td></tr>
+        <tr><td>와인</td><td>유럽, 지중해</td><td>동아시아, 남아시아</td></tr>
+        <tr><td>다이아몬드</td><td>지중해</td><td>동아시아, 남아시아</td></tr>
+        <tr><td>해산물</td><td>지중해, 유럽</td><td>동아시아, 아라비아</td></tr>
+        <tr><td>면직물</td><td>남아시아</td><td>유럽, 동아시아</td></tr>
+        <tr><td>양털</td><td>유럽</td><td>동아시아, 아라비아</td></tr>
+        <tr><td>계피</td><td>남아시아</td><td>유럽, 아라비아, 지중해</td></tr>
+        <tr><td>쌀</td><td>동아시아, 남아시아</td><td>유럽, 아라비아</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.2 가격 구조 &amp; 수수료</h3>
+    <div class="card">
+      <div class="card-title">수수료 공식</div>
+      <pre style="margin:8px 0 0;">수수료율 = max(0, 10 - floor(승무원 거래평균 / 2)) %
+매입가 = 판매가 = 현재 시세  (가격 차별 없음, 수수료는 별도 차감)</pre>
+    </div>
+
+    <h3>5.3 시세 변동</h3>
+    <table>
+      <thead><tr><th>항목</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>갱신 주기</td><td><code>3,600 / 게임속도</code> 초마다</td></tr>
+        <tr><td>변동 방식</td><td>지역 가중치 기반 ±랜덤</td></tr>
+        <tr><td>히스토리</td><td>항구×상품별 최대 5개 기록 (차트 표시용)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 6. PORT PANEL -->
+  <section id="port-panel">
+    <div class="section-header">
+      <div class="section-num blue">6</div>
+      <h2>항구 시세 패널</h2>
+    </div>
+
+    <p>항구를 클릭하면 오픈. <strong>좌/우 분할 레이아웃</strong> (v1.10 개선).</p>
+
+    <table>
+      <thead><tr><th>영역</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>헤더</td><td>항구명 · 지역 뱃지 · 거래소 개장 여부 · 상승/하락 종수 · ✕ 버튼</td></tr>
+        <tr><td>좌측 목록 (144px)</td><td>전체 상품 스크롤 목록 — 아이콘, 이름, 현재가, 등락률 뱃지. 클릭으로 우측 차트 선택</td></tr>
+        <tr><td>우측 차트</td><td>선택 상품 대형 160px SVG 차트 + 현재가/등락 크게 표시 + 최고가·최저가·변동폭 3칸 + 수수료 안내</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <div class="callout-icon">&#9432;</div>
+      <div class="callout-body">
+        패널 열릴 때 <strong>첫 번째 상품 자동 선택</strong>. 오버레이 클릭 또는 ✕ 버튼으로 닫기.
+        차트는 순수 SVG(area + polyline + glow dot)로 구현.
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. MARKET -->
+  <section id="market">
+    <div class="section-header">
+      <div class="section-num green">7</div>
+      <h2>시장 팝업 (매입/판매)</h2>
+    </div>
+
+    <p>항구 정박 후 시장 버튼 클릭. 루트 레벨에 배치되어 맵 이벤트와 간섭 없음.</p>
+
+    <table>
+      <thead><tr><th>영역</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>헤더</td><td>항구명 · 보유 금화 · ✕ 버튼</td></tr>
+        <tr><td>화물 바</td><td>현재 적재량 / 최대 적재량 시각화</td></tr>
+        <tr><td>상품 목록</td><td>상품별 구매 버튼 (1개 · 5개 · 10개)</td></tr>
+        <tr><td>하단</td><td>연료 보충 · 선체 수리 버튼</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+      <div class="callout-icon">&#9888;</div>
+      <div class="callout-body">
+        시장 팝업은 맵 div <strong>외부(루트 레벨 형제)</strong>에 위치. 내부에 있을 경우
+        <code>stopPropagation</code>이 <code>setPointerCapture</code>를 차단해 드래그 불가 버그 발생.
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. INFO -->
+  <section id="info">
+    <div class="section-header">
+      <div class="section-num purple">8</div>
+      <h2>정보 시스템 (시세 예측)</h2>
+    </div>
+
+    <h3>8.1 정보 등급</h3>
+    <table>
+      <thead><tr><th>등급</th><th>이름</th><th>기본 비용</th><th>정확도</th><th>변동폭</th><th>반복</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gray">소문</span></td>
+          <td>거리 소문</td><td>300금</td><td>30%</td><td>±15~45</td><td>가능</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">힌트</span></td>
+          <td>상인 귀띔</td><td>700금</td><td>40%</td><td>±25~65</td><td>가능</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gold">분석</span></td>
+          <td>상업 분석 보고서</td><td>3,000금</td><td>58%</td><td>±60~130</td><td>1회</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">내부</span></td>
+          <td>내부 정보</td><td>8,000금</td><td>72%</td><td>±100~200</td><td>1회</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>8.2 예측 흐름</h3>
+    <pre>구매 시 turnsUntil 결정 → 매 시세 변동마다 turnsRemaining-- → 0 도달 시 정확도 확률로 적용
+소문: 1~3턴 / 힌트: 1~2턴 / 분석·내부: 1턴 (즉시)
+최대 30개 보관 (오래된 것부터 삭제)</pre>
+
+    <h3>8.3 무료 소문 조건부 지급</h3>
+    <table>
+      <thead><tr><th>시점</th><th>조건</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>새 항구 최초 도착</td><td>20% 확률</td><td>소문 1개 자동 입수 (로그: 📰 XXX에서 시장 소문을 입수했습니다)</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-info">
+      <div class="callout-icon">&#9432;</div>
+      <div class="callout-body">
+        기존에 시세 변동·게임 시작 시 무료 제공하던 소문은 <strong>완전 폐지</strong>.
+        탐험 보상으로만 획득 가능하여 정보 구매의 가치가 높아짐.
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. QUESTS -->
+  <section id="quests">
+    <div class="section-header">
+      <div class="section-num red">9</div>
+      <h2>퀘스트</h2>
+    </div>
+
+    <h3>9.1 일반 퀘스트 (3개 고정)</h3>
+    <table>
+      <thead><tr><th>유형</th><th>내용</th><th>보상</th></tr></thead>
+      <tbody>
+        <tr><td>운송</td><td>특정 상품 N개를 특정 항구에서 판매</td><td>금화</td></tr>
+        <tr><td>탐험</td><td>새 항구 N곳 방문</td><td>금화 + 보석 1</td></tr>
+        <tr><td>무역</td><td>누적 판매액 N금 달성</td><td>금화</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px; color:var(--text2);">퀘스트는 시세 변동 시마다 갱신 (3개 유지)</p>
+
+    <h3>9.2 일일 목표 (4개, 매일 자정 리셋)</h3>
+    <table>
+      <thead><tr><th>유형</th><th>내용</th><th>보상</th></tr></thead>
+      <tbody>
+        <tr><td>일일 운송</td><td>특정 상품 N개를 오늘 안에 판매</td><td>금화 + 보석 1</td></tr>
+        <tr><td>일일 항구 순례</td><td>새 항구 N곳 발견</td><td>금화 + 보석 1</td></tr>
+        <tr><td>일일 매출 목표</td><td>오늘 누적 판매액 N금</td><td>금화</td></tr>
+        <tr><td>일일 거래 횟수</td><td>오늘 판매 N회 완료</td><td>금화</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-info">
+      <div class="callout-icon">&#9432;</div>
+      <div class="callout-body">
+        난이도는 세금 레벨에 따라 자동 스케일. 우측 상단 위젯 / 모달로 확인 가능.
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. TAX -->
+  <section id="tax">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <h2>세금 시스템</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-title">세금 공식</div>
+      <pre style="margin:8px 0 0;">세금액 = 50 × 1.3^(level-1) + 선박수 × max(20, floor(20 × 1.1^(level-1)))
+부과 주기: 매 600초</pre>
+    </div>
+
+    <p>세금 레벨이 높을수록 퀘스트·일일 목표 난이도가 함께 상승.
+    이것이 게임의 <strong>핵심 긴장감</strong>을 만드는 생존 압박 메커니즘.</p>
+  </section>
+
+  <!-- 11. SAVE -->
+  <section id="save">
+    <div class="section-header">
+      <div class="section-num blue">11</div>
+      <h2>저장 / 불러오기</h2>
+    </div>
+
+    <table>
+      <thead><tr><th>방식</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td>자동 저장</td><td>매 시세 변동 후 localStorage 기록</td></tr>
+        <tr><td>수동 저장</td><td>헤더 저장 버튼</td></tr>
+        <tr><td>시작 분기</td><td>저장 데이터 존재 시 "계속하기 / 새 게임" 다이얼로그</td></tr>
+      </tbody>
+    </table>
+
+    <pre>{
+  "saveVersion": "1.1",
+  "savedAt": "ISO 8601",
+  "gs": { "gold, gems, ships, crew, predictions, taxLevel, quests, dailyGoals ..." },
+  "priceHistory": {}
+}</pre>
+  </section>
+
+  <!-- 12. EVENTS -->
+  <section id="events">
+    <div class="section-header">
+      <div class="section-num green">12</div>
+      <h2>이벤트</h2>
+    </div>
+
+    <h3>12.1 해상 이벤트 (구현됨)</h3>
+
+    <p>항해 중인 배에 <strong>5초마다 35% 확률</strong>로 이벤트 발생. 강제 이벤트가 대부분이며 즉각 적용.</p>
+
+    <table>
+      <thead><tr><th>이벤트</th><th>유형</th><th>가중치</th><th>효과</th></tr></thead>
+      <tbody>
+        <tr><td>⛈️ 폭풍우</td><td><span class="badge badge-red">강제</span></td><td>35</td><td>45~90초간 속도 60% 감소</td></tr>
+        <tr><td>🏴‍☠️ 해적 출몰</td><td><span class="badge badge-red">강제</span></td><td>30</td><td>화물 8~20% 즉시 약탈</td></tr>
+        <tr><td>🌊 순조로운 해류</td><td><span class="badge badge-green">강제</span></td><td>25</td><td>연료 +8~18% 즉시 회복</td></tr>
+        <tr><td>🐋 고래 출몰</td><td><span class="badge badge-green">강제</span></td><td>20</td><td>+80~200금 즉시 획득</td></tr>
+        <tr><td>🪵 난파선 발견</td><td><span class="badge badge-blue">클릭</span></td><td>8</td><td>클릭 시 +100~600금</td></tr>
+        <tr><td>💰 보물 발견</td><td><span class="badge badge-blue">클릭</span></td><td>5</td><td>클릭 시 +300~1,100금</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+      <div class="callout-icon">&#9888;</div>
+      <div class="callout-body">
+        <strong>강제 이벤트 비율 약 92%</strong> (가중치 합 110 중 110 × 92%). 클릭형 이벤트는 보조적 역할.
+        폭풍 지속 시간은 45~90초로 랜덤 변동.
+      </div>
+    </div>
+
+    <h3>12.2 날씨 시스템 (기획 완료, 구현 예정)</h3>
+    <table>
+      <thead><tr><th>날씨</th><th>속도 배율</th><th>확률</th></tr></thead>
+      <tbody>
+        <tr><td>잔잔</td><td>1.0×</td><td>50%</td></tr>
+        <tr><td>순풍</td><td>1.3×</td><td>20%</td></tr>
+        <tr><td>역풍</td><td>0.7×</td><td>20%</td></tr>
+        <tr><td>폭풍</td><td>0.5×</td><td>10%</td></tr>
+      </tbody>
+    </table>
+    <p>폭풍 시 이동 중인 배 화물 최대 20% 손실 (스태미나 능력치로 완화).</p>
+  </section>
+
+  <!-- 13. SPEED -->
+  <section id="speed">
+    <div class="section-header">
+      <div class="section-num purple">13</div>
+      <h2>게임 속도</h2>
+    </div>
+
+    <p>배속 선택 기능 없음. 게임은 항상 <strong>고정 1× 속도</strong>로 진행.</p>
+    <table>
+      <thead><tr><th>타이머</th><th>주기</th></tr></thead>
+      <tbody>
+        <tr><td>시세 갱신</td><td>60분</td></tr>
+        <tr><td>세금 부과</td><td>10분</td></tr>
+        <tr><td>이벤트 체크</td><td>5초 (항해 중 배당 35% 확률)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 14. UI -->
+  <section id="ui">
+    <div class="section-header">
+      <div class="section-num red">14</div>
+      <h2>UI 구조</h2>
+    </div>
+
+    <div class="ui-diagram">
+<span style="color:var(--accent);">┌─ 헤더 ──────────────────────────────────────────────────────────┐</span>
+│  Pioneer  │  금화  │  보석  │  1× 2× 4× 8×  │  저장  │  일일 목표  │
+<span style="color:var(--accent);">└──────────────────────────────────────────────────────────────────┘</span>
+
+<span style="color:var(--accent2);">┌─ 좌측 패널 (함대) ──┐</span>  <span style="color:var(--accent3);">┌─ 지도 (메인) ─────────────────────┐</span>
+│  함대 목록           │  │  항구 아이콘 + 배 아이콘 + 이벤트  │
+│  · 배 이름·상태      │  │  마우스 휠/드래그 줌·패닝          │
+│  · 화물·연료·선체    │  <span style="color:var(--accent3);">└───────────────────────────────────┘</span>
+│  [업그레이드]        │
+│  [승무원]            │  <span style="color:var(--accent5);">┌─ 우측 패널 (탭) ─────────────────┐</span>
+│  [정보 구매]         │  │  INFO / 화물 / 로그 / 일일 목표   │
+│  [퀘스트]            │  <span style="color:var(--accent5);">└───────────────────────────────────┘</span>
+<span style="color:var(--accent2);">└─────────────────────┘</span>
+
+<span style="color:var(--accent);">오버레이 (루트 레벨, 지도와 분리)</span>
+│  · 항구 시세 패널 (좌측 목록 + 우측 대형 차트)
+│  · 시장 팝업 (화물 바 + 상품 구매 + 연료/수리)
+│  · 일일 목표 모달
+    </div>
+  </section>
+
+  <!-- 15. TECH -->
+  <section id="tech">
+    <div class="section-header">
+      <div class="section-num">15</div>
+      <h2>기술 스택</h2>
+    </div>
+
+    <table>
+      <thead><tr><th>항목</th><th>선택</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>UI 프레임워크</td><td>React 18</td><td>컴포넌트 단위 상태 관리, 풍부한 생태계</td></tr>
+        <tr><td>빌드</td><td>Vite 5</td><td>HMR, 빠른 개발 서버, 경량 번들</td></tr>
+        <tr><td>스타일</td><td>TailwindCSS 3</td><td>유틸리티 클래스, 빠른 프로토타이핑</td></tr>
+        <tr><td>차트</td><td>순수 SVG</td><td>외부 라이브러리 없이 area + polyline + glow dot 구현</td></tr>
+        <tr><td>패키징</td><td>Electron 33 + electron-builder 24</td><td>Windows 포터블 exe 단일 파일 배포</td></tr>
+        <tr><td>상태 관리</td><td>useState + useRef mirror</td><td>클로저 안정화 (setInterval 내 stale 방지)</td></tr>
+        <tr><td>포인터 이벤트</td><td>Pointer Events API + setPointerCapture</td><td>맵 밖에서도 끊김 없는 드래그</td></tr>
+        <tr><td>저장</td><td>localStorage</td><td>설치 없이 데이터 영속성 확보</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 16. HISTORY -->
+  <section id="history">
+    <div class="section-header">
+      <div class="section-num blue">16</div>
+      <h2>버전 히스토리</h2>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-version">v1.0</div>
+        <div class="timeline-desc">기본 무역, 항구 이동, 선박 구매. 단일 App.jsx 구조.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-version">v1.1</div>
+        <div class="timeline-desc">
+          승무원 시스템 (희귀도, 지역 전문), 업그레이드 3종, 퀘스트 3종,
+          정보 시스템 (4등급 예측), 저장/불러오기, 스파크라인 차트.
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-version">v1.2 (기획 완료)</div>
+        <div class="timeline-desc">
+          일일 목표 4종 (자정 리셋), 시세 차트 클릭으로 항구 열기, 드래그 수정(1차),
+          무료 소문 자동 지급, 예측 N턴 표시, 시세 패널 좌측 목록+우측 대형 차트 레이아웃,
+          시장 팝업 간소화, 매입/판매가 통일.
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-version">v1.9</div>
+        <div class="timeline-desc">
+          드래그 2차 수정 (setPointerCapture 적용), 항로 선택 루트 모드 복구,
+          항구 시세 패널 데드존 제거.
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-version">v1.10</div>
+        <div class="timeline-desc">
+          시세 패널 목록+대형 차트 레이아웃 최종 적용, 무료 소문 자동 지급 구현,
+          예측 N턴 표시 구현, 시장/정보 팝업 루트 레벨 이동(드래그 근본 버그 수정),
+          정박 배 클릭 우선순위 재정립, 업그레이드 미리보기 수치 표시,
+          퀘스트 문구 명확화, ✕ 버튼 클릭 수정.
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot current"></div>
+        <div class="timeline-version current">v1.11 — 현행 출시 버전</div>
+        <div class="timeline-desc">
+          배속 제거 (고정 1×). 무료 소문 자동 지급 폐지 → 새 항구 최초 도착 20% 확률 조건부 지급.
+          선박 구매 시 세금 레벨 +1 즉시 상승. 강제 이벤트 빈도 대폭 증가 (5초마다 35% 확률,
+          가중치 storm 35 / pirate 30 / current 25 / whale 20). 고래·해류 즉각 효과 추가
+          (고래 금화 획득, 해류 연료 회복). 폭풍 지속시간 랜덤화 (45~90초).
+          승무원 UI 카드 형식 개편 — 4개 능력치 게이지 바, 배치 시 속도 변화 미리보기.
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot future"></div>
+        <div class="timeline-version future">v2.0 — 예정</div>
+        <div class="timeline-desc">
+          단일 파일 → 모듈 분리 (constants / systems / components),
+          날씨·해류 이벤트, 해적 조우, FTUE 튜토리얼, 보석 수익화 5종.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17. ROADMAP -->
+  <section id="roadmap">
+    <div class="section-header">
+      <div class="section-num green">17</div>
+      <h2>향후 로드맵 (미구현)</h2>
+    </div>
+
+    <div class="status-row">
+      <div class="pill pill-done"><div class="pill-dot"></div>구현 완료</div>
+      <div class="pill pill-wip"><div class="pill-dot"></div>기획 완료 / 구현 예정</div>
+      <div class="pill pill-todo"><div class="pill-dot"></div>장기 검토</div>
+    </div>
+
+    <table>
+      <thead><tr><th>기능</th><th>상태</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>날씨·해류 이벤트</td>
+          <td><span class="badge badge-gold">기획완료</span></td>
+          <td>폭풍(화물 손실), 순풍, 역풍, 해류 보너스</td>
+        </tr>
+        <tr>
+          <td>해적 조우</td>
+          <td><span class="badge badge-gold">기획완료</span></td>
+          <td>이벤트 팝업 + 전투/도주/협상 선택지</td>
+        </tr>
+        <tr>
+          <td>항구 특산 가격 보너스</td>
+          <td><span class="badge badge-gold">기획완료</span></td>
+          <td>지역별 특산 상품 가격 추가 상승</td>
+        </tr>
+        <tr>
+          <td>FTUE 인터랙티브 튜토리얼</td>
+          <td><span class="badge badge-gold">기획완료</span></td>
+          <td>단계별 가이드 오버레이</td>
+        </tr>
+        <tr>
+          <td>보석 수익화 (5종)</td>
+          <td><span class="badge badge-gold">기획완료</span></td>
+          <td>속도 부스트, 화물 확장, 정보 해금 등</td>
+        </tr>
+        <tr>
+          <td>v2.0 모듈 분리</td>
+          <td><span class="badge badge-gold">기획완료</span></td>
+          <td>constants / systems / components 구조 분리</td>
+        </tr>
+        <tr>
+          <td>외교·평판 시스템</td>
+          <td><span class="badge badge-gray">장기검토</span></td>
+          <td>항구별 우호도, 관세 차등</td>
+        </tr>
+        <tr>
+          <td>멀티플레이어 경쟁</td>
+          <td><span class="badge badge-gray">장기검토</span></td>
+          <td>실시간 시세 공유, 리더보드</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 18. SUCCESS FACTORS -->
+  <section id="success">
+    <div class="section-header">
+      <div class="section-num purple">18</div>
+      <h2>성공 요인 분석</h2>
+    </div>
+
+    <p>
+      Pioneer가 캐주얼~중간 전략 게이머 시장에서 자리잡을 수 있는 핵심 이유를 분석.
+    </p>
+
+    <h3>18.1 게임플레이 설계</h3>
+    <div class="success-grid">
+
+      <div class="success-card">
+        <div class="success-icon">&#9202;</div>
+        <div class="success-title">방치형 + 접속형의 균형</div>
+        <div class="success-body">
+          배를 출발시키고 현실 시간을 보내다 돌아와 결과를 처리하는
+          "출발 &rarr; 방치 &rarr; 귀환" 루프. 하루 5~15분 플레이로도 진행감을 느낄 수 있어
+          직장인·학생 코어 타겟에 최적.
+        </div>
+      </div>
+
+      <div class="success-card green">
+        <div class="success-icon">&#9650;</div>
+        <div class="success-title">지수 세금 = 영원한 긴장감</div>
+        <div class="success-body">
+          세금이 지수적으로 오르기 때문에 "이기는" 엔드게임이 없다.
+          생존 시간 자체가 점수가 되어 리플레이어빌리티를 자연스럽게 확보.
+          소규모 전략 게임에서 가장 검증된 생존 압박 설계.
+        </div>
+      </div>
+
+      <div class="success-card blue">
+        <div class="success-icon">&#128200;</div>
+        <div class="success-title">정보 비대칭으로 전략 깊이 확보</div>
+        <div class="success-body">
+          시세 예측 정보 시스템(4등급)으로 "정보를 살 것인가, 위험을 감수할 것인가"
+          트레이드오프를 만든다. 단순 가격 비교 게임을 넘어 정보 투자 게임으로 격상.
+        </div>
+      </div>
+
+      <div class="success-card purple">
+        <div class="success-icon">&#9733;</div>
+        <div class="success-title">희귀 승무원 수집 욕구</div>
+        <div class="success-body">
+          3% 확률의 전설 승무원은 강력한 가챠 동기를 만든다.
+          획득 시 즉각적인 성능 향상이 보장되어 유저 만족도 극대화.
+          수집 로그와 뱃지로 소장 가치도 부여.
+        </div>
+      </div>
+
+      <div class="success-card red">
+        <div class="success-icon">&#128197;</div>
+        <div class="success-title">일일 목표의 재방문 유도</div>
+        <div class="success-body">
+          자정 리셋 일일 목표 4개는 매일 접속 이유를 제공.
+          세금 레벨에 따라 난이도가 오르므로 항상 적절한 도전감 유지.
+          보석 보상이 중장기 진행의 당근 역할.
+        </div>
+      </div>
+
+      <div class="success-card">
+        <div class="success-icon">&#128205;</div>
+        <div class="success-title">탐험의 만족감</div>
+        <div class="success-body">
+          24개 항구를 직접 발견하고, 각 지역의 상품 가격 구조를 학습하는 과정이
+          자연스러운 튜토리얼. "유럽에서 싸고 동아시아에서 비싸다"는 지식이
+          플레이어 역량으로 쌓이는 느낌을 준다.
+        </div>
+      </div>
+
+    </div>
+
+    <h3 style="margin-top:36px;">18.2 기술·제품 품질</h3>
+    <div class="success-grid">
+
+      <div class="success-card blue">
+        <div class="success-icon">&#128190;</div>
+        <div class="success-title">설치 없는 포터블 exe</div>
+        <div class="success-body">
+          Electron 포터블 exe는 설치 마찰이 0. USB 하나로 어디서든 플레이 가능.
+          바이럴 공유에 최적이며, 기업 PC처럼 설치 권한이 없는 환경에서도 실행된다.
+        </div>
+      </div>
+
+      <div class="success-card green">
+        <div class="success-icon">&#9881;</div>
+        <div class="success-title">외부 의존성 최소화</div>
+        <div class="success-body">
+          차트를 외부 라이브러리 없이 순수 SVG로 구현, 상태 관리도 Redux 없이
+          useState + useRef만 사용. 번들 크기가 작고 로딩이 빠르며 장기 유지보수에 유리.
+        </div>
+      </div>
+
+      <div class="success-card purple">
+        <div class="success-icon">&#128247;</div>
+        <div class="success-title">화면 좌표 직접 렌더링 (블러 없는 줌)</div>
+        <div class="success-body">
+          CSS scale 레이어 대신 스크린 좌표로 직접 렌더링하는 방식으로
+          줌 시 픽셀 블러가 없다. 사용자가 의식하지 못해도 체감 품질에 기여하는
+          디테일.
+        </div>
+      </div>
+
+      <div class="success-card red">
+        <div class="success-icon">&#128281;</div>
+        <div class="success-title">자동 저장으로 데이터 손실 0</div>
+        <div class="success-body">
+          매 시세 변동마다 localStorage에 자동 저장. 게임이 갑자기 꺼져도
+          진행이 날아가지 않는다는 신뢰감은 장기 플레이어 유지에 핵심.
+        </div>
+      </div>
+
+    </div>
+
+    <h3 style="margin-top:36px;">18.3 시장 포지션</h3>
+    <div class="card">
+      <div class="card-title">경쟁 우위 요약</div>
+      <table style="margin-bottom:0;">
+        <thead><tr><th>관점</th><th>Pioneer의 강점</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>장르 레퍼런스</td>
+            <td>대항해시대 IP 감성 + 현대적 UI/UX. 원작 팬층과 전략 게임 신규 유저 모두 공략.</td>
+          </tr>
+          <tr>
+            <td>진입 장벽</td>
+            <td>다운로드 &rarr; 실행으로 즉시 플레이. 튜토리얼 없이도 직관적 구조.</td>
+          </tr>
+          <tr>
+            <td>세션 길이</td>
+            <td>5분~무제한. 캐주얼과 하드코어 모두 수용하는 유연한 플레이 타임.</td>
+          </tr>
+          <tr>
+            <td>수익화 잠재력</td>
+            <td>보석 5종 시스템으로 페이-투-윈 없이 QoL 중심 과금. 유저 반감 최소화.</td>
+          </tr>
+          <tr>
+            <td>개발 효율</td>
+            <td>단일 파일 &rarr; 모듈 분리 경로 확보. 현재 코드베이스가 v2.0 리팩토링 기반이 됨.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:36px;">18.4 개선 우선순위 (성공 확률 극대화)</h3>
+    <table>
+      <thead><tr><th>순위</th><th>기능</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-red">1순위</span></td>
+          <td>FTUE 인터랙티브 튜토리얼</td>
+          <td>첫 10분 경험이 리텐션을 결정. 지금은 자력으로 배워야 함.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gold">2순위</span></td>
+          <td>날씨·해적 이벤트</td>
+          <td>단조로운 A→B 이동에 위기감과 선택지 추가. 몰입도 급상승.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">3순위</span></td>
+          <td>v2.0 모듈 분리</td>
+          <td>이후 기능 추가 속도를 4배 이상 높임. 장기 성공의 기반.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">4순위</span></td>
+          <td>리더보드 / 생존 기록</td>
+          <td>"내 기록 몇 레벨?"을 공유하는 소셜 루프. 바이럴 확산 엔진.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gray">5순위</span></td>
+          <td>보석 수익화</td>
+          <td>안정적 유저 기반 확보 후 도입. 성급하면 역효과.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- 19. BUSINESS MODEL -->
+  <section id="bm">
+    <div class="section-header">
+      <div class="section-num green">19</div>
+      <h2>비즈니스 모델 (BM)</h2>
+    </div>
+
+    <p>
+      Pioneer는 <strong>무료 플레이 + 보석 인앱 구매(IAP)</strong> 구조를 기반으로 한다.
+      페이-투-윈 없이 QoL(삶의 질) 개선 중심 과금으로 유저 반감을 최소화하면서
+      지속 가능한 수익을 확보한다.
+    </p>
+
+    <h3>19.1 플랫폼별 배포 전략</h3>
+    <table>
+      <thead><tr><th>플랫폼</th><th>형태</th><th>가격</th><th>수익 수단</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-blue">PC (현행)</span></td>
+          <td>Electron 포터블 exe</td>
+          <td><strong>무료</strong></td>
+          <td>보석 IAP (추후 연동)</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gold">Steam</span></td>
+          <td>설치형 앱</td>
+          <td><strong>₩5,900 ~ ₩9,900</strong> 일회성</td>
+          <td>DLC (시나리오팩) + 보석 번들</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">모바일 (iOS/Android)</span></td>
+          <td>앱스토어 배포</td>
+          <td><strong>무료</strong></td>
+          <td>보석 IAP 5종 + 광고 제거 1,900원</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">웹 (WebGL)</span></td>
+          <td>브라우저 플레이</td>
+          <td><strong>무료</strong></td>
+          <td>보석 IAP + 배너 광고 (비로그인 한정)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>19.2 보석(💎) 인앱 구매 5종</h3>
+    <table>
+      <thead><tr><th>상품명</th><th>효과</th><th>가격(원)</th><th>성격</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>🚀 항해 부스터</td>
+          <td>현재 항해 중인 배 즉시 도착 (1회)</td>
+          <td>990</td>
+          <td><span class="badge badge-green">소모성</span></td>
+        </tr>
+        <tr>
+          <td>📦 화물 확장권</td>
+          <td>선택 배의 적재량 +50개 (영구, 배당 1회)</td>
+          <td>2,900</td>
+          <td><span class="badge badge-blue">영구</span></td>
+        </tr>
+        <tr>
+          <td>🗺️ 항로 지도</td>
+          <td>미방문 항구 3곳 시세 즉시 공개</td>
+          <td>1,490</td>
+          <td><span class="badge badge-green">소모성</span></td>
+        </tr>
+        <tr>
+          <td>👑 전설 선원 소환</td>
+          <td>전설 등급 선원 1명 즉시 지급 (풀에 추가)</td>
+          <td>3,900</td>
+          <td><span class="badge badge-green">소모성</span></td>
+        </tr>
+        <tr>
+          <td>🛡️ 세금 유예권</td>
+          <td>세금 레벨 동결 24시간 (실시간)</td>
+          <td>1,990</td>
+          <td><span class="badge badge-green">소모성</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-success">
+      <div class="callout-icon">&#9651;</div>
+      <div class="callout-body">
+        <strong>설계 원칙:</strong> 모든 유료 상품은 게임 내에서도 시간·노력으로 대체 가능.
+        보석은 "빠르게 가는 길"이지 "이기는 유일한 길"이 아님. 유저 이탈 방지 최우선.
+      </div>
+    </div>
+
+    <h3>19.3 보석 묶음 판매</h3>
+    <div class="card-grid">
+      <div class="stat-card">
+        <div class="stat-num" style="font-size:22px; color:var(--accent2);">💎 80</div>
+        <div class="stat-label">1,100원</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="font-size:22px; color:var(--accent2);">💎 500</div>
+        <div class="stat-label">5,500원 <span style="color:var(--accent3); font-size:11px;">+보너스 20%</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="font-size:22px; color:var(--accent2);">💎 1,400</div>
+        <div class="stat-label">13,200원 <span style="color:var(--accent3); font-size:11px;">+보너스 40%</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="font-size:22px; color:var(--accent);">💎 3,500</div>
+        <div class="stat-label">27,500원 <span style="color:var(--accent); font-size:11px;">Best Value</span></div>
+      </div>
+    </div>
+
+    <h3>19.4 수익화 로드맵</h3>
+    <table>
+      <thead><tr><th>단계</th><th>시점</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-gray">Phase 0</span></td>
+          <td>현재 (v1.11)</td>
+          <td>포터블 exe 무료 배포. 유저 확보·피드백 수집. 수익화 없음.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-gold">Phase 1</span></td>
+          <td>v2.0 (모듈화 후)</td>
+          <td>모바일 앱 출시. 보석 IAP 5종 연동. 광고 제거 옵션 추가.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">Phase 2</span></td>
+          <td>안정화 후</td>
+          <td>Steam 출시 (₩7,900 일회성). DLC 시나리오팩 1종 (신대륙 루트).</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Phase 3</span></td>
+          <td>장기</td>
+          <td>리더보드 시즌제 + 시즌 패스 도입. 멀티 플랫폼 클라우드 저장 연동.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>19.5 KPI 목표</h3>
+    <div class="card-grid">
+      <div class="stat-card">
+        <div class="stat-num">D7</div>
+        <div class="stat-label">리텐션 목표 ≥ 35%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">D30</div>
+        <div class="stat-label">리텐션 목표 ≥ 15%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">ARPU</div>
+        <div class="stat-label">월 평균 ₩2,500 (유료 전환 3% 가정)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">전환율</div>
+        <div class="stat-label">무료→유료 목표 3~5%</div>
+      </div>
+    </div>
+
+    <div class="callout callout-warning">
+      <div class="callout-icon">&#9888;</div>
+      <div class="callout-body">
+        <strong>보석 수익화는 Phase 1 이후 도입.</strong>
+        안정적 유저 기반(MAU 5,000+) 확보 전에 수익화를 시작하면 성장보다 이탈이 앞설 수 있음.
+        Phase 0에서는 구전·SNS 바이럴로 유저풀을 먼저 키운다.
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<footer>
+  <span>Pioneer Game Design Document &mdash; 현행 구현 기준 v1.11</span>
+  <span>최종 갱신: 2026-04-29</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pioneer — 게임 기획서 v2.0</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2128;
+      --border: #30363d;
+      --accent: #d4a843;
+      --accent2: #58a6ff;
+      --accent3: #3fb950;
+      --accent4: #f85149;
+      --accent5: #bc8cff;
+      --text: #e6edf3;
+      --text2: #8b949e;
+      --text3: #c9d1d9;
+      --success-bg: #0d2a1a;
+      --warning-bg: #2a1f0d;
+      --info-bg: #0d1f2a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1a2235 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 48px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 80% 50%, rgba(212,168,67,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(212,168,67,0.15);
+      border: 1px solid rgba(212,168,67,0.4);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #d4a843, #f0c87a, #a07830);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+    }
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text2);
+      margin-top: 10px;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .meta-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+    .meta-value { font-size: 14px; color: var(--text); font-weight: 600; }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 200px);
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 0 20px 12px;
+    }
+    .nav-item {
+      display: block;
+      padding: 7px 20px;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-item:hover {
+      color: var(--text);
+      background: var(--surface2);
+      border-left-color: var(--accent);
+    }
+    .nav-item.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(212,168,67,0.05);
+    }
+    .nav-sub {
+      display: block;
+      padding: 5px 20px 5px 32px;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 12px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .nav-sub:hover { color: var(--text3); background: var(--surface2); }
+    .nav-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .content { padding: 48px 56px; max-width: 960px; }
+    section { margin-bottom: 72px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-num {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: #0d1117;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-num.blue   { background: var(--accent2); }
+    .section-num.green  { background: var(--accent3); }
+    .section-num.red    { background: var(--accent4); }
+    .section-num.purple { background: var(--accent5); }
+    h2 { font-size: 22px; font-weight: 700; color: var(--text); }
+    h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 28px 0 12px; }
+    h3:first-child { margin-top: 0; }
+    p { color: var(--text3); margin-bottom: 12px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--text2); margin-top: 6px; }
+
+    /* ── TABLE ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 20px; }
+    thead th {
+      background: var(--surface2);
+      color: var(--text2);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid rgba(48,54,61,0.5); transition: background 0.1s; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 10px 14px; color: var(--text3); vertical-align: top; }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      line-height: 1.6;
+    }
+    .badge-gold   { background: rgba(212,168,67,0.15); color: var(--accent);  border: 1px solid rgba(212,168,67,0.3); }
+    .badge-blue   { background: rgba(88,166,255,0.12); color: var(--accent2); border: 1px solid rgba(88,166,255,0.3); }
+    .badge-green  { background: rgba(63,185,80,0.12);  color: var(--accent3); border: 1px solid rgba(63,185,80,0.3); }
+    .badge-red    { background: rgba(248,81,73,0.12);  color: var(--accent4); border: 1px solid rgba(248,81,73,0.3); }
+    .badge-purple { background: rgba(188,140,255,0.12);color: var(--accent5); border: 1px solid rgba(188,140,255,0.3); }
+    .badge-gray   { background: rgba(139,148,158,0.12);color: var(--text2);   border: 1px solid rgba(139,148,158,0.3); }
+
+    /* ── CODE ── */
+    pre, code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+    }
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      color: var(--text3);
+      margin: 12px 0 20px;
+      line-height: 1.7;
+    }
+    code {
+      background: rgba(139,148,158,0.12);
+      border: 1px solid rgba(139,148,158,0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #f0c87a;
+      font-size: 12.5px;
+    }
+    pre code { background: none; border: none; padding: 0; color: inherit; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .callout-body { color: var(--text3); }
+    .callout-body strong { color: var(--text); }
+    .callout-info    { background: var(--info-bg);    border-left: 3px solid var(--accent2); }
+    .callout-success { background: var(--success-bg); border-left: 3px solid var(--accent3); }
+    .callout-warning { background: var(--warning-bg); border-left: 3px solid var(--accent); }
+
+    /* ── TIMELINE ── */
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 6px; bottom: 6px;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item { position: relative; margin-bottom: 28px; }
+    .timeline-dot {
+      position: absolute;
+      left: -24px; top: 5px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      z-index: 1;
+    }
+    .timeline-label { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+    .timeline-desc  { font-size: 13px; color: var(--text3); }
+
+    /* ── TAX TIER ── */
+    .tax-tier {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .tax-tier-lv {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .tax-amount { font-size: 18px; font-weight: 800; color: var(--accent); min-width: 100px; }
+    .tax-trigger { font-size: 12px; color: var(--text2); flex: 1; }
+    .tax-feel { font-size: 12px; }
+
+    /* ── SCENARIO STEP ── */
+    .scenario-step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .step-time {
+      flex-shrink: 0;
+      width: 80px;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      padding-top: 3px;
+    }
+    .step-body {
+      flex: 1;
+      border-left: 2px solid var(--border);
+      padding-left: 16px;
+      padding-bottom: 8px;
+    }
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .step-desc { font-size: 13px; color: var(--text3); line-height: 1.7; }
+    .step-note {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: var(--warning-bg);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--text3);
+    }
+    .step-note strong { color: var(--accent); }
+
+    /* ── POSITION MAP ── */
+    .pos-map {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 32px;
+      position: relative;
+      height: 320px;
+      margin-bottom: 20px;
+    }
+    .pos-axis-x {
+      position: absolute;
+      left: 32px; right: 32px;
+      top: 50%;
+      height: 1px;
+      background: var(--border);
+    }
+    .pos-axis-y {
+      position: absolute;
+      top: 32px; bottom: 32px;
+      left: 50%;
+      width: 1px;
+      background: var(--border);
+    }
+    .pos-label-top    { position: absolute; top: 10px;   left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--text2); }
+    .pos-label-bottom { position: absolute; bottom: 10px;left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--text2); }
+    .pos-label-left   { position: absolute; left: 8px;   top: 50%;  transform: translateY(-50%); font-size: 11px; color: var(--text2); }
+    .pos-label-right  { position: absolute; right: 8px;  top: 50%;  transform: translateY(-50%); font-size: 11px; color: var(--text2); }
+    .pos-dot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .pos-dot-circle {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--text2);
+      margin: 0 auto 4px;
+    }
+    .pos-dot-circle.highlight { background: var(--accent); width: 14px; height: 14px; box-shadow: 0 0 12px rgba(212,168,67,0.5); }
+    .pos-dot-name { font-size: 11px; color: var(--text2); white-space: nowrap; }
+    .pos-dot-name.highlight { color: var(--accent); font-weight: 700; font-size: 12px; }
+
+    /* ── CHECKLIST ── */
+    .checklist { list-style: none; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(48,54,61,0.4);
+      font-size: 14px;
+      color: var(--text3);
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .check-box {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    ul.bullet { padding-left: 20px; margin-bottom: 12px; }
+    ul.bullet li { color: var(--text3); margin-bottom: 6px; }
+    ul.bullet li strong { color: var(--text); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+    strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-badge">Game Design Document</div>
+  <h1>Pioneer</h1>
+  <div class="hero-subtitle">대항해시대 방치형 무역 생존 게임 — 설계 기획서 v2.0</div>
+  <div class="hero-meta">
+    <div class="meta-item"><span class="meta-label">Version</span><span class="meta-value">v2.0</span></div>
+    <div class="meta-item"><span class="meta-label">Date</span><span class="meta-value">2026-04-29</span></div>
+    <div class="meta-item"><span class="meta-label">Status</span><span class="meta-value" style="color:var(--accent3)">Active</span></div>
+    <div class="meta-item"><span class="meta-label">Base</span><span class="meta-value">v1.2 구현 기반</span></div>
+  </div>
+</div>
+
+<!-- ── LAYOUT ── -->
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar">
+    <div class="sidebar-title">목차</div>
+    <a class="nav-item" href="#architecture">0. 아키텍처</a>
+    <a class="nav-sub" href="#file-structure">파일 구조</a>
+    <a class="nav-sub" href="#state-structure">State 구조</a>
+    <a class="nav-item" href="#core-loop">1. 핵심 루프</a>
+    <a class="nav-item" href="#tax">2. 세금 시스템</a>
+    <a class="nav-item" href="#crew">3. 선원 시스템</a>
+    <a class="nav-item" href="#events">4. 이벤트 &amp; 퀘스트</a>
+    <a class="nav-item" href="#monetization">5. 수익화</a>
+    <a class="nav-item" href="#save-system">6. 저장/불러오기</a>
+    <a class="nav-item" href="#ftue">7. 튜토리얼 (FTUE)</a>
+    <a class="nav-item" href="#visual-design">8. 비주얼 디자인</a>
+    <a class="nav-sub" href="#color-palette">컬러 팔레트</a>
+    <a class="nav-sub" href="#map-visual">지도 비주얼</a>
+    <div class="nav-section">
+      <div class="sidebar-title">비판 보강</div>
+      <a class="nav-item" href="#gambling">7. 도박성 회피 근거</a>
+      <a class="nav-sub" href="#gambling-compare">도박 vs Pioneer 비교</a>
+      <a class="nav-sub" href="#gambling-gems">보석 소비 — 가챠 아님</a>
+      <a class="nav-item" href="#positioning">8. 경쟁 게임 포지셔닝</a>
+      <a class="nav-sub" href="#pos-map">시장 포지션 맵</a>
+      <a class="nav-sub" href="#pos-diff">경쟁작과의 차이</a>
+      <a class="nav-item" href="#playtime">9. 첫 30분 플레이 설계</a>
+      <a class="nav-sub" href="#scenario">분 단위 시나리오</a>
+      <a class="nav-sub" href="#antichurn">이탈 방지 원칙</a>
+      <a class="nav-sub" href="#success">성공 기준</a>
+    </div>
+    <div class="nav-section">
+      <div class="sidebar-title">심화 설계</div>
+      <a class="nav-item" href="#economy">10. 경제 밸런싱</a>
+      <a class="nav-sub" href="#day-sim">일별 성장 시뮬레이션</a>
+      <a class="nav-sub" href="#gold-flow">골드 흐름 분석</a>
+      <a class="nav-sub" href="#ship-roi">배 / 선원 ROI</a>
+      <a class="nav-item" href="#ux">11. UI/UX 설계</a>
+      <a class="nav-sub" href="#screen-hierarchy">화면 계층</a>
+      <a class="nav-sub" href="#panel-ux">패널별 UX</a>
+      <a class="nav-sub" href="#noti">알림 시스템</a>
+      <a class="nav-item" href="#tutorial-system">12. 튜토리얼 체계</a>
+      <a class="nav-sub" href="#tut-phases">3단계 구성</a>
+      <a class="nav-sub" href="#tut-hints">맥락적 힌트</a>
+      <a class="nav-sub" href="#tut-help">도움말 시스템</a>
+    </div>
+    <div class="nav-section">
+      <div class="sidebar-title">사업 전략</div>
+      <a class="nav-item" href="#dopamine">도파민 설계</a>
+      <a class="nav-sub" href="#stock-compare">모의 주식 비교</a>
+      <a class="nav-sub" href="#dopamine-points">도파민 유발 포인트</a>
+      <a class="nav-item" href="#ip-independence">IP 독립성 선언</a>
+      <a class="nav-item" href="#platform">플랫폼 전략</a>
+      <a class="nav-sub" href="#web-iap">웹 인앱 결제</a>
+      <a class="nav-sub" href="#steam">스팀 패키지</a>
+      <a class="nav-item" href="#crew-collect">14. 선원 수집 설계</a>
+      <a class="nav-sub" href="#crew-stats">확장 능력치</a>
+      <a class="nav-sub" href="#crew-synergy">시너지 조합</a>
+      <a class="nav-sub" href="#ship-cost">배 비용 재설계</a>
+    </div>
+    <div class="nav-section">
+      <div class="sidebar-title">부록</div>
+      <a class="nav-item" href="#success">성공 기준</a>
+      <a class="nav-item" href="#roadmap">로드맵</a>
+    </div>
+  </nav>
+
+  <!-- ── CONTENT ── -->
+  <main class="content">
+
+    <!-- ── 0. 아키텍처 ── -->
+    <section id="architecture">
+      <div class="section-header">
+        <div class="section-num blue">0</div>
+        <h2>아키텍처</h2>
+      </div>
+
+      <h3 id="file-structure">파일 구조 (v1.x 단일 파일 → v2.0 모듈 분리)</h3>
+      <pre>src/
+├── App.jsx                  # 조율자 — state 연결·라우팅만 담당
+├── main.jsx
+├── index.css
+├── constants/
+│   ├── ships.js             # SHIP_TYPES, PORT_SHIPS
+│   ├── ports.js             # PORTS, REGION_STYLE, RESOURCE_REGIONS
+│   ├── resources.js         # RESOURCES
+│   └── crew.js              # SPECIAL_CREW_POOL, CREW_NAMES, CREW_ROLES
+├── systems/
+│   ├── economy.js           # 시세 계산, 세금, 거래가 공식, 밸런스 상수
+│   ├── events.js            # 이벤트 테이블, 발생 로직, 회피 처리
+│   ├── quests.js            # 퀘스트 풀, 생성, 판정, 보상·패널티
+│   └── save.js              # localStorage 저장/불러오기
+└── components/
+    ├── GameMap.jsx           # 지도 + Pan/Zoom
+    ├── ShipPanel.jsx         # 함대 관리
+    ├── TradePanel.jsx        # 무역
+    ├── CrewPanel.jsx         # 선원 관리 (역할 시스템)
+    ├── InfoPanel.jsx         # 정보 구매
+    ├── QuestPanel.jsx        # 퀘스트 목록 + 수락/포기
+    ├── EventOverlay.jsx      # 이벤트 팝업 + 회피 버튼
+    ├── TutorialOverlay.jsx   # FTUE 단계별 가이드
+    └── GameLog.jsx           # 로그</pre>
+
+      <h3 id="state-structure">State 구조</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div class="card-title" style="font-size:12px;color:var(--accent2);margin-bottom:8px">gs (GameState) — localStorage 저장 대상</div>
+          <pre style="margin:0">gold: number
+gems: number
+ships: Ship[]
+crew: Crew[]
+availableCrew: Crew[]
+purchasedInfo: {}
+predictions: Prediction[]
+taxLevel: number
+totalEarned: number
+quests: Quest[]
+tutorialStep: number  // -1 = 완료</pre>
+        </div>
+        <div>
+          <div class="card-title" style="font-size:12px;color:var(--accent5);margin-bottom:8px">로컬 UI state (저장 안 함)</div>
+          <pre style="margin:0">prices: {}
+priceHistory: {}
+weather: {}
+activeEvent: Event | null
+paused: boolean
+tab: string
+mapView: {}
+lastTaxAt: timestamp</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 1. 핵심 루프 ── -->
+    <section id="core-loop">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>핵심 게임 루프</h2>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">⚓</span>
+        <div class="callout-body">
+          <strong>Core Value</strong>: 세금에 맞서 얼마나 오래 살아남는가. 생존이 목표, 방치가 플레이 방식.
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="stat-card">
+          <div class="stat-num">1~2분</div>
+          <div class="stat-label">최소 세션 — 배 출발만 해도 의미 있음</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">5~10분</div>
+          <div class="stat-label">표준 세션 — 퀘스트 + 선원 관리</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">20~30분</div>
+          <div class="stat-label">풀 세션 — 배 업그레이드 + 이벤트 대응</div>
+        </div>
+      </div>
+
+      <h3>루프 구조</h3>
+      <pre>접속
+ └─ 도착한 배 확인 → 화물 판매
+ └─ 퀘스트 처리 (완료/실패)
+ └─ 이벤트 확인 (팝업 처리)
+ └─ 다음 항구로 배 출발
+     └─ [방치 — 앱 종료 가능]
+         └─ 1시간마다 시세 변동
+         └─ 배 도착 시 로그 기록
+             └─ [재접속]</pre>
+    </section>
+
+    <!-- ── 2. 세금 시스템 ── -->
+    <section id="tax">
+      <div class="section-header">
+        <div class="section-num red">2</div>
+        <h2>세금 시스템</h2>
+      </div>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">🏛️</span>
+        <div class="callout-body">
+          <strong>설계 의도</strong>: 구간 내에서는 거의 느껴지지 않다가, 배를 사거나 거래가 성장하는 순간 세금이 껑충 뛴다. 성장의 대가를 플레이어가 명확히 느끼게 한다.
+        </div>
+      </div>
+
+      <h3>레벨 상승 조건</h3>
+      <div class="card-grid">
+        <div class="stat-card">
+          <div style="font-size:28px;margin-bottom:8px">⚓</div>
+          <div class="stat-label" style="font-size:13px;color:var(--text)">배 추가 구매 시</div>
+          <div class="stat-label">구매 즉시 +1레벨</div>
+        </div>
+        <div class="stat-card">
+          <div style="font-size:28px;margin-bottom:8px">📊</div>
+          <div class="stat-label" style="font-size:13px;color:var(--text)">누적 판매금 마일스톤</div>
+          <div class="stat-label">1만 / 5만 / 20만 / 80만 / 300만금</div>
+        </div>
+        <div class="stat-card">
+          <div style="font-size:28px;margin-bottom:8px">✅</div>
+          <div class="stat-label" style="font-size:13px;color:var(--text)">납부 자체로는 상승 없음</div>
+          <div class="stat-label">성장하지 않으면 세금도 오르지 않음</div>
+        </div>
+      </div>
+
+      <h3>구간별 일일 세금</h3>
+
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(63,185,80,0.2);color:var(--accent3)">L1</div>
+        <div class="tax-amount">200금</div>
+        <div class="tax-trigger">게임 시작 (슬루프 1척)</div>
+        <div class="tax-feel"><span class="badge badge-green">거의 무료</span></div>
+      </div>
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(63,185,80,0.2);color:var(--accent3)">L2</div>
+        <div class="tax-amount">600금</div>
+        <div class="tax-trigger">배 2번째 구매</div>
+        <div class="tax-feel"><span class="badge badge-green">살짝 쓴맛</span></div>
+      </div>
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(212,168,67,0.2);color:var(--accent)">L3</div>
+        <div class="tax-amount">1,000금</div>
+        <div class="tax-trigger">누적 1만금 판매 달성</div>
+        <div class="tax-feel"><span class="badge badge-gold">슬슬 신경 쓰임</span></div>
+      </div>
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(212,168,67,0.2);color:var(--accent)">L4</div>
+        <div class="tax-amount">3,000금</div>
+        <div class="tax-trigger">배 3번째 구매</div>
+        <div class="tax-feel"><span class="badge badge-gold">압박 시작</span></div>
+      </div>
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(212,168,67,0.2);color:var(--accent)">L5</div>
+        <div class="tax-amount">7,000금</div>
+        <div class="tax-trigger">누적 5만금 판매 달성</div>
+        <div class="tax-feel"><span class="badge badge-gold">본격 경영</span></div>
+      </div>
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(248,81,73,0.15);color:var(--accent4)">L6</div>
+        <div class="tax-amount">20,000금</div>
+        <div class="tax-trigger">배 4번째 구매</div>
+        <div class="tax-feel"><span class="badge badge-red">유의미한 부담</span></div>
+      </div>
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(248,81,73,0.15);color:var(--accent4)">L7</div>
+        <div class="tax-amount">50,000금</div>
+        <div class="tax-trigger">누적 20만금 판매 달성</div>
+        <div class="tax-feel"><span class="badge badge-red">긴장감</span></div>
+      </div>
+      <div class="tax-tier">
+        <div class="tax-tier-lv" style="background:rgba(248,81,73,0.2);color:var(--accent4)">L8+</div>
+        <div class="tax-amount">12만금~</div>
+        <div class="tax-trigger">계속 성장 시</div>
+        <div class="tax-feel"><span class="badge badge-red">극한 생존</span></div>
+      </div>
+
+      <h3>납부 규칙</h3>
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>납부 주기</td><td>실제 24시간마다 1회 자동 징수 (마지막 납부 기준)</td></tr>
+          <tr><td>저장 연동</td><td><code>lastTaxAt</code> 타임스탬프 localStorage 저장 — 새로고침 후에도 남은 시간 유지</td></tr>
+          <tr><td>미납 (금화 부족)</td><td>보석 1개 자동 대납, 보석도 없으면 로그 출력만</td></tr>
+          <tr><td>헤더 표시</td><td>"Lv.N — 일일 Xh YYm" 형식</td></tr>
+          <tr><td>세금 면제</td><td>보석 2개 소비 → 다음 1회 면제 (헤더에 🛡️ 표시)</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 3. 선원 ── -->
+    <section id="crew">
+      <div class="section-header">
+        <div class="section-num blue">3</div>
+        <h2>선원 특화 시스템</h2>
+      </div>
+      <table>
+        <thead><tr><th>역할</th><th>주 효과</th><th>부 효과</th><th>고용</th></tr></thead>
+        <tbody>
+          <tr><td>⚓ 항해사</td><td>배 속도 +N%</td><td>이벤트 발생률 -5%</td><td>금화 (항구)</td></tr>
+          <tr><td>💰 상인</td><td>구매가 -N%, 판매가 +N%</td><td>—</td><td>금화 (항구)</td></tr>
+          <tr><td>📦 화물관리사</td><td>수납량 +N칸</td><td>연료 소모 -5%</td><td>금화 (항구)</td></tr>
+          <tr><td>⚙️ 기관사</td><td>연료 효율 +N%</td><td>수리비 -10%</td><td>금화 (항구)</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <thead><tr><th>등급</th><th>주 효과 범위</th><th>고용 방법</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-gray">일반</span></td><td>+5~10%</td><td>금화 (항구)</td></tr>
+          <tr><td><span class="badge badge-blue">숙련</span></td><td>+10~18%</td><td>금화 (항구, 드묾)</td></tr>
+          <tr><td><span class="badge badge-purple">전문가</span></td><td>+18~28%</td><td>💎 1~2개</td></tr>
+          <tr><td><span class="badge badge-gold">전설</span></td><td>+28~40%</td><td>💎 3개 + 특수 퀘스트</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 4. 이벤트 & 퀘스트 ── -->
+    <section id="events">
+      <div class="section-header">
+        <div class="section-num purple">4</div>
+        <h2>이벤트 &amp; 퀘스트</h2>
+      </div>
+      <h3>이벤트 테이블</h3>
+      <table>
+        <thead><tr><th>이벤트</th><th>가중치</th><th>효과</th><th>회피 비용</th></tr></thead>
+        <tbody>
+          <tr><td>⛈️ 풍랑</td><td>30</td><td>도착 시간 +50%, 화물 5~15% 손실</td><td>💎 1개</td></tr>
+          <tr><td>🏴‍☠️ 해적 출몰</td><td>25</td><td>화물 20~40% 강탈</td><td>💎 2개</td></tr>
+          <tr><td>📉 대공황</td><td>15</td><td>목적지 항구 시세 -30%</td><td>💎 3개</td></tr>
+          <tr><td>🧊 빙하 충돌</td><td>15</td><td>선체 -50, 속도 -30%</td><td>💎 2개</td></tr>
+          <tr><td>☠️ 역병 창궐</td><td>10</td><td>목적지 항구 입항 불가 (1회)</td><td>💎 2개</td></tr>
+          <tr><td>💨 순풍 행운</td><td>5</td><td>도착 시간 -30% (긍정)</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <h3>퀘스트 종류</h3>
+      <table>
+        <thead><tr><th>퀘스트</th><th>조건</th><th>제한</th><th>성공 보상</th></tr></thead>
+        <tbody>
+          <tr><td>긴급 배송</td><td>자원 10~30개 → 지정 항구</td><td>2시간</td><td>금화(세금 2배) + 💎1</td></tr>
+          <tr><td>항구 방문</td><td>3~5개 항구 탐방</td><td>4시간</td><td>금화(세금 3배) + 선원 1명</td></tr>
+          <tr><td>무역왕</td><td>특정 자원으로 5,000~20,000금 수익</td><td>3시간</td><td>금화 + 세금 레벨 -1</td></tr>
+          <tr><td>위기 구조</td><td>폭풍 이벤트 중 배 1척 귀환</td><td>1시간</td><td>💎 2개</td></tr>
+          <tr><td>독점 계약</td><td>특정 자원 20~50개 매입</td><td>2시간</td><td>금화 + 해당 자원 판매가 +20%</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 5. 수익화 ── -->
+    <section id="monetization">
+      <div class="section-header">
+        <div class="section-num green">5</div>
+        <h2>보석 수익화</h2>
+      </div>
+      <table>
+        <thead><tr><th>소비 항목</th><th>비용</th><th>결과 예측 가능성</th></tr></thead>
+        <tbody>
+          <tr><td>⚡ 즉시 도착</td><td>💎 1개</td><td>100% 확정</td></tr>
+          <tr><td>👤 전문가+ 선원 고용</td><td>💎 1~3개</td><td>능력치 사전 표시 후 구매</td></tr>
+          <tr><td>⬆️ 선원 업그레이드</td><td>💎 1~3개</td><td>결과 확정 표시</td></tr>
+          <tr><td>🛡️ 세금 면제</td><td>💎 2개</td><td>100% 확정</td></tr>
+          <tr><td>🌀 이벤트 회피</td><td>💎 1~3개</td><td>100% 확정</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-success">
+        <span class="callout-icon">✅</span>
+        <div class="callout-body"><strong>랜덤 박스, 확률 뽑기, 숨겨진 확률표 없음.</strong> 모든 보석 소비는 결과가 사전에 명시된다.</div>
+      </div>
+    </section>
+
+    <!-- ── 6. 튜토리얼 ── -->
+    <section id="ftue">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>튜토리얼 (FTUE)</h2>
+      </div>
+      <table>
+        <thead><tr><th>단계</th><th>행동</th><th>완료 조건</th></tr></thead>
+        <tbody>
+          <tr><td>Step 0</td><td>세계관 슬라이드 3장</td><td>슬라이드 종료</td></tr>
+          <tr><td>Step 1</td><td>함선 탭 하이라이트 → 슬루프 구매</td><td>구매 완료</td></tr>
+          <tr><td>Step 2</td><td>선원 탭 하이라이트 → 선원 고용</td><td>고용 완료</td></tr>
+          <tr><td>Step 3</td><td>지도 하이라이트 → 목적지 선택 후 출발</td><td>출발 완료</td></tr>
+          <tr><td>Step 4</td><td>화물 탭 하이라이트 → 자원 구매</td><td>구매 완료</td></tr>
+          <tr><td>완료</td><td>💰 500금 + 💎 2개 + 첫 퀘스트 자동 부여</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 저장/불러오기 ── -->
+    <section id="save-system">
+      <div class="section-header">
+        <div class="section-num blue">6</div>
+        <h2>저장/불러오기 시스템</h2>
+      </div>
+      <table>
+        <thead><tr><th>항목</th><th>내용</th></tr></thead>
+        <tbody>
+          <tr><td>저장 키</td><td><code>pioneer_save</code> (localStorage)</td></tr>
+          <tr><td>저장 시점</td><td>시세 갱신마다 + 항구 도착마다 자동 저장, 수동 저장 버튼</td></tr>
+          <tr><td>저장 내용</td><td>gs 전체 + priceHistory + dailyGoals + dailyResetAt + lastTaxAt</td></tr>
+          <tr><td>버전 관리</td><td>saveVersion 불일치 시 새 게임 시작 (구버전 무시)</td></tr>
+          <tr><td>스팀 버전</td><td>Steam Cloud Save로 대체</td></tr>
+        </tbody>
+      </table>
+      <pre>// saveGame()
+const saveData = {
+  saveVersion: '1.2',
+  savedAt: new Date().toISOString(),
+  gs,
+  priceHistory,
+  dailyGoals,
+  dailyResetAt,
+  lastTaxAt,      // 세금 납부 타이머 — 새로고침 후에도 유지
+};</pre>
+    </section>
+
+    <!-- ── 비주얼 디자인 ── -->
+    <section id="visual-design">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <h2>비주얼 디자인 (Clash Royale 스타일)</h2>
+      </div>
+
+      <h3 id="color-palette">컬러 팔레트</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px">
+        <div style="background:#0d1b2a;border:1px solid #30363d;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">배경 딥</div>
+          <div style="font-size:14px;font-weight:700;color:#e6edf3">#0d1b2a</div>
+          <div style="font-size:11px;color:#8b949e">전체 배경, 패널 기저</div>
+        </div>
+        <div style="background:#1a2f4a;border:1px solid #30363d;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">배경 미드</div>
+          <div style="font-size:14px;font-weight:700;color:#e6edf3">#1a2f4a</div>
+          <div style="font-size:11px;color:#8b949e">카드·패널 본체</div>
+        </div>
+        <div style="background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">골드 (주)</div>
+          <div style="font-size:14px;font-weight:700;color:#f5c842">#f5c842</div>
+          <div style="font-size:11px;color:#8b949e">테두리, 강조, 버튼</div>
+        </div>
+        <div style="background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">보석 (청록)</div>
+          <div style="font-size:14px;font-weight:700;color:#00e5ff">#00e5ff</div>
+          <div style="font-size:11px;color:#8b949e">보석 아이콘, 수량</div>
+        </div>
+        <div style="background:rgba(41,128,185,0.15);border:1px solid rgba(41,128,185,0.4);border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">숙련 (파랑)</div>
+          <div style="font-size:14px;font-weight:700;color:#2980b9">#2980b9</div>
+          <div style="font-size:11px;color:#8b949e">숙련 등급 선원</div>
+        </div>
+        <div style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">전문가 (보라)</div>
+          <div style="font-size:14px;font-weight:700;color:#9b59b6">#9b59b6</div>
+          <div style="font-size:11px;color:#8b949e">전문가 등급 선원</div>
+        </div>
+        <div style="background:rgba(230,126,34,0.15);border:1px solid rgba(230,126,34,0.4);border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">전설 (주황)</div>
+          <div style="font-size:14px;font-weight:700;color:#e67e22">#e67e22</div>
+          <div style="font-size:11px;color:#8b949e">전설 등급 선원</div>
+        </div>
+        <div style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#8b949e;margin-bottom:4px">위험 (빨강)</div>
+          <div style="font-size:14px;font-weight:700;color:#e74c3c">#e74c3c</div>
+          <div style="font-size:11px;color:#8b949e">세금 경고, 이벤트</div>
+        </div>
+      </div>
+
+      <h3 id="map-visual">지도 비주얼 개편</h3>
+      <table>
+        <thead><tr><th>요소</th><th>현재 (v1.x)</th><th>v2.0 목표</th></tr></thead>
+        <tbody>
+          <tr><td>바다 배경</td><td>단색 파랑</td><td><code>#0d2137 → #0a3d5c</code> 방사형 그라데이션</td></tr>
+          <tr><td>항구 마커</td><td>작은 원형 점</td><td>지역별 이모지 (🏰 유럽 / ⛪ 지중해 / 🕌 아라비아 / 🛕 남아시아 / 🏯 동아시아)</td></tr>
+          <tr><td>항구 이름표</td><td>흰 텍스트</td><td>골드 테두리 다크 배지</td></tr>
+          <tr><td>배 아이콘</td><td>이모지</td><td>이모지 + 흰 드롭 글로우 (<code>filter: drop-shadow</code>)</td></tr>
+          <tr><td>항로 선</td><td>흰 점선</td><td>골드 점선 + <code>dash-move</code> 애니메이션</td></tr>
+          <tr><td>선택된 항구</td><td>강조 없음</td><td><code>pulse-gold</code> 애니메이션 링</td></tr>
+        </tbody>
+      </table>
+
+      <h3>헤더 레이아웃</h3>
+      <pre>┌──────────────────────────────────────────────────────────┐
+│  ⚓ PIONEER  │  💰 12,450금  │  💎 8  │  🏛️ Lv.3 — 일일 18h  │
+│             │  [골드 텍스트] │ [청록] │  [빨강: 4h 미만 경고]  │
+│  배경: #0d1b2a  /  하단 테두리: 2px solid #f5c842         │
+└──────────────────────────────────────────────────────────┘</pre>
+
+      <h3>등급별 선원 카드 스타일</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+        <div style="border:2px solid #7f8c8d;border-radius:10px;padding:12px 16px;background:var(--surface2);min-width:100px;text-align:center">
+          <div style="font-size:18px">⚓</div>
+          <div style="font-size:12px;color:#7f8c8d;margin-top:4px">일반</div>
+          <div style="font-size:11px;color:var(--text2)">+5~10%</div>
+        </div>
+        <div style="border:2px solid #2980b9;border-radius:10px;padding:12px 16px;background:var(--surface2);min-width:100px;text-align:center;box-shadow:0 0 8px rgba(41,128,185,0.5)">
+          <div style="font-size:18px">⚓</div>
+          <div style="font-size:12px;color:#2980b9;margin-top:4px">숙련</div>
+          <div style="font-size:11px;color:var(--text2)">+10~18%</div>
+        </div>
+        <div style="border:2px solid #9b59b6;border-radius:10px;padding:12px 16px;background:var(--surface2);min-width:100px;text-align:center;box-shadow:0 0 10px rgba(155,89,182,0.6)">
+          <div style="font-size:18px">⚓</div>
+          <div style="font-size:12px;color:#9b59b6;margin-top:4px">전문가</div>
+          <div style="font-size:11px;color:var(--text2)">+18~28%</div>
+        </div>
+        <div style="border:2px solid #e67e22;border-radius:10px;padding:12px 16px;background:var(--surface2);min-width:100px;text-align:center;box-shadow:0 0 14px rgba(230,126,34,0.8)">
+          <div style="font-size:18px">⚓</div>
+          <div style="font-size:12px;color:#e67e22;margin-top:4px">전설</div>
+          <div style="font-size:11px;color:var(--text2)">+28~40%</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+    <p style="font-size:13px;color:var(--text2);margin-bottom:40px">
+      이하 섹션은 <strong style="color:var(--accent)">외부 비판 사항에 대한 설계 보강</strong>입니다. 팀원 설득 및 기획 검증용 자료입니다.
+    </p>
+
+    <!-- ── 7. 도박성 회피 ── -->
+    <section id="gambling">
+      <div class="section-header">
+        <div class="section-num red">7</div>
+        <h2>도박성 분류 회피 — 설계 근거</h2>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">⚖️</span>
+        <div class="callout-body">
+          <strong>비판</strong>: 불확실한 가격 변동이 확률 게임/베팅으로 인식될 수 있음 → 앱스토어 심의 거부 위험
+        </div>
+      </div>
+
+      <h3 id="gambling-compare">핵심 구분: 경제 불확실성 vs 확률 베팅</h3>
+      <p>앱스토어 가이드라인(Apple 4.3, Google Play 도박 정책)은 <strong>"결과가 무작위이며 실제 화폐로 베팅하는 행위"</strong>를 도박으로 정의한다. Pioneer의 가격 변동은 다음 이유로 이 정의에 해당하지 않는다.</p>
+
+      <table>
+        <thead><tr><th>구분</th><th>도박 게임</th><th>Pioneer</th></tr></thead>
+        <tbody>
+          <tr><td>결과 결정 방식</td><td>순수 난수 (RNG)</td><td>수급 알고리즘 (결정론적)</td></tr>
+          <tr><td>플레이어 영향력</td><td>없음</td><td>루트 선택·타이밍·선원 구성으로 수익 차이 발생</td></tr>
+          <tr><td>실패 반복 가능성</td><td>동일 확률 반복</td><td>정보 구매·경험 축적으로 개선 가능</td></tr>
+          <tr><td>실제 화폐 베팅</td><td>있음</td><td>없음 (인앱 결제는 보석 구매, 게임 결과에 직접 베팅 아님)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-success">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          이는 <strong>Stardew Valley 작물 시세</strong>, <strong>Civilization 교역 시스템</strong>과 동일한 <strong>경제 시뮬레이션</strong> 범주다. 두 게임 모두 앱스토어에서 도박성 문제 없이 유통 중.
+        </div>
+      </div>
+
+      <h3>가격 변동 — 투명성 원칙</h3>
+      <pre>수급 알고리즘 공개 원칙
+├── 각 자원의 현재 가격은 언제나 화면에 표시
+├── 가격 히스토리(차트)를 통해 추세 파악 가능
+├── "정보 구매" 시스템은 불확실성을 줄이는 수단 (완전 제거 아님)
+└── 플레이어가 더 많은 정보로 더 나은 결정을 내릴 수 있음</pre>
+
+      <h3 id="gambling-gems">보석 소비 — 가챠가 아닌 이유</h3>
+      <p>보석으로 구매하는 모든 항목은 <strong>결과가 사전에 확정 표시</strong>된다. 확률 뽑기 요소가 전혀 없다.</p>
+      <table>
+        <thead><tr><th>소비 항목</th><th>결과 예측 가능성</th><th>판단</th></tr></thead>
+        <tbody>
+          <tr><td>즉시 도착</td><td>100% 확정 (배가 즉시 도착)</td><td><span class="badge badge-green">확정</span></td></tr>
+          <tr><td>선원 고용</td><td>등급·능력치 사전 표시 후 구매</td><td><span class="badge badge-green">확정</span></td></tr>
+          <tr><td>선원 업그레이드</td><td>업그레이드 결과 확정 표시</td><td><span class="badge badge-green">확정</span></td></tr>
+          <tr><td>세금 면제</td><td>100% 확정 (다음 세금 1회 면제)</td><td><span class="badge badge-green">확정</span></td></tr>
+          <tr><td>이벤트 회피</td><td>100% 확정 (이벤트 무효화)</td><td><span class="badge badge-green">확정</span></td></tr>
+        </tbody>
+      </table>
+
+      <h3>앱스토어 분류 전략</h3>
+      <table>
+        <thead><tr><th>항목</th><th>전략</th></tr></thead>
+        <tbody>
+          <tr><td>장르 태그</td><td><strong>Strategy / Simulation</strong> (Gambling/Casino 카테고리 아님)</td></tr>
+          <tr><td>연령 등급</td><td>4+ (실제 화폐 베팅 없음 → 도박 관련 등급 상승 사유 없음)</td></tr>
+          <tr><td>스크린샷 방향</td><td>지도·무역 화면 중심, 가격 차트는 "경제 전략" 맥락으로 설명</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 8. 경쟁 게임 포지셔닝 ── -->
+    <section id="positioning">
+      <div class="section-header">
+        <div class="section-num blue">8</div>
+        <h2>경쟁 게임 포지셔닝</h2>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">🗺️</span>
+        <div class="callout-body">
+          <strong>비판</strong>: 기존 경영 시뮬레이션(Shop Titans, Merge Mansion 등)과의 게임플레이 차이 불명확
+        </div>
+      </div>
+
+      <h3 id="pos-map">시장 포지션 맵</h3>
+      <div class="pos-map">
+        <div class="pos-axis-x"></div>
+        <div class="pos-axis-y"></div>
+        <div class="pos-label-top">높은 전략성</div>
+        <div class="pos-label-bottom">낮은 전략성</div>
+        <div class="pos-label-left">낮은 방치</div>
+        <div class="pos-label-right">높은 방치</div>
+
+        <div class="pos-dot" style="left:28%;top:28%">
+          <div class="pos-dot-circle"></div>
+          <div class="pos-dot-name">Port Royale<br><span style="font-size:10px;color:var(--text2)">(복잡, PC)</span></div>
+        </div>
+        <div class="pos-dot" style="left:30%;top:60%">
+          <div class="pos-dot-circle"></div>
+          <div class="pos-dot-name">Clash of Clans<br><span style="font-size:10px;color:var(--text2)">(전쟁·건설)</span></div>
+        </div>
+        <div class="pos-dot" style="left:70%;top:68%">
+          <div class="pos-dot-circle"></div>
+          <div class="pos-dot-name">Merge Mansion<br><span style="font-size:10px;color:var(--text2)">(수집·퍼즐)</span></div>
+        </div>
+        <div class="pos-dot" style="left:35%;top:45%">
+          <div class="pos-dot-circle"></div>
+          <div class="pos-dot-name">Shop Titans<br><span style="font-size:10px;color:var(--text2)">(제작·판매)</span></div>
+        </div>
+        <div class="pos-dot" style="left:72%;top:30%">
+          <div class="pos-dot-circle highlight"></div>
+          <div class="pos-dot-name highlight">Pioneer ◀ 우리<br><span style="font-size:10px">(무역 생존, 모바일)</span></div>
+        </div>
+      </div>
+
+      <h3 id="pos-diff">주요 경쟁작과의 차이</h3>
+      <table>
+        <thead><tr><th>게임</th><th>핵심 루프</th><th>Pioneer와의 차이</th></tr></thead>
+        <tbody>
+          <tr><td>Shop Titans</td><td>아이템 제작 → 영웅에게 판매 → 장비 강화</td><td>생산 없음, <strong>루트 최적화와 시세 판단</strong>이 핵심</td></tr>
+          <tr><td>Merge Mansion</td><td>오브젝트 합성 → 스토리 해금</td><td>합성 없음, <strong>실시간 경제 압박(세금)</strong>이 긴장감 원천</td></tr>
+          <tr><td>Port Royale</td><td>복잡한 무역·전투 시뮬레이션</td><td>진입장벽 낮음, <strong>방치 허용</strong> (배가 알아서 이동)</td></tr>
+          <tr><td>트로피코</td><td>도시 건설·정치 시스템</td><td>공간 관리 없음, <strong>1~2분 세션</strong>도 의미 있음</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Pioneer의 고유 포지션</h3>
+      <div class="card">
+        <div class="card-title">"방치하면서도 긴장감이 있는 무역 생존 게임"</div>
+        <ul class="bullet">
+          <li><strong>방치 허용</strong>: 배가 항해하는 동안 앱을 꺼도 됨 → 바쁜 성인 유저 친화</li>
+          <li><strong>세금 압박</strong>: 단순 수집이 아니라 "버티기"가 목표 → 엔드게임 명확</li>
+          <li><strong>짧은 세션</strong>: 1~2분에도 의미 있는 행동 가능 → 이동 중 플레이 적합</li>
+          <li><strong>경제 전략</strong>: 가격 차트·정보 구매로 숙련도 차이 발생 → 재방문 동기</li>
+        </ul>
+        <div class="callout callout-success" style="margin-top:8px;margin-bottom:0">
+          <span class="callout-icon">✅</span>
+          <div class="callout-body">이 조합은 현재 모바일 시장에서 <strong>직접적인 경쟁작이 없는 틈새</strong>다.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 9. 첫 30분 플레이 설계 ── -->
+    <section id="playtime">
+      <div class="section-header">
+        <div class="section-num green">9</div>
+        <h2>첫 30분 플레이 설계</h2>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">⏱️</span>
+        <div class="callout-body">
+          <strong>비판</strong>: 게임 초반 유저 이탈 위험 — 너무 느린 진행, 불명확한 보상<br/>
+          <strong>설계 목표</strong>: 첫 30분 안에 "출발 → 방치 → 도착 → 거래" 루프를 1회 완료하고 자발적으로 다시 배를 출발시키게 만든다.
+        </div>
+      </div>
+
+      <h3 id="scenario">분 단위 시나리오</h3>
+
+      <div class="scenario-step">
+        <div class="step-time">0~3분</div>
+        <div class="step-body">
+          <div class="step-title">세계관 진입</div>
+          <div class="step-desc">
+            세계관 슬라이드 3장 표시 (스킵 가능)<br/>
+            → 시작 자금 <strong>600금</strong> + 보석 5개 지급<br/>
+            → 화면: 런던 항구 줌인, 첫 퀘스트 없음 (깨끗한 시작)
+          </div>
+          <div class="step-note">
+            <strong>★ 설계 포인트</strong>: 시작 자금 600금 — 슬루프(500금) + 선원 고용(50금) + 여유 50금. 첫 행동을 즉시 가능하게 한다.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step">
+        <div class="step-time">3~7분</div>
+        <div class="step-body">
+          <div class="step-title">첫 번째 배 구매 <span class="badge badge-gold">tutorialStep 1</span></div>
+          <div class="step-desc">
+            함선 탭 하이라이트: "슬루프를 구매하세요 (500금)"<br/>
+            → 구매 완료: "슬루프 1호를 영입했습니다!" 로그 출력
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step">
+        <div class="step-time">7~10분</div>
+        <div class="step-body">
+          <div class="step-title">첫 선원 고용 <span class="badge badge-gold">tutorialStep 2</span></div>
+          <div class="step-desc">
+            선원 탭 하이라이트: "항해사 1명을 고용하세요 (50금)"<br/>
+            → 일반 등급 항해사 1명 미리 배치 (50금 고용 유도)<br/>
+            → 고용 완료: 선원 카드에 이름·효과 표시
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step">
+        <div class="step-time">10~13분</div>
+        <div class="step-body">
+          <div class="step-title">첫 항해 출발 <span class="badge badge-gold">tutorialStep 3</span></div>
+          <div class="step-desc">
+            지도 하이라이트: "슬루프를 클릭하고 목적지를 선택하세요"<br/>
+            → 추천 목적지 배지: <strong>"리스본 (15분)"</strong> — 가장 가까운 항구 강조<br/>
+            → 출발 완료: 항로 골드 점선 애니메이션 시작<br/>
+            → 팝업: "배가 출발했습니다! 앱을 꺼도 배는 항해합니다 ⚓"
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step">
+        <div class="step-time">13~28분</div>
+        <div class="step-body">
+          <div class="step-title">첫 방치 구간 <span class="badge badge-blue">의도된 공백</span></div>
+          <div class="step-desc">
+            타이머 배지: "슬루프 1호 — 리스본까지 12분"<br/>
+            → 플레이어는 탭 구경, 가격 차트 확인 자유롭게 탐색<br/>
+            → <strong>이 시간에 세금 타이머 미표시</strong> (압박 없는 탐색 유도)
+          </div>
+          <div class="step-note">
+            <strong>★ 설계 포인트</strong>: 방치를 "버그"가 아니라 "기능"임을 명확히 인지시키는 구간. 이 시간에 이탈하면 알림으로 복귀 유도.
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step">
+        <div class="step-time">28~30분</div>
+        <div class="step-body">
+          <div class="step-title">첫 도착 + 첫 거래 <span class="badge badge-gold">tutorialStep 4</span></div>
+          <div class="step-desc">
+            로그 최상단: "★ 슬루프 1호가 리스본에 도착했습니다!"<br/>
+            → 화물 탭 하이라이트: "자원을 구매해보세요"<br/>
+            → 리스본에서 판매가 높은 자원 1종 강조 표시 (초보자 힌트)<br/>
+            → 구매 완료 → 튜토리얼 종료 보상:
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <span class="badge badge-gold">💰 500금 지급</span>
+            <span class="badge badge-blue">💎 보석 2개 지급</span>
+            <span class="badge badge-green">첫 퀘스트 자동 부여</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario-step">
+        <div class="step-time">30분 이후</div>
+        <div class="step-body">
+          <div class="step-title">자유 플레이 <span class="badge badge-green">루프 완성</span></div>
+          <div class="step-desc">
+            플레이어는 이미 "출발 → 방치 → 도착 → 거래" 루프를 1회 완료<br/>
+            → 첫 퀘스트: "긴급 배송 — 면화 10개를 런던으로" (쉬운 난이도)<br/>
+            → 세금 첫 납부까지 약 <strong>20시간 남음</strong> (충분한 여유)
+          </div>
+        </div>
+      </div>
+
+      <h3 id="antichurn">초반 이탈 방지 설계 원칙</h3>
+      <table>
+        <thead><tr><th>위험 지점</th><th>이탈 원인</th><th>대응 설계</th></tr></thead>
+        <tbody>
+          <tr><td>게임 시작 직후</td><td>"뭘 해야 하는지 모름"</td><td>튜토리얼 하이라이트 + 단계별 유도</td></tr>
+          <tr><td>첫 배 구매 시</td><td>"돈이 부족함"</td><td>시작 자금 600금 — 즉시 구매 가능</td></tr>
+          <tr><td>첫 항해 출발 후</td><td>"기다리는 게 지루함"</td><td>방치 의도 명시 팝업 + 타이머 배지</td></tr>
+          <tr><td>첫 도착 시</td><td>"뭘 사야 할지 모름"</td><td>고수익 자원 힌트 강조 표시</td></tr>
+          <tr><td>세금 첫 납부</td><td>"갑자기 돈이 빠져나감"</td><td>24시간 여유 + 납부 전 경고 알림</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="success">첫 세션 성공 기준</h3>
+      <p>플레이어가 30분 세션 종료 시점에 다음 상태여야 한다.</p>
+      <ul class="checklist">
+        <li><div class="check-box"></div>배 1척 보유, 현재 항해 중 상태</li>
+        <li><div class="check-box"></div>선원 1명 배정 완료</li>
+        <li><div class="check-box"></div>금화 600금 이상 보유 (시작보다 증가)</li>
+        <li><div class="check-box"></div>퀘스트 1개 활성화 상태</li>
+        <li><div class="check-box"></div>세금 타이머 인지 완료 (다음 납부 시간 알고 있음)</li>
+      </ul>
+      <div class="callout callout-success">
+        <span class="callout-icon">🎯</span>
+        <div class="callout-body">이 5가지가 달성되면 플레이어는 <strong>재방문 이유</strong>가 생긴다.</div>
+      </div>
+    </section>
+
+    <!-- ── 10. 경제 밸런싱 ── -->
+    <section id="economy">
+      <div class="section-header">
+        <div class="section-num">10</div>
+        <h2>경제 밸런싱 심화</h2>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">📊</span>
+        <div class="callout-body">
+          <strong>비판</strong>: 경제 밸런싱 세부사항 미흡 — 실제 수치 기반 진행 속도 설계 필요
+        </div>
+      </div>
+
+      <h3 id="day-sim">일별 성장 시뮬레이션</h3>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">가정: 하루 3세션 (아침·점심·저녁), 세션당 5~10분, 세션마다 도착 화물 판매 + 재출발</p>
+      <table>
+        <thead><tr><th>일차</th><th>배 구성</th><th>세금 Lv</th><th>일일 수익</th><th>일일 세금</th><th>일일 순수익</th><th>누적 자금</th></tr></thead>
+        <tbody>
+          <tr><td>Day 1</td><td>슬루프 1</td><td><span class="badge badge-green">L1</span></td><td>~900금</td><td>200금</td><td>~700금</td><td>~1,800금</td></tr>
+          <tr><td>Day 3</td><td>슬루프 1</td><td><span class="badge badge-green">L1</span></td><td>~900금</td><td>200금</td><td>~700금</td><td>~3,200금</td></tr>
+          <tr><td>Day 5</td><td>슬루프 2 구매 후</td><td><span class="badge badge-gold">L2</span></td><td>~1,800금</td><td>600금</td><td>~1,200금</td><td>~2,600금</td></tr>
+          <tr><td>Day 7</td><td>슬루프 2</td><td><span class="badge badge-gold">L2~3</span></td><td>~1,800금</td><td>~800금</td><td>~1,000금</td><td>~5,000금</td></tr>
+          <tr><td>Day 14</td><td>상인선 1 + 슬루프 1</td><td><span class="badge badge-gold">L3~4</span></td><td>~4,500금</td><td>~2,000금</td><td>~2,500금</td><td>~17,000금</td></tr>
+          <tr><td>Day 21</td><td>상인선 2</td><td><span class="badge badge-red">L4~5</span></td><td>~6,000금</td><td>~5,000금</td><td>~3,000금</td><td>~32,000금</td></tr>
+          <tr><td>Day 30</td><td>갤리온 1 + 상인선 1</td><td><span class="badge badge-red">L5~6</span></td><td>~9,000금</td><td>~13,500금</td><td>~5,000금</td><td>~60,000금</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-warning">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body"><strong>설계 확인</strong>: 각 단계에서 일일 순수익이 반드시 양수를 유지해야 한다. 세금이 순수익을 초과하는 순간이 게임 오버 압박의 시작점이다.</div>
+      </div>
+
+      <h3 id="gold-flow">골드 흐름 분석 (Faucet vs Sink)</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="card">
+          <div class="card-title">수입원 (Faucet)</div>
+          <table style="margin-bottom:0">
+            <thead><tr><th>수입원</th><th>비중</th></tr></thead>
+            <tbody>
+              <tr><td>화물 판매</td><td><span class="badge badge-gold">~75%</span></td></tr>
+              <tr><td>퀘스트 보상</td><td><span class="badge badge-blue">~15%</span></td></tr>
+              <tr><td>일일 목표 보상</td><td><span class="badge badge-gray">~5%</span></td></tr>
+              <tr><td>이벤트 보상</td><td><span class="badge badge-gray">~3%</span></td></tr>
+              <tr><td>튜토리얼 완료</td><td><span class="badge badge-gray">~2%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title">지출원 (Sink)</div>
+          <table style="margin-bottom:0">
+            <thead><tr><th>지출원</th><th>비중</th></tr></thead>
+            <tbody>
+              <tr><td>세금</td><td><span class="badge badge-red">~35%</span></td></tr>
+              <tr><td>배 구매/업그레이드</td><td><span class="badge badge-gold">~40%</span></td></tr>
+              <tr><td>선원 고용</td><td><span class="badge badge-blue">~15%</span></td></tr>
+              <tr><td>정보 구매</td><td><span class="badge badge-gray">~10%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3 id="ship-roi">배 투자 ROI</h3>
+      <table>
+        <thead><tr><th>추가 구매</th><th>비용</th><th>일일 추가 수익</th><th>세금 증가</th><th>순 회수 기간</th></tr></thead>
+        <tbody>
+          <tr><td>2번째 슬루프</td><td>3,000금</td><td>+900금/일</td><td>+400금/일</td><td><span class="badge badge-green">~6일</span></td></tr>
+          <tr><td>상인선 (첫 구매)</td><td>20,000금</td><td>+2,800금/일</td><td>+2,400금/일</td><td><span class="badge badge-gold">~50일 (장기)</span></td></tr>
+          <tr><td>갤리온 (첫 구매)</td><td>45,000금</td><td>+6,000금/일</td><td>+13,000금/일</td><td><span class="badge badge-red">위험 — 수익 확보 필수</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body"><strong>설계 원칙</strong>: 배를 많이 살수록 세금이 급등하므로 무작정 확장이 최선이 아니다. 선원 투자와 루트 최적화가 배 추가보다 효율적인 구간이 반드시 존재해야 한다.</div>
+      </div>
+
+      <h3>가격 변동 설계 범위</h3>
+      <table>
+        <thead><tr><th>자원 등급</th><th>기준가 범위</th><th>변동폭</th><th>항구 특산물 보정</th></tr></thead>
+        <tbody>
+          <tr><td>기초 (밀, 면화)</td><td>50~150금</td><td>±20%</td><td>+30~50%</td></tr>
+          <tr><td>중급 (향신료, 비단)</td><td>200~500금</td><td>±30%</td><td>+40~60%</td></tr>
+          <tr><td>고급 (보석류, 희귀품)</td><td>800~2,000금</td><td>±40%</td><td>+50~80%</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 11. UI/UX ── -->
+    <section id="ux">
+      <div class="section-header">
+        <div class="section-num blue">11</div>
+        <h2>UI/UX 설계</h2>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">🎨</span>
+        <div class="callout-body">
+          <strong>비판</strong>: UI/UX 설계 세부사항 미흡 — 패널 구성, 인터랙션 패턴, 알림 시스템 설계 필요
+        </div>
+      </div>
+
+      <h3 id="screen-hierarchy">화면 구성 계층</h3>
+      <pre>App (전체 화면)
+├── Header (고정, 상단)
+│   ├── 타이틀 + 로고
+│   ├── 💰 금화 표시
+│   ├── 💎 보석 표시
+│   ├── 🏛️ 세금 카운트다운 (Lv.N — 일일 Xh YYm)
+│   ├── ⚡ 시세 변동 배지 (클릭 시 제거)
+│   └── 💾 저장 버튼
+│
+├── GameMap (메인 영역)
+│   ├── 지도 캔버스 (pan/zoom)
+│   ├── 항구 마커 (지역별 이모지 아이콘)
+│   ├── 배 아이콘 + 이름 배지
+│   └── 항로 골드 점선 애니메이션
+│
+└── Bottom Panel (탭 전환)
+    ├── [함선] ShipPanel
+    ├── [화물] TradePanel
+    ├── [선원] CrewPanel
+    ├── [정보] InfoPanel
+    └── [퀘스트] QuestPanel</pre>
+
+      <h3 id="panel-ux">패널별 UX 상세</h3>
+      <table>
+        <thead><tr><th>패널</th><th>주요 요소</th><th>핵심 인터랙션</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>GameMap</td>
+            <td>지도, 항구 마커, 배 아이콘, 항로 선</td>
+            <td>배 클릭 → 선택 + 화물 탭 전환<br/>항구 클릭 → 목적지 확인 팝업<br/>핀치/휠 줌, 드래그 팬</td>
+          </tr>
+          <tr>
+            <td>ShipPanel</td>
+            <td>배 카드 목록, 상태 배지, 화물/선원 상세</td>
+            <td>[구매] → 비용 + 세금 상승 경고 팝업<br/>[업그레이드] → 속도/화물/선원 슬롯 개선</td>
+          </tr>
+          <tr>
+            <td>TradePanel</td>
+            <td>자원 목록, 등락 표시, 가격 차트 탭</td>
+            <td>자원 선택 → 수량 슬라이더 표시<br/>1개 / 최대 버튼 제공<br/>총 금액 실시간 계산 표시</td>
+          </tr>
+          <tr>
+            <td>CrewPanel</td>
+            <td>역할별 필터, 선원 카드 (등급 테두리), 배정 UI</td>
+            <td>선원 탭 → 배 선택 드롭다운<br/>[고용 가능] 탭: 항구 노출 선원 목록</td>
+          </tr>
+          <tr>
+            <td>InfoPanel</td>
+            <td>정보 등급 목록, 정확도, 예상 효과</td>
+            <td>구매 → 결과 즉시 표시<br/>이전 구매 결과 이력 표시</td>
+          </tr>
+          <tr>
+            <td>QuestPanel</td>
+            <td>퀘스트 카드 (진행도 바), 기한 카운트다운</td>
+            <td>[수락/거절] 선택<br/>완료된 퀘스트 강조 + [보상 받기] 버튼</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="noti">알림 시스템</h3>
+      <table>
+        <thead><tr><th>알림 종류</th><th>표시 위치</th><th>지속</th><th>클릭 동작</th></tr></thead>
+        <tbody>
+          <tr><td>배 도착</td><td>로그 최상단 + 헤더 배지</td><td>상시</td><td>해당 배 선택</td></tr>
+          <tr><td>시세 변동</td><td>헤더 ⚡ 배지</td><td>클릭 전까지</td><td>배지 제거</td></tr>
+          <tr><td>세금 경고 (4시간 전)</td><td>헤더 세금 표시 빨강 전환</td><td>상시</td><td>세금 정보 표시</td></tr>
+          <tr><td>퀘스트 완료</td><td>로그 + 녹색 펄스 배지</td><td>클릭 전까지</td><td>퀘스트 패널 열기</td></tr>
+          <tr><td>이벤트 발생</td><td>화면 중앙 팝업</td><td>확인 전까지</td><td>회피 / 감수 선택</td></tr>
+        </tbody>
+      </table>
+
+      <h3>핵심 인터랙션 원칙</h3>
+      <table>
+        <thead><tr><th>상황</th><th>패턴</th><th>이유</th></tr></thead>
+        <tbody>
+          <tr><td>저렴한 항목 구매 (선원, 소량 화물)</td><td>싱글 탭 확인</td><td>마찰 최소화</td></tr>
+          <tr><td>비싼 항목 구매 (배, 고급 선원)</td><td>팝업 + 확인 버튼</td><td>실수 방지</td></tr>
+          <tr><td>대량 화물 거래</td><td>수량 슬라이더 + 총액 실시간 표시</td><td>계획적 거래 유도</td></tr>
+          <tr><td>보석 소모 액션</td><td>팝업 + 잔여 보석 표시</td><td>보석 가치 인지</td></tr>
+          <tr><td>게임 오버 위기</td><td>빨간 경고 UI + 해결 방법 제안</td><td>이탈 방지</td></tr>
+        </tbody>
+      </table>
+
+      <h3>모바일 터치 타겟 기준</h3>
+      <div class="card-grid">
+        <div class="stat-card"><div class="stat-num">44px</div><div class="stat-label">버튼 최소 크기 (Apple HIG)</div></div>
+        <div class="stat-card"><div class="stat-num">+20px</div><div class="stat-label">배 선택 터치 영역 확장</div></div>
+        <div class="stat-card"><div class="stat-num">28px</div><div class="stat-label">슬라이더 트랙 최소 높이</div></div>
+        <div class="stat-card"><div class="stat-num">60px</div><div class="stat-label">탭 바 아이템 최소 너비</div></div>
+      </div>
+    </section>
+
+    <!-- ── 12. 튜토리얼 체계 ── -->
+    <section id="tutorial-system">
+      <div class="section-header">
+        <div class="section-num green">12</div>
+        <h2>튜토리얼 가이드 체계</h2>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">🎓</span>
+        <div class="callout-body">
+          <strong>비판</strong>: 초기 온보딩, 초보자 진입장벽 해소 설계 미흡 — 3단계 점진적 가이드 체계로 해결
+        </div>
+      </div>
+
+      <h3 id="tut-phases">3단계 구성</h3>
+      <div class="card-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div style="font-size:24px;margin-bottom:8px">1️⃣</div>
+          <div class="stat-label" style="font-size:13px;color:var(--accent);font-weight:700">Phase 1</div>
+          <div class="stat-label" style="font-size:13px;color:var(--text);margin:4px 0">필수 튜토리얼</div>
+          <div class="stat-label">첫 30분<br/>스킵 불가<br/>핵심 루프 1회 완성</div>
+        </div>
+        <div class="stat-card">
+          <div style="font-size:24px;margin-bottom:8px">2️⃣</div>
+          <div class="stat-label" style="font-size:13px;color:var(--accent2);font-weight:700">Phase 2</div>
+          <div class="stat-label" style="font-size:13px;color:var(--text);margin:4px 0">맥락적 힌트</div>
+          <div class="stat-label">Day 1~3<br/>첫 진입 시 자동<br/>"다시 보지 않기" 가능</div>
+        </div>
+        <div class="stat-card">
+          <div style="font-size:24px;margin-bottom:8px">3️⃣</div>
+          <div class="stat-label" style="font-size:13px;color:var(--accent5);font-weight:700">Phase 3</div>
+          <div class="stat-label" style="font-size:13px;color:var(--text);margin:4px 0">심화 팁</div>
+          <div class="stat-label">Day 3+<br/>선택적<br/>로그 노출 + 재열람</div>
+        </div>
+      </div>
+
+      <h3>Phase 1 — 필수 튜토리얼 단계</h3>
+      <table>
+        <thead><tr><th>Step</th><th>하이라이트</th><th>요구 행동</th><th>완료 시</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>세계관 슬라이드</td><td>읽기 (스킵 가능)</td><td>→ Step 1</td></tr>
+          <tr><td>1</td><td>함선 탭</td><td>슬루프 구매</td><td>→ Step 2</td></tr>
+          <tr><td>2</td><td>선원 탭</td><td>선원 1명 고용</td><td>→ Step 3</td></tr>
+          <tr><td>3</td><td>지도 → 목적지</td><td>배 출발</td><td>→ Step 4</td></tr>
+          <tr><td>4</td><td>화물 탭</td><td>도착 후 자원 구매</td><td>→ 완료 보상</td></tr>
+          <tr><td style="color:var(--accent3)">완료</td><td colspan="2">500금 + 💎 보석 2개 + 첫 퀘스트 자동 부여</td><td>자유 플레이</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="tut-hints">Phase 2 — 맥락적 힌트 트리거</h3>
+      <table>
+        <thead><tr><th>트리거 조건</th><th>힌트 내용</th><th>표시 위치</th></tr></thead>
+        <tbody>
+          <tr><td>첫 퀘스트 수락</td><td>"퀘스트는 세금 2~3배 보상! 기한 안에 완료하세요"</td><td>퀘스트 패널 상단</td></tr>
+          <tr><td>첫 이벤트 발생</td><td>"회피: 보석 소모. 감수: 화물 손실. 항해사 선원이 있으면 확률 감소!"</td><td>이벤트 팝업 하단</td></tr>
+          <tr><td>선원 2명 이상 보유</td><td>"선원은 배에 배정해야 효과가 납니다"</td><td>선원 탭 첫 진입 시</td></tr>
+          <tr><td>금화 2,500금 달성</td><td>"2번째 배를 사면 수익이 2배! 단, 세금도 오릅니다"</td><td>로그 팁</td></tr>
+          <tr><td>세금 첫 납부 1시간 전</td><td>"곧 세금이 징수됩니다. 금화를 확인하세요"</td><td>헤더 경고</td></tr>
+          <tr><td>가격 차트 첫 오픈</td><td>"오르는 자원을 싸게 사두면 나중에 비싸게 팔 수 있어요"</td><td>차트 패널 상단</td></tr>
+          <tr><td>선체 내구도 50% 이하</td><td>"선체가 손상됐어요. 항구에서 수리하세요"</td><td>로그 경고</td></tr>
+          <tr><td>일일 목표 첫 완료</td><td>"일일 목표를 매일 완료하면 꾸준한 수익을 얻을 수 있어요"</td><td>완료 팝업</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Phase 3 — 심화 팁</h3>
+      <table>
+        <thead><tr><th>발동 조건</th><th>팁 내용</th></tr></thead>
+        <tbody>
+          <tr><td>세금 L3 도달</td><td>"선원 상인 등급을 올리면 배를 추가하지 않아도 수익이 늘어요"</td></tr>
+          <tr><td>배 3척 이상 운영</td><td>"항구별 특산물 루트를 고정하면 시세 변동 리스크가 줄어요"</td></tr>
+          <tr><td>정보 구매 첫 시도</td><td>"대량 거래 전에 정보를 사면 수백 금 차이가 날 수 있어요"</td></tr>
+          <tr><td>퀘스트 실패</td><td>"퀘스트 실패 시 세금 1회분이 추가됩니다. 무리한 퀘스트는 거절하세요"</td></tr>
+          <tr><td>보석 10개 이상 보유</td><td>"보석은 세금 면제(2개)나 위기 이벤트 회피(1~3개)에 가장 효율적입니다"</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="tut-help">도움말 시스템 구조</h3>
+      <div class="card">
+        <div class="card-title">❓ 버튼 — 헤더 상시 노출</div>
+        <p>게임 요약: 핵심 루프 / 세금 시스템 / 선원 역할 / 보석 용도</p>
+      </div>
+      <div class="card">
+        <div class="card-title">(i) 아이콘 — 각 패널 우측 상단</div>
+        <ul class="bullet" style="margin-bottom:0">
+          <li><strong>ShipPanel</strong>: 배 종류별 스펙 비교표</li>
+          <li><strong>TradePanel</strong>: 구매가/판매가 계산 공식 설명</li>
+          <li><strong>CrewPanel</strong>: 역할별 효과 + 등급별 수치 범위</li>
+          <li><strong>InfoPanel</strong>: 정확도 의미 + ROI 설명</li>
+          <li><strong>QuestPanel</strong>: 퀘스트 종류별 보상/패널티 설명</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">🏛️ 세금 표시 탭 — 클릭 시</div>
+        <p style="margin-bottom:0">"세금이 왜 오르나요?" — 레벨 상승 조건 2가지 (배 구매 / 누적 판매금 마일스톤) 설명</p>
+      </div>
+    </section>
+
+    <!-- ── 도파민 설계 ── -->
+    <section id="dopamine">
+      <div class="section-header">
+        <div class="section-num" style="background:var(--accent4)">⚡</div>
+        <h2>도파민 설계 — 모의 주식급 접속률 목표</h2>
+      </div>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">🎯</span>
+        <div class="callout-body">
+          <strong>Pioneer는 모의 주식 앱과 동일한 수준의 도파민과 재방문율을 목표로 설계된다.</strong><br/>
+          모의 주식이 주는 "숫자가 오르는 쾌감"과 "손실이 두려운 긴장감"을 그대로 가져오되, 시각적 세계관·선원 수집·생존 서사를 얹어 더 오래, 더 자주 돌아오게 만든다.
+        </div>
+      </div>
+
+      <h3 id="stock-compare">모의 주식과 Pioneer의 구조적 유사성</h3>
+      <p>모의 주식 앱이 높은 접속률을 갖는 이유는 단순히 수익 때문이 아니다. 핵심은 <strong>불확실성 → 결정 → 결과 확인</strong>이라는 심리적 사이클이다. Pioneer는 이 사이클을 무역 게임으로 정확히 재현한다.</p>
+      <table>
+        <thead><tr><th>모의 주식 앱</th><th>Pioneer</th></tr></thead>
+        <tbody>
+          <tr><td>시세 등락 차트를 실시간 확인</td><td>항구별 자원 가격 히스토리 차트 확인</td></tr>
+          <tr><td>"이 종목 지금 사야 해?" 결정 긴장감</td><td>"리스본에서 비단 지금 사야 해?" 결정 긴장감</td></tr>
+          <tr><td>매수 후 다음 시세 확인하러 재접속</td><td>배 출발 후 도착 결과 확인하러 재접속</td></tr>
+          <tr><td>포트폴리오 수익률 확인</td><td>함대 운영 수익 확인</td></tr>
+          <tr><td>손실이 두려워 눌러보게 됨</td><td>세금 납부 가능한지 확인하러 눌러보게 됨</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="dopamine-points">Pioneer만의 도파민 유발 설계 포인트</h3>
+      <div class="card">
+        <div class="card-title">① 시세 변동 배지 (⚡)</div>
+        <p style="margin-bottom:0">앱을 닫은 사이 시세가 바뀌었다는 알림 → "얼마나 바뀌었지?" 즉각 접속 유도. 모의 주식 앱의 "삼성전자 +3.2%" 푸시 알림과 동일한 심리 자극.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">② 배 도착 타이머</div>
+        <p style="margin-bottom:0">"슬루프 1호 — 리스본까지 12분" → 12분 후 결과를 확인하려는 재방문 유도. 쿠키런·클래시의 "완성까지 N분" 루프와 동일한 구조.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">③ 세금 카운트다운</div>
+        <p style="margin-bottom:0">"다음 세금 납부까지 4h 30m" → 시간 압박이 주기적 접속을 강제. "오늘 세금 낼 돈 있나?" 확인 행동 자체가 습관 형성.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">④ 퀘스트 기한 압박</div>
+        <p style="margin-bottom:0">"긴급 배송 — 2시간 남음" → 마감 임박 심리 (FOMO). 할 일을 미룰 수 없게 만드는 데드라인 도파민.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">⑤ 세금 레벨 상승 경고</div>
+        <p style="margin-bottom:0">배 구매·판매 마일스톤 돌파 순간 "세금 레벨 상승!" 알림. 성장의 쾌감과 동시에 새로운 위기감 → 즉각적인 전략 재계산 유도.</p>
+      </div>
+
+      <h3>모의 주식 대비 Pioneer의 우위</h3>
+      <table>
+        <thead><tr><th>항목</th><th>모의 주식 앱</th><th>Pioneer</th></tr></thead>
+        <tbody>
+          <tr><td>실패 시 감정</td><td>허탈 (가상 손실도 심리적 타격)</td><td><span class="badge badge-green">세금 위기 → 극복 서사로 전환</span></td></tr>
+          <tr><td>진입장벽</td><td>경제 지식 필요</td><td><span class="badge badge-green">튜토리얼 30분으로 완전 숙달</span></td></tr>
+          <tr><td>재미 요소</td><td>숫자만 변동</td><td><span class="badge badge-green">시각적 항해 + 이벤트 + 선원 수집</span></td></tr>
+          <tr><td>중독성 위험</td><td>실제 투자 전이 위험</td><td><span class="badge badge-green">게임 내 한정, 건강한 몰입</span></td></tr>
+          <tr><td>사회적 공유</td><td>수익률 자랑</td><td><span class="badge badge-blue">함대 구성·퀘스트 달성 자랑</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── IP 독립성 ── -->
+    <section id="ip-independence">
+      <div class="section-header">
+        <div class="section-num" style="background:var(--accent3)">IP</div>
+        <h2>IP 독립성 선언</h2>
+      </div>
+
+      <div class="callout callout-success">
+        <span class="callout-icon">✅</span>
+        <div class="callout-body">
+          <strong>Pioneer는 런닝맨(Running Man)과 IP 상의 관련이 없습니다.</strong><br/>
+          일부 게임 규칙 구조에서 영감을 받았을 뿐이며, 런닝맨의 어떠한 지식재산권도 사용하지 않습니다.
+        </div>
+      </div>
+
+      <table>
+        <thead><tr><th>런닝맨 IP 항목</th><th>Pioneer 사용 여부</th></tr></thead>
+        <tbody>
+          <tr><td>상표·로고·브랜드명</td><td><span class="badge badge-green">미사용</span></td></tr>
+          <tr><td>캐릭터·출연진</td><td><span class="badge badge-green">미사용</span></td></tr>
+          <tr><td>방송 콘텐츠·영상</td><td><span class="badge badge-green">미사용</span></td></tr>
+          <tr><td>타이틀·명칭</td><td><span class="badge badge-green">미사용</span></td></tr>
+          <tr><td>게임 규칙 구조 (mechanics)</td><td><span class="badge badge-blue">일부 참고 (합법)</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">⚖️</span>
+        <div class="callout-body">
+          <strong>법적 근거</strong>: 게임 규칙·아이디어 자체는 저작권 보호 대상이 아닙니다 (아이디어-표현 이분법 원칙). 체스 규칙을 참고해 새로운 보드게임을 만들거나, 포커 룰을 응용해 카드 게임을 출시하는 것과 동일한 일반적 게임 디자인 관행입니다. Pioneer는 독자적인 세계관, 캐릭터, 아트워크를 가진 <strong>완전히 독립된 오리지널 게임</strong>입니다.
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 13. 플랫폼 전략 ── -->
+    <section id="platform">
+      <div class="section-header">
+        <div class="section-num purple">13</div>
+        <h2>플랫폼 전략 및 수익화 로드맵</h2>
+      </div>
+
+      <table>
+        <thead><tr><th>플랫폼</th><th>배포 형태</th><th>수익 모델</th><th>타겟 유저</th></tr></thead>
+        <tbody>
+          <tr><td>웹 (브라우저)</td><td>무료 플레이</td><td>인앱 결제 (보석 패키지)</td><td>캐주얼, 모바일 대체 유저</td></tr>
+          <tr><td>스팀 (PC)</td><td>패키지 판매</td><td>일회성 구매 ₩12,000~₩18,000</td><td>하드코어 시뮬 팬, 모드 커뮤니티</td></tr>
+          <tr><td>모바일 (v2.3+)</td><td>무료 플레이</td><td>인앱 결제</td><td>방치형 팬층</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="web-iap">웹 버전 — 인앱 결제 설계</h3>
+      <div class="callout callout-success">
+        <span class="callout-icon">✅</span>
+        <div class="callout-body"><strong>핵심 원칙</strong>: 결제 없이도 끝까지 플레이 가능. 결제는 "시간 단축"이지 "벽 제거"가 아니다.</div>
+      </div>
+      <table>
+        <thead><tr><th>패키지</th><th>보석</th><th>가격</th><th>타겟 상황</th></tr></thead>
+        <tbody>
+          <tr><td>소량팩</td><td>10개</td><td>₩1,900</td><td>이벤트 위기 1회 회피</td></tr>
+          <tr><td>중량팩</td><td>35개</td><td>₩5,900</td><td>선원 육성 집중</td></tr>
+          <tr><td>대량팩</td><td>80개</td><td>₩11,900</td><td>세금 압박 탈출</td></tr>
+          <tr><td>월정액</td><td>20개/월</td><td>₩3,900/월</td><td>꾸준한 플레이어</td></tr>
+        </tbody>
+      </table>
+      <h3>결제 유도 모멘트</h3>
+      <ul class="bullet">
+        <li><strong>세금 납부 불가</strong> → "보석으로 대납" 버튼 + 소량팩 링크</li>
+        <li><strong>전설 등급 선원 등장</strong> → 보석 부족 시 구매 제안</li>
+        <li><strong>이벤트 회피 직전 보석 1개 부족</strong> → 소량팩 링크</li>
+      </ul>
+
+      <h3 id="steam">스팀 버전 — 패키지 게임 설계</h3>
+      <table>
+        <thead><tr><th>항목</th><th>웹 버전</th><th>스팀 버전</th></tr></thead>
+        <tbody>
+          <tr><td>결제 방식</td><td>인앱 결제</td><td>일회성 구매 (보석 시스템 없음)</td></tr>
+          <tr><td>보석 대체</td><td>보석 구매</td><td>초반 충분 지급 + 게임 내 획득</td></tr>
+          <tr><td>콘텐츠 분량</td><td>표준</td><td>추가 항구 5개, 배 종류 2개 추가</td></tr>
+          <tr><td>업적 시스템</td><td>없음</td><td>Steam 업적 30개</td></tr>
+          <tr><td>모딩 지원</td><td>없음</td><td>constants/ 파일 공개 (커뮤니티 확장)</td></tr>
+          <tr><td>저장 방식</td><td>localStorage</td><td>Steam Cloud Save</td></tr>
+        </tbody>
+      </table>
+      <div class="card-grid">
+        <div class="stat-card"><div class="stat-num">₩12,000</div><div class="stat-label">얼리 액세스 출시 가격</div></div>
+        <div class="stat-card"><div class="stat-num">₩18,000</div><div class="stat-label">정식 출시 가격</div></div>
+        <div class="stat-card"><div class="stat-num">30개</div><div class="stat-label">Steam 업적</div></div>
+        <div class="stat-card"><div class="stat-num">+5개</div><div class="stat-label">스팀 전용 추가 항구</div></div>
+      </div>
+    </section>
+
+    <!-- ── 14. 선원 수집 설계 ── -->
+    <section id="crew-collect">
+      <div class="section-header">
+        <div class="section-num">14</div>
+        <h2>선원 수집 시스템 — 장기 플레이 설계</h2>
+      </div>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">⚓</span>
+        <div class="callout-body">
+          <strong>설계 철학</strong>: 선원 하나가 게임을 바꾼다. 선원은 단순 보조 수치가 아니라 플레이어가 능동적으로 수집·조합·육성하는 핵심 콘텐츠다.
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="stat-card"><div class="stat-num">50~80명</div><div class="stat-label">선원 총 풀 (이름·특기·능력치 전부 고유)</div></div>
+        <div class="stat-card"><div class="stat-num">4가지</div><div class="stat-label">역할 (항해사·상인·화물관리사·기관사)</div></div>
+        <div class="stat-card"><div class="stat-num">4등급</div><div class="stat-label">일반·숙련·전문가·전설</div></div>
+      </div>
+
+      <h3 id="crew-stats">확장 능력치 구조</h3>
+      <table>
+        <thead><tr><th>능력치</th><th>기본 범위</th><th>시너지 조합 시 추가 효과</th></tr></thead>
+        <tbody>
+          <tr><td>속도 보정</td><td>+5~40%</td><td>항해사 + 기관사 동선 배치 시 +5% 추가</td></tr>
+          <tr><td>화물 보정</td><td>+5~30칸</td><td>화물관리사 2인 동선 배치 시 +5칸 추가</td></tr>
+          <tr><td>판매가 보정</td><td>+5~35%</td><td>항구 친밀도 높은 상인 선원: +10% 추가</td></tr>
+          <tr><td>이벤트 회피</td><td>-5~25%</td><td>항해사 전문가 이상: 폭풍 회피 -10% 추가</td></tr>
+          <tr><td>연료 효율</td><td>+5~30%</td><td>기관사 2인: 연료 소모 -15% 추가</td></tr>
+          <tr><td>수리비 할인</td><td>-10~40%</td><td>기관사 전설: 항구 수리 무료 1회/일</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="crew-synergy">선원 시너지 조합</h3>
+      <table>
+        <thead><tr><th>조합</th><th>보너스 효과</th><th>획득 난이도</th></tr></thead>
+        <tbody>
+          <tr><td>항해사 + 기관사 (같은 선박)</td><td>속도 +8%, 연료 -10%</td><td><span class="badge badge-green">보통</span></td></tr>
+          <tr><td>상인 3인 편대</td><td>판매가 +5% 추가 중첩</td><td><span class="badge badge-gold">어려움</span></td></tr>
+          <tr><td>전설 선원 2인</td><td>특수 항로 해금 (고수익 지역)</td><td><span class="badge badge-red">매우 어려움</span></td></tr>
+          <tr><td>지역 전문 선원 (아라비아 상인 등)</td><td>해당 지역 시세 미리 보기</td><td><span class="badge badge-purple">특수 퀘스트</span></td></tr>
+        </tbody>
+      </table>
+
+      <h3>선원 획득 루트</h3>
+      <pre>일반 등급:   항구 도착 시 고용 가능 (금화)
+숙련 등급:   드물게 등장 (금화), 일부 퀘스트 보상
+전문가 등급: 보석 1~2개 or 특수 퀘스트 완료
+전설 등급:   특정 항구 누적 방문 10회 이상 or 퀘스트 체인 완료
+지역 전문가: 해당 지역 교역량 임계값 돌파 시 해금</pre>
+
+      <h3 id="ship-cost">배 구매 비용 재설계 — 장기 플레이 유도</h3>
+      <div class="callout callout-warning">
+        <span class="callout-icon">⚓</span>
+        <div class="callout-body"><strong>설계 의도</strong>: 배 구매는 즉시 결정이 아니라 며칠간 저축하는 <strong>목표</strong>가 되어야 한다. 구매 직전 2~3일이 게임에서 가장 긴장감 있는 구간.</div>
+      </div>
+      <table>
+        <thead><tr><th>배 종류</th><th>재설계 비용</th><th>예상 저축 기간</th><th>세금 변화</th></tr></thead>
+        <tbody>
+          <tr><td>슬루프</td><td>500금 (튜토리얼) / 5,000금 (이후)</td><td>~5일</td><td><span class="badge badge-gold">L+1</span></td></tr>
+          <tr><td>상인선</td><td>35,000금</td><td>~2주</td><td><span class="badge badge-gold">L+1</span></td></tr>
+          <tr><td>갤리온</td><td>80,000금</td><td>~3주</td><td><span class="badge badge-red">L+1</span></td></tr>
+          <tr><td>프리깃</td><td>150,000금</td><td>~4~5주</td><td><span class="badge badge-red">L+1</span></td></tr>
+          <tr><td>전함 (최고급)</td><td>300,000금</td><td>~2개월</td><td><span class="badge badge-red">L+1</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 성공 기준 ── -->
+    <section id="success">
+      <div class="section-header">
+        <div class="section-num green">✓</div>
+        <h2>성공 기준</h2>
+      </div>
+      <table>
+        <thead><tr><th>기준</th><th>목표</th></tr></thead>
+        <tbody>
+          <tr><td>저장/불러오기</td><td>저장 후 새로고침 시 금화·배·퀘스트·세금 타이머 완벽 복원</td></tr>
+          <tr><td>세금 압박</td><td>세금 레벨 7~8에서 플레이어가 명확한 긴장감을 느낌</td></tr>
+          <tr><td>이벤트</td><td>시세 갱신마다 항해 중 배에 15% 확률 정상 발생</td></tr>
+          <tr><td>퀘스트</td><td>항구 도착 시 0~2개 생성, 최대 3개 동시 진행</td></tr>
+          <tr><td>선원 특화</td><td>역할별 효과가 계산에 정확히 반영, 시너지 보너스 포함</td></tr>
+          <tr><td>FTUE</td><td>튜토리얼 4단계 완료 후 보상 정상 지급</td></tr>
+          <tr><td>보석 소비</td><td>5종 용도 모두 정상 작동, 결과 확정 표시</td></tr>
+          <tr><td>코드 구조</td><td>constants / systems / components 분리, App.jsx 200줄 이내</td></tr>
+          <tr><td>비주얼</td><td>CR 스타일 3D 버튼·패널, 골드 지도 항로, 등급별 선원 카드 글로우</td></tr>
+          <tr><td>경제 밸런스</td><td>Day 1~30 시뮬레이션에서 일일 순수익이 항상 양수 유지</td></tr>
+          <tr><td>플랫폼 (웹)</td><td>보석 결제 연동, 결제 없이도 엔드게임 도달 가능</td></tr>
+          <tr><td>플랫폼 (스팀)</td><td>Steam Cloud Save, 업적 30개, 추가 콘텐츠 포함</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ── 로드맵 ── -->
+    <section id="roadmap">
+      <div class="section-header">
+        <div class="section-num gray" style="background:var(--surface2);color:var(--text2)">→</div>
+        <h2>미구현 로드맵</h2>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-label">v2.0 — 현재</div>
+          <div class="timeline-desc">이벤트·퀘스트·선원 특화·FTUE·세금 구간 시스템·보석 5종 소비</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent2)"></div>
+          <div class="timeline-label" style="color:var(--accent2)">v2.1</div>
+          <div class="timeline-desc">보석 인앱 결제 실제 연동, 세금 미납 시 배 압류 로직</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent5)"></div>
+          <div class="timeline-label" style="color:var(--accent5)">v2.2</div>
+          <div class="timeline-desc">경쟁 NPC 상인, 업적 시스템</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent5)"></div>
+          <div class="timeline-label" style="color:var(--accent5)">v2.3</div>
+          <div class="timeline-desc">모바일 최적화 (터치 UX, 반응형 레이아웃)</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background:var(--accent5)"></div>
+          <div class="timeline-label" style="color:var(--accent5)">v3.0</div>
+          <div class="timeline-desc">리더보드 (서버 필요), 멀티플레이어 무역 경쟁</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>
