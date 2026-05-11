@@ -1788,6 +1788,23 @@ const OceanTycoon = () => {
               <button onClick={() => setShowMarket(false)} className="text-gray-400 hover:text-gold">✕</button>
             </div>
           </div>
+          {/* 추천 시세 — 보유 화물 중 판매가 가장 높은 품목 */}
+          {(() => {
+            const best = Object.entries(cur.cargo)
+              .map(([r, n]) => ({ r, n, p: getSell(r) }))
+              .filter(x => x.n > 0 && x.p > 0)
+              .sort((a, b) => b.p - a.p)[0];
+            if (!best) return null;
+            return (
+              <div className="px-3 py-1.5 border-b border-gold/20 flex-shrink-0 flex items-center gap-2 bg-green-950/40">
+                <span className="text-[10px] text-gray-500">추천 판매</span>
+                <span className="text-sm">{RESOURCES[best.r]?.icon}</span>
+                <span className="text-xs font-bold text-white">{best.r}</span>
+                <span className="text-xs text-green-400 font-bold ml-auto">{best.p.toLocaleString()}금/개</span>
+                <span className="text-[10px] text-green-600">× {best.n} = {(best.p * best.n).toLocaleString()}금</span>
+              </div>
+            );
+          })()}
           {/* 화물 바 */}
           <div className="px-3 py-1.5 border-b border-gold/30 flex-shrink-0 flex items-center gap-2">
             <span className="text-xs text-gray-400">화물</span>
@@ -2078,7 +2095,7 @@ const OceanTycoon = () => {
 
               {/* 화물 인벤토리 — 지도 우측 하단 */}
               {cur && (
-                <div className="absolute bottom-3 right-3 z-20 w-64 bg-black bg-opacity-80 border border-gold border-opacity-60 rounded-xl shadow-2xl backdrop-blur-sm">
+                <div className="absolute bottom-3 right-3 z-20 w-64 bg-black bg-opacity-80 border border-gold border-opacity-60 rounded-xl shadow-2xl backdrop-blur-sm" onPointerDown={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gold border-opacity-30">
                     <span className="text-xs font-bold text-gold">{SHIP_TYPES[cur.type].icon} {cur.name}</span>
                     <div className="flex items-center gap-1.5">
@@ -2172,13 +2189,12 @@ const OceanTycoon = () => {
                       const isTutTarget = tutorialPhase==='depart'&&(k==='london'||k==='antwerp');
                       return (
                         <div key={k} className="absolute" style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:10}}
+                          onPointerDown={e => e.stopPropagation()}
                           onClick={e => {
                             if (routeMode) return;
                             e.stopPropagation();
-                            const selS = gsRef.current.ships.find(s => s.id === selShipRef.current);
-                            const dockedHere = selS && !selS.isMoving && Math.hypot(selS.x - p.x, selS.y - p.y) < 3.5;
-                            if (dockedHere) { setShowMarket(prev => !prev); }
-                            else if ((gsRef.current.visitedPorts||['lisbon']).includes(k)) { setShowPortPrice(k); }
+                            if (portKey === k) { setShowMarket(prev => !prev); return; }
+                            if ((gs.visitedPorts||['lisbon']).includes(k)) { setShowPortPrice(k); }
                             else { addLog(`🔒 ${p.name}은 미개척 항구입니다. 직접 항해해서 개척하세요!`); }
                           }}>
                           {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:72,height:72,top:-36,left:-36,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
@@ -2271,7 +2287,7 @@ const OceanTycoon = () => {
                       const bx = Math.min(W-90, Math.max(0, sx-40));
                       const by = Math.min(H-30, Math.max(40, sy-55));
                       return (
-                        <button key={s.id} onClick={(e)=>{e.stopPropagation();toggleBooster(s.id);}}
+                        <button key={s.id} onPointerDown={e => e.stopPropagation()} onClick={(e)=>{e.stopPropagation();toggleBooster(s.id);}}
                           className={`absolute text-xs font-bold rounded-lg px-2 py-1 shadow-lg border transition-colors pointer-events-auto
                             ${s.booster?'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse':isSel?'bg-blue-700 hover:bg-blue-500 text-blue-100 border-blue-400':'bg-blue-900 text-blue-300 border-blue-700 opacity-75 hover:opacity-100'}`}
                           style={{left:bx, top:by, zIndex:25}}>
