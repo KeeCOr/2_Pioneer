@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createDepartureState, findPortForShip } from './navigation.js';
 
 // ==================== 모듈 레벨 상수 ====================
 const SHIP_TYPES = {
@@ -663,8 +664,9 @@ const OceanTycoon = () => {
               const p = PORTS[pk];
               if (Math.hypot(s.x - p.x, s.y - p.y) < 1) return prev;
               addLog(`${s.name}이(가) ${p.name}으로 ${s.isMoving ? '항로 변경' : '항해 중'}...`);
+              const sourcePort = findPortForShip(s, PORTS);
               return { ...prev, ships: prev.ships.map(s2 => s2.id === sid
-                ? { ...s2, isMoving: true, targetX: p.x, targetY: p.y, startX: s2.x, startY: s2.y, booster: false } : s2) };
+                ? createDepartureState(s2, p, sourcePort) : s2) };
             });
             setRouteMode(false);
             if (tutorialPhase === 'depart') setTutorialPhase('sailing');

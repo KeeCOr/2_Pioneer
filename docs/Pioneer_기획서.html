@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pioneer 기획서</title>
+  <style>
+    body { margin: 0; font-family: "Segoe UI", sans-serif; background: #0f172a; color: #e5e7eb; line-height: 1.7; }
+    main { max-width: 920px; margin: 0 auto; padding: 40px 24px; }
+    h1, h2 { color: #f8c96a; }
+    section { margin-top: 28px; padding-top: 20px; border-top: 1px solid #334155; }
+    li { margin: 8px 0; }
+    code { color: #93c5fd; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Pioneer 기획서</h1>
+    <section>
+      <h2>개요</h2>
+      <p>Pioneer는 대항해시대를 배경으로 항구를 오가며 자원을 사고팔고, 선박과 승무원을 성장시키는 항해 경영 게임이다. 플레이어는 지도에서 배와 목적지를 선택하고, 시장 가격·화물·승무원·일일 목표를 관리하며 무역 루프를 확장한다.</p>
+    </section>
+    <section>
+      <h2>이번 변경 사항</h2>
+      <ul>
+        <li>출항 UX 개선: 정박 중인 배가 목적지 항구로 출발할 때 출발 항구 중심과 겹쳐 보이지 않도록, 항구에서 목적지 방향으로 일정 거리 떨어진 지점에서 항해를 시작한다.</li>
+        <li>항해 진행도 보정: 출항 시작 좌표(<code>startX</code>, <code>startY</code>)를 실제 이격된 위치로 저장해 진행도와 도착 예정 표시가 출발 연출과 일치하게 유지된다.</li>
+        <li>회귀 테스트 추가: 출항 시작 좌표가 출발 항구의 시각 중심에서 3 이상 떨어지는지 검증하는 Node 내장 테스트를 추가했다.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>기획적 개선 제안</h2>
+      <ul>
+        <li>초반 온보딩은 “배 선택 → 목적지 선택 → 도착 후 시장 판매”의 다음 행동을 더 크게 강조하고, 일일 목표와 퀘스트는 접힌 요약으로 낮추는 편이 좋다.</li>
+        <li>항구/선박/시장 정보가 동시에 강하게 노출되므로, 지도 위 행동 버튼은 현재 맥락의 1차 행동만 남기고 상세 정보는 우측 패널 탭으로 정리하는 것을 권장한다.</li>
+        <li>출항·도착·판매 같은 주요 순간에는 짧은 시각 피드백을 추가하면 플레이어가 시스템 상태 변화를 더 쉽게 이해할 수 있다.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
