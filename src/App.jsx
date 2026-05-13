@@ -1774,7 +1774,193 @@ const OceanTycoon = () => {
       })()}
 
       {/* 시장 팝업 — 매입+판매 통합 (루트 레벨, 맵 이벤트 간섭 없음) */}
-      {atPort && showMarket && cur && (() => {
+      {atPort && showMarket && cur && prices[portKey] && (() => {
+        const port = PORTS[portKey];
+        const rs = REGION_STYLE[port.region];
+        const nativeRes = REGION_NATIVE_RES[port.region];
+        const feeR = getFeeRate(st?.tradePct);
+        const spaceLeft = (st?.capacity || 0) - cargoN(cur);
+        const resources = Object.entries(RESOURCES).map(([res, { icon }]) => {
+          const tier = RESOURCE_TIER[res] || 1;
+          const unlocked = res === nativeRes || tier === 1 || (gs.totalEarned || 0) >= (TIER_GOLD_REQ[tier] || 0);
+          const hist = priceHistory[portKey]?.[res] || [];
+          const curPrice = hist[hist.length - 1] ?? prices[portKey]?.[res] ?? 0;
+          const prevPrice = hist[hist.length - 2] ?? curPrice;
+          const delta = curPrice - prevPrice;
+          const pct = prevPrice > 0 ? (delta / prevPrice) * 100 : 0;
+          const buyP = Math.ceil(getBuy(res) * (1 + feeR / 100));
+          const sellP = Math.floor(getSell(res) * (1 - feeR / 100));
+          const owned = cur.cargo[res] || 0;
+          return { res, icon, tier, unlocked, hist, curPrice, prevPrice, delta, pct, buyP, sellP, owned,
+            minH: Math.min(...(hist.length ? hist : [curPrice])),
+            maxH: Math.max(...(hist.length ? hist : [curPrice])) };
+        });
+        const firstUnlocked = resources.find(r => r.unlocked)?.res || resources[0]?.res;
+        const selRes = resources.some(r => r.res === selectedPortRes && r.unlocked) ? selectedPortRes : firstUnlocked;
+        const detail = resources.find(r => r.res === selRes) || resources[0];
+        const bestSell = resources.filter(r => r.owned > 0).sort((a, b) => b.sellP - a.sellP)[0];
+        const risers = resources.filter(r => r.delta > 0).length;
+        const fallers = resources.filter(r => r.delta < 0).length;
+        const renderMarketChart = (d, W, H) => {
+          if (!d) return null;
+          const isUp = d.delta > 0, isDown = d.delta < 0;
+          const lineColor = isUp ? '#22c55e' : isDown ? '#ef4444' : '#64748b';
+          const range = (d.maxH - d.minH) || 1;
+          const pts = d.hist.length > 1 ? d.hist : [d.curPrice, d.curPrice];
+          const toY = v => H - ((v - d.minH) / range) * (H - 8) - 4;
+          const linePts = pts.map((v, i) => `${(i / (pts.length - 1 || 1)) * W},${toY(v)}`).join(' ');
+          const areaD = `M0,${H} ` + pts.map((v, i) => `L${(i / (pts.length - 1 || 1)) * W},${toY(v)}`).join(' ') + ` L${W},${H} Z`;
+          return (
+            <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+              <path d={areaD} fill={isUp ? '#22c55e22' : isDown ? '#ef444422' : '#64748b18'}/>
+              <polyline points={linePts} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
+            </svg>
+          );
+        };
+        return (
+          <div key="market-modal" className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowMarket(false)}>
+            <div className="w-[860px] max-w-[96vw] max-h-[92vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gold/50 flex-shrink-0">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-gold">🏪 {port.country} {port.name} 거래소</span>
+                    <span className="text-xs px-2 py-1 rounded-full font-bold" style={{background:rs.color+'22', color:rs.color, border:`1px solid ${rs.color}55`}}>{rs.icon} {rs.label}</span>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    보유 {gs.gold.toLocaleString()}금 · 화물 {cargoN(cur)}/{st?.capacity} · 상승 {risers}종 · 하락 {fallers}종
+                  </div>
+                </div>
+                <button onClick={() => setShowMarket(false)} className="w-10 h-10 rounded-full text-gray-400 hover:text-white hover:bg-white/10 text-xl">✕</button>
+              </div>
+
+              {bestSell && (
+                <button onClick={() => setSelectedPortRes(bestSell.res)}
+                  className="mx-4 mt-3 px-3 py-2 rounded-lg border border-green-700 bg-green-950/50 text-left text-xs flex items-center gap-2">
+                  <span className="text-gray-400">추천 판매</span>
+                  <span className="text-lg">{bestSell.icon}</span>
+                  <span className="font-bold text-white">{bestSell.res}</span>
+                  <span className="text-green-400 font-bold ml-auto">{bestSell.sellP.toLocaleString()}금/개 × {bestSell.owned}</span>
+                </button>
+              )}
+
+              <div className="flex flex-1 min-h-0 p-4 gap-4">
+                <div className="w-64 flex-shrink-0 rounded-lg overflow-hidden border border-gold/30 bg-black/20">
+                  <div className="px-3 py-2 text-xs font-bold text-gold border-b border-gold/20">물품 목록</div>
+                  <div className="overflow-y-auto max-h-[54vh]">
+                    {resources.map(item => {
+                      const isSel = item.res === detail?.res;
+                      const trend = item.delta > 0 ? '▲' : item.delta < 0 ? '▼' : '━';
+                      if (!item.unlocked) {
+                        return (
+                          <div key={item.res} className="px-3 py-2.5 border-b border-white/5 opacity-45 flex items-center gap-2">
+                            <span className="text-lg">{item.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-bold truncate">{item.res}</div>
+                              <div className="text-[11px] text-gray-500">누적 {TIER_LABEL[item.tier]} 해금</div>
+                            </div>
+                            <span className="text-gray-500">🔒</span>
+                          </div>
+                        );
+                      }
+                      return (
+                        <button key={item.res} onClick={() => setSelectedPortRes(item.res)}
+                          className={`w-full px-3 py-2.5 border-b border-white/5 text-left flex items-center gap-2 transition-colors ${isSel?'bg-gold text-ocean-dark':'hover:bg-ocean-blue/70 text-gray-200'}`}>
+                          <span className="text-xl">{item.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold truncate">{item.res}{item.res === nativeRes && <span className="ml-1 text-[10px] text-emerald-400">지역</span>}</div>
+                            <div className={`text-[11px] ${isSel?'text-ocean-dark/70':'text-gray-500'}`}>보유 {item.owned} · 판매 {item.sellP.toLocaleString()}금</div>
+                          </div>
+                          <div className={`text-xs font-bold ${item.delta > 0 ? (isSel?'text-green-900':'text-green-400') : item.delta < 0 ? 'text-red-400' : (isSel?'text-ocean-dark/70':'text-gray-500')}`}>
+                            {trend} {Math.abs(item.pct).toFixed(1)}%
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0 flex flex-col gap-3 overflow-y-auto">
+                  {detail && (
+                    <>
+                      <div className="rounded-lg border border-gold/25 bg-black/25 p-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-3">
+                            <span className="text-4xl">{detail.icon}</span>
+                            <div>
+                              <div className="text-xl font-bold text-white">{detail.res}</div>
+                              <div className="text-xs text-gray-400">{port.name} 현재 시세</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-3xl font-bold text-white">{detail.curPrice.toLocaleString()}</div>
+                            <div className={`text-sm font-bold ${detail.delta > 0 ? 'text-green-400' : detail.delta < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                              {detail.delta > 0 ? '+' : ''}{detail.delta} ({detail.delta > 0 ? '+' : ''}{detail.pct.toFixed(1)}%)
+                            </div>
+                          </div>
+                        </div>
+                        <div className="h-32 rounded-lg overflow-hidden bg-slate-950 border border-slate-700">
+                          {renderMarketChart(detail, 520, 128)}
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                          <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">최고가</div><div className="text-sm font-bold text-green-300">{detail.maxH.toLocaleString()}</div></div>
+                          <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">최저가</div><div className="text-sm font-bold text-red-300">{detail.minH.toLocaleString()}</div></div>
+                          <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">수수료</div><div className="text-sm font-bold text-gold">{feeR}%</div></div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg border border-gold/25 bg-black/25 p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-bold text-yellow-300">매입</span>
+                              <span className="text-xs text-gray-400">{detail.buyP.toLocaleString()}금/개</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              {[1,5,10].map(n => (
+                                <button key={n} onClick={() => doBuy(detail.res,n)} disabled={gs.gold < detail.buyP * n || spaceLeft < n}
+                                  className="h-10 rounded border border-yellow-700 text-yellow-200 bg-yellow-950 hover:bg-yellow-800 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700">+{n}</button>
+                              ))}
+                              <button onClick={() => doBuy(detail.res, Math.min(spaceLeft, Math.floor(gs.gold/detail.buyP)))} disabled={gs.gold < detail.buyP || spaceLeft < 1}
+                                className="h-10 rounded border border-yellow-600 text-yellow-100 bg-yellow-900 hover:bg-yellow-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700">최대</button>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-bold text-green-300">판매</span>
+                              <span className="text-xs text-gray-400">보유 {detail.owned}개 · {detail.sellP.toLocaleString()}금/개</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              {[1,5,10].map(n => (
+                                <button key={n} onClick={() => doSell(detail.res,n)} disabled={detail.owned < n}
+                                  className="h-10 rounded border border-green-800 text-green-200 bg-green-950 hover:bg-green-800 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700">-{n}</button>
+                              ))}
+                              <button onClick={() => doSell(detail.res, detail.owned)} disabled={detail.owned < 1}
+                                className="h-10 rounded border border-green-600 text-green-100 bg-green-900 hover:bg-green-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700">전량</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-4 py-3 border-t border-gold/30 flex-shrink-0 flex gap-2 bg-black/20">
+                {cargoN(cur) > 0 && (
+                  <button onClick={() => Object.entries(cur.cargo).forEach(([r,n]) => doSell(r,n))}
+                    className="h-10 px-4 rounded font-bold bg-green-800 hover:bg-green-600 text-green-100 border border-green-600">
+                    전체 판매 ({cargoSellTotal(cur, portKey).toLocaleString()}금)
+                  </button>
+                )}
+                <button onClick={refuel} className="h-10 px-4 rounded bg-orange-900 hover:bg-orange-700 text-orange-100 border border-orange-700">⛽ 보충 ({Math.floor((100-(cur?.fuel??100))*2)}금)</button>
+                <button onClick={doRepair} className="h-10 px-4 rounded bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600">🔧 수리 ({Math.floor((100-(cur?.hull??100))*5)}금)</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {false && atPort && showMarket && cur && (() => {
         const portRegion = PORTS[portKey]?.region;
         const nativeRes  = REGION_NATIVE_RES[portRegion];
         const feeR       = getFeeRate(st?.tradePct);
