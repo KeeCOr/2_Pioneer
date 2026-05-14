@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createDepartureState, findPortForShip } from './navigation.js';
+import { clampTradeQuantity } from './trade.js';
 
 // ==================== 모듈 레벨 상수 ====================
 const SHIP_TYPES = {
@@ -445,6 +446,7 @@ const OceanTycoon = () => {
   const [nextTax,       setNextTax]       = useState(TAX_INTERVAL);
   const [showMarket,    setShowMarket]    = useState(false);
   const [showSellModal, setShowSellModal] = useState(false);
+  const [tradeQty,      setTradeQty]      = useState(1);
   const [showInfo,      setShowInfo]      = useState(false);
   const [showAllCrew,   setShowAllCrew]   = useState(false);
   const [showQuests,    setShowQuests]    = useState(false);
@@ -1798,6 +1800,10 @@ const OceanTycoon = () => {
         const firstUnlocked = resources.find(r => r.unlocked)?.res || resources[0]?.res;
         const selRes = resources.some(r => r.res === selectedPortRes && r.unlocked) ? selectedPortRes : firstUnlocked;
         const detail = resources.find(r => r.res === selRes) || resources[0];
+        const maxBuyQty = detail ? Math.max(0, Math.min(spaceLeft, Math.floor(gs.gold / detail.buyP))) : 0;
+        const maxSellQty = detail?.owned || 0;
+        const buyQty = clampTradeQuantity(tradeQty, maxBuyQty);
+        const sellQty = clampTradeQuantity(tradeQty, maxSellQty);
         const bestSell = resources.filter(r => r.owned > 0).sort((a, b) => b.sellP - a.sellP)[0];
         const risers = resources.filter(r => r.delta > 0).length;
         const fallers = resources.filter(r => r.delta < 0).length;
@@ -1843,8 +1849,8 @@ const OceanTycoon = () => {
                 </button>
               )}
 
-              <div className="flex flex-1 min-h-0 p-4 gap-4">
-                <div className="w-64 flex-shrink-0 rounded-lg overflow-hidden border border-gold/30 bg-black/20">
+              <div className="flex flex-row-reverse flex-1 min-h-0 p-4 gap-4">
+                <div className="w-72 flex-shrink-0 rounded-lg overflow-hidden border border-gold/30 bg-black/20">
                   <div className="px-3 py-2 text-xs font-bold text-gold border-b border-gold/20">물품 목록</div>
                   <div className="overflow-y-auto max-h-[54vh]">
                     {resources.map(item => {
@@ -1879,11 +1885,11 @@ const OceanTycoon = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 min-w-0 flex flex-col gap-3 overflow-y-auto">
+                <div className="flex-1 min-w-0 flex flex-col gap-2 overflow-y-auto">
                   {detail && (
                     <>
-                      <div className="rounded-lg border border-gold/25 bg-black/25 p-4">
-                        <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="rounded-lg border border-gold/25 bg-black/25 p-3">
+                        <div className="flex items-start justify-between gap-3 mb-2">
                           <div className="flex items-center gap-3">
                             <span className="text-4xl">{detail.icon}</span>
                             <div>
@@ -1898,18 +1904,18 @@ const OceanTycoon = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="h-32 rounded-lg overflow-hidden bg-slate-950 border border-slate-700">
-                          {renderMarketChart(detail, 520, 128)}
+                        <div className="h-16 rounded-lg overflow-hidden bg-slate-950 border border-slate-700">
+                          {renderMarketChart(detail, 520, 64)}
                         </div>
-                        <div className="grid grid-cols-3 gap-2 mt-3 text-center">
+                        <div className="grid grid-cols-3 gap-2 mt-2 text-center">
                           <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">최고가</div><div className="text-sm font-bold text-green-300">{detail.maxH.toLocaleString()}</div></div>
                           <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">최저가</div><div className="text-sm font-bold text-red-300">{detail.minH.toLocaleString()}</div></div>
                           <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">수수료</div><div className="text-sm font-bold text-gold">{feeR}%</div></div>
                         </div>
                       </div>
 
-                      <div className="rounded-lg border border-gold/25 bg-black/25 p-4">
-                        <div className="grid grid-cols-2 gap-4">
+                      <div className="rounded-lg border border-gold/25 bg-black/25 p-3">
+                        <div className="hidden">
                           <div>
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm font-bold text-yellow-300">매입</span>
@@ -1937,6 +1943,45 @@ const OceanTycoon = () => {
                               <button onClick={() => doSell(detail.res, detail.owned)} disabled={detail.owned < 1}
                                 className="h-10 rounded border border-green-600 text-green-100 bg-green-900 hover:bg-green-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700">전량</button>
                             </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-[1fr_auto] gap-3 items-stretch">
+                          <div className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="text-sm font-bold text-white">거래 수량</span>
+                              <span className="text-xs text-gray-400">적재 {spaceLeft} · 보유 {detail.owned}</span>
+                            </div>
+                            <div className="grid grid-cols-[44px_1fr_44px] gap-2 mb-3">
+                              <button onClick={() => setTradeQty(q => clampTradeQuantity(q - 1, Math.max(maxBuyQty, maxSellQty)))}
+                                className="h-11 rounded-lg border border-slate-600 bg-slate-800 text-xl text-white hover:bg-slate-700">-</button>
+                              <div className="h-11 rounded-lg border border-gold/40 bg-ocean-blue flex items-center justify-center text-xl font-bold text-gold">
+                                {clampTradeQuantity(tradeQty, Math.max(maxBuyQty, maxSellQty))}
+                              </div>
+                              <button onClick={() => setTradeQty(q => clampTradeQuantity(q + 1, Math.max(maxBuyQty, maxSellQty)))}
+                                className="h-11 rounded-lg border border-slate-600 bg-slate-800 text-xl text-white hover:bg-slate-700">+</button>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              {[1,5,10].map(n => (
+                                <button key={n} onClick={() => setTradeQty(clampTradeQuantity(n, Math.max(maxBuyQty, maxSellQty)))}
+                                  className="h-9 rounded border border-slate-600 text-gray-200 bg-slate-800 hover:bg-slate-700">{n}</button>
+                              ))}
+                              <button onClick={() => setTradeQty(Math.max(maxBuyQty, maxSellQty))}
+                                className="h-9 rounded border border-gold/60 text-gold bg-yellow-950/50 hover:bg-yellow-900">최대</button>
+                            </div>
+                          </div>
+                          <div className="w-64 grid grid-rows-2 gap-3">
+                            <button onClick={() => doBuy(detail.res, buyQty)} disabled={buyQty < 1}
+                              className="rounded-lg border border-yellow-500 bg-yellow-600 text-ocean-dark hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              <div className="text-xs font-bold opacity-80">매입 {buyQty}개</div>
+                              <div className="text-lg font-black">{(detail.buyP * buyQty).toLocaleString()}금</div>
+                              <div className="text-[11px] opacity-80">단가 {detail.buyP.toLocaleString()}금</div>
+                            </button>
+                            <button onClick={() => doSell(detail.res, sellQty)} disabled={sellQty < 1}
+                              className="rounded-lg border border-green-500 bg-green-700 text-white hover:bg-green-500 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              <div className="text-xs font-bold opacity-80">판매 {sellQty}개</div>
+                              <div className="text-lg font-black">{(detail.sellP * sellQty).toLocaleString()}금</div>
+                              <div className="text-[11px] opacity-80">단가 {detail.sellP.toLocaleString()}금</div>
+                            </button>
                           </div>
                         </div>
                       </div>
