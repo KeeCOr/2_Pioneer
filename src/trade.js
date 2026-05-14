@@ -4,3 +4,19 @@ export const clampTradeQuantity = (requested, limit) => {
   const qty = Math.floor(Number(requested) || 1);
   return Math.min(max, Math.max(1, qty));
 };
+
+export const getTradePreview = ({ mode, unitPrice, quantity, gold, cargo, capacity }) => {
+  const qty = Math.max(0, Math.floor(Number(quantity) || 0));
+  const total = Math.max(0, Math.floor((Number(unitPrice) || 0) * qty));
+  const currentGold = Math.max(0, Math.floor(Number(gold) || 0));
+  const currentCargo = Math.max(0, Math.floor(Number(cargo) || 0));
+  const maxCargo = Math.max(0, Math.floor(Number(capacity) || 0));
+  const nextGold = mode === 'sell' ? currentGold + total : Math.max(0, currentGold - total);
+  const nextCargo = mode === 'sell' ? Math.max(0, currentCargo - qty) : Math.min(maxCargo, currentCargo + qty);
+  return {
+    total,
+    nextGold,
+    nextCargo,
+    remainingCargo: Math.max(0, maxCargo - nextCargo),
+  };
+};

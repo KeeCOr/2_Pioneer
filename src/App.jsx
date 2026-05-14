@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createDepartureState, findPortForShip } from './navigation.js';
-import { clampTradeQuantity } from './trade.js';
+import { clampTradeQuantity, getTradePreview } from './trade.js';
 
 // ==================== 모듈 레벨 상수 ====================
 const SHIP_TYPES = {
@@ -1457,6 +1457,9 @@ const OceanTycoon = () => {
                           {gs.ships.map(s => <button key={s.id} onClick={() => assign(c.id, s.id)} className="text-green-400 text-xs border border-green-800 rounded px-1">{SHIP_TYPES[s.type].icon}탑승</button>)}
                           <button onClick={() => dismiss(c.id)} className="text-red-400 text-xs border border-red-900 rounded px-1">해고</button>
                         </div>
+                        <div className="mt-2 rounded-lg border border-blue-700/60 bg-blue-950/40 px-3 py-2 text-xs text-blue-100">
+                          {actionHint}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1804,6 +1807,15 @@ const OceanTycoon = () => {
         const maxSellQty = detail?.owned || 0;
         const buyQty = clampTradeQuantity(tradeQty, maxBuyQty);
         const sellQty = clampTradeQuantity(tradeQty, maxSellQty);
+        const buyPreview = detail ? getTradePreview({ mode: 'buy', unitPrice: detail.buyP, quantity: buyQty, gold: gs.gold, cargo: cargoN(cur), capacity: st?.capacity || 0 }) : null;
+        const sellPreview = detail ? getTradePreview({ mode: 'sell', unitPrice: detail.sellP, quantity: sellQty, gold: gs.gold, cargo: cargoN(cur), capacity: st?.capacity || 0 }) : null;
+        const actionHint = detail?.owned > 0 && detail.delta >= 0
+          ? '보유 중이고 가격이 버티고 있어 판매 후보입니다.'
+          : detail?.delta < 0 && maxBuyQty > 0
+            ? '가격이 내려가 매입을 검토하기 좋은 구간입니다.'
+            : maxBuyQty > 0
+              ? '화물 여유가 있으면 소량 매입해 다음 항구를 노려볼 수 있습니다.'
+              : '화물칸이나 금화를 확보한 뒤 거래할 수 있습니다.';
         const bestSell = resources.filter(r => r.owned > 0).sort((a, b) => b.sellP - a.sellP)[0];
         const risers = resources.filter(r => r.delta > 0).length;
         const fallers = resources.filter(r => r.delta < 0).length;
@@ -1870,11 +1882,12 @@ const OceanTycoon = () => {
                       }
                       return (
                         <button key={item.res} onClick={() => setSelectedPortRes(item.res)}
-                          className={`w-full px-3 py-2.5 border-b border-white/5 text-left flex items-center gap-2 transition-colors ${isSel?'bg-gold text-ocean-dark':'hover:bg-ocean-blue/70 text-gray-200'}`}>
+                          className={`w-full px-3 py-2.5 border-b text-left flex items-center gap-2 transition-colors ${isSel?'bg-gold text-ocean-dark border-gold':item.owned>0?'bg-green-950/30 border-green-800/50 text-green-50 hover:bg-green-900/50':'border-white/5 hover:bg-ocean-blue/70 text-gray-200'}`}>
                           <span className="text-xl">{item.icon}</span>
                           <div className="flex-1 min-w-0">
                             <div className="text-xs font-bold truncate">{item.res}{item.res === nativeRes && <span className="ml-1 text-[10px] text-emerald-400">지역</span>}</div>
                             <div className={`text-[11px] ${isSel?'text-ocean-dark/70':'text-gray-500'}`}>보유 {item.owned} · 판매 {item.sellP.toLocaleString()}금</div>
+                            {item.owned > 0 && !isSel && <div className="mt-1 inline-flex rounded bg-green-800/70 px-1.5 py-0.5 text-[10px] font-bold text-green-100">판매 가능</div>}
                           </div>
                           <div className={`text-xs font-bold ${item.delta > 0 ? (isSel?'text-green-900':'text-green-400') : item.delta < 0 ? 'text-red-400' : (isSel?'text-ocean-dark/70':'text-gray-500')}`}>
                             {trend} {Math.abs(item.pct).toFixed(1)}%
@@ -1972,12 +1985,14 @@ const OceanTycoon = () => {
                           <div className="w-64 grid grid-rows-2 gap-3">
                             <button onClick={() => doBuy(detail.res, buyQty)} disabled={buyQty < 1}
                               className="rounded-lg border border-yellow-500 bg-yellow-600 text-ocean-dark hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              {buyPreview && <div className="mb-1 text-[11px] font-bold opacity-80">거래 후 {buyPreview.nextGold.toLocaleString()}금 · 화물 {buyPreview.nextCargo}/{st?.capacity}</div>}
                               <div className="text-xs font-bold opacity-80">매입 {buyQty}개</div>
                               <div className="text-lg font-black">{(detail.buyP * buyQty).toLocaleString()}금</div>
                               <div className="text-[11px] opacity-80">단가 {detail.buyP.toLocaleString()}금</div>
                             </button>
                             <button onClick={() => doSell(detail.res, sellQty)} disabled={sellQty < 1}
                               className="rounded-lg border border-green-500 bg-green-700 text-white hover:bg-green-500 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              {sellPreview && <div className="mb-1 text-[11px] font-bold opacity-80">거래 후 {sellPreview.nextGold.toLocaleString()}금 · 화물 {sellPreview.nextCargo}/{st?.capacity}</div>}
                               <div className="text-xs font-bold opacity-80">판매 {sellQty}개</div>
                               <div className="text-lg font-black">{(detail.sellP * sellQty).toLocaleString()}금</div>
                               <div className="text-[11px] opacity-80">단가 {detail.sellP.toLocaleString()}금</div>
