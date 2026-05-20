@@ -658,23 +658,41 @@ const OceanTycoon = () => {
         const curGs = gsRef.current;
         const portEntry = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - mx, p.y - my) < 5);
 
-        // 배 클릭 감지 (반경 2.5 월드유닛)
-        const dockedHits  = curGs.ships.filter(s => !s.isMoving && Math.hypot(s.x - mx, s.y - my) < 2.5);
+        // 배 클릭 감지: 정박 배는 화면에 그려진 오프셋 위치 기준으로 판정
+        const dockGroups = {};
+        curGs.ships.forEach(s => {
+          if (s.isMoving) return;
+          const pk = portOf(s);
+          if (!pk) return;
+          if (!dockGroups[pk]) dockGroups[pk] = [];
+          dockGroups[pk].push(s.id);
+        });
+        const dockOffsetWorld = (shipId) => {
+          for (const ids of Object.values(dockGroups)) {
+            const idx = ids.indexOf(shipId);
+            if (idx === -1) continue;
+            const n = ids.length;
+            const col = Math.floor(idx / 3);
+            const row = idx % 3;
+            const ox = 54 + col * 30;
+            const oy = Math.round((row - (Math.min(n, 3) - 1) / 2) * 26);
+            return {
+              x: ox / (rect.width * zoom) * 100,
+              y: oy / (rect.height * zoom) * 100,
+            };
+          }
+          return { x: 0, y: 0 };
+        };
+        const dockedHits  = curGs.ships.filter(s => {
+          if (s.isMoving) return false;
+          const o = dockOffsetWorld(s.id);
+          return Math.hypot((s.x + o.x) - mx, (s.y + o.y) - my) < 2.5;
+        });
         const movingHits  = curGs.ships.filter(s =>  s.isMoving && Math.hypot(s.x - mx, s.y - my) < 2.5 && !portEntry);
         const hits = [...dockedHits, ...movingHits];
 
-        // 1순위: 정박 배 (항구보다 우선)
-        if (!routeModeRef.current && dockedHits.length > 0) {
-          const curIdx = dockedHits.findIndex(s => s.id === selShipRef.current);
-          const hit = dockedHits.length === 1 ? dockedHits[0] : dockedHits[(curIdx + 1) % dockedHits.length];
-          if (hit.id === selShipRef.current && routeModeRef.current) { setRouteMode(false); return; }
-          setSelShip(hit.id); setRouteMode(true);
-          if (tutorialPhase === 'select') setTutorialPhase('depart');
-          return;
-        }
-
-        // 2순위: 항구 시세 (항로 모드 아닐 때, 정박 배 없을 때)
-        if (!routeModeRef.current && portEntry) {
+        // 1순위: 항구 정보 (항로 모드 아닐 때, 배 아이콘 직접 클릭이 아닐 때)
+        if (!routeModeRef.current && portEntry && dockedHits.length === 0) {
           const [pk, pData] = portEntry;
           if (!(curGs.visitedPorts || getInitialVisitedPorts()).includes(pk)) {
             const access = getPortAccessState(pk, curGs.totalEarned);
@@ -682,6 +700,16 @@ const OceanTycoon = () => {
             return;
           }
           setShowPortPrice(pk);
+          return;
+        }
+
+        // 2순위: 정박 배 아이콘 직접 클릭
+        if (!routeModeRef.current && dockedHits.length > 0) {
+          const curIdx = dockedHits.findIndex(s => s.id === selShipRef.current);
+          const hit = dockedHits.length === 1 ? dockedHits[0] : dockedHits[(curIdx + 1) % dockedHits.length];
+          if (hit.id === selShipRef.current && routeModeRef.current) { setRouteMode(false); return; }
+          setSelShip(hit.id); setRouteMode(true);
+          if (tutorialPhase === 'select') setTutorialPhase('depart');
           return;
         }
 
@@ -1082,6 +1110,7 @@ const OceanTycoon = () => {
   const atPort  = !!portKey;
   const st      = cur ? calcStats(cur, gs.crew) : null;
   const nextTaxAmount = calcTax(gs.ships.length, gs.taxLevel);
+  const cargoN  = (s) => Object.values(s?.cargo || {}).reduce((a, v) => a + v, 0);
   const journeyProgress = (s) => {
     if (!s?.isMoving || s.startX == null) return 0;
     const total = Math.hypot(s.targetX - s.startX, s.targetY - s.startY);
@@ -1144,7 +1173,6 @@ const OceanTycoon = () => {
   // ── 거래 ──
   const getBuy  = (res) => calcBuyPrice(prices[portKey]?.[res] || 0, st?.tradePct || 0);
   const getSell = (res) => calcSellPrice(prices[portKey]?.[res] || 0, st?.tradePct || 0);
-  const cargoN  = (s) => Object.values(s.cargo).reduce((a, v) => a + v, 0);
   const cargoSellTotal = (ship, pk) => {
     if (!pk || !prices[pk]) return 0;
     const tp = calcStats(ship, gs.crew).tradePct;
