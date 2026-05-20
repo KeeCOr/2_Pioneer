@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createDepartureState, findPortForShip } from './navigation.js';
-import { clampTradeQuantity, getTradePreview } from './trade.js';
+import { clampMapView, zoomMapViewAt } from './mapView.js';
+import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
 
 // ==================== 모듈 레벨 상수 ====================
 const SHIP_TYPES = {
@@ -66,9 +67,11 @@ const getPortUnlockReq = (portKey) => {
 const getPortAccessState = (portKey, totalEarned = 0) => {
   const required = getPortUnlockReq(portKey);
   const unlocked = required <= (totalEarned || 0);
+  const shortReq = required >= 1000 ? `${Math.round(required / 1000)}k금 필요` : `${required}금 필요`;
   return {
     unlocked,
     required,
+    shortLabel: unlocked ? '항해 가능' : shortReq,
     label: unlocked ? '항해 가능' : `누적 판매 ${required.toLocaleString()}금`,
   };
 };
@@ -158,7 +161,7 @@ const RESOURCE_REGIONS = {
   '쌀':        { cheap: ['east_asia', 'south_asia'],   expensive: ['europe', 'arabian', 'americas']  },
 };
 
-const TRADE_FEE_PCT = 10; // 고정 거래 수수료 10%
+const TRADE_FEE_PCT = 10; // 판매 수수료 10% (구매 수수료 없음)
 const calcPrice     = (base) => Math.max(1, base); // 매입=판매=기준가
 const calcBuyPrice  = (base, tradePct) => calcPrice(base);
 const calcSellPrice = (base, tradePct) => calcPrice(base);
@@ -524,26 +527,30 @@ const OceanTycoon = () => {
 
   const clampXY = useCallback((x, y, zoom) => {
     const el = mapRef.current; if (!el) return { x, y };
-    const W = el.clientWidth, H = el.clientHeight;
-    const pad = Math.min(W, H) * 0.25; // 25% 여유
-    const minX = W * (1 - zoom) - pad, minY = H * (1 - zoom) - pad;
-    return {
-      x: zoom <= 1 ? minX / 2 : Math.min(pad, Math.max(minX, x)),
-      y: zoom <= 1 ? minY / 2 : Math.min(pad, Math.max(minY, y)),
-    };
+    return clampMapView({ x, y, zoom, width: el.clientWidth, height: el.clientHeight });
   }, []);
+
+  const zoomAt = useCallback((factor, centerX = null, centerY = null) => {
+    const el = mapRef.current; if (!el) return;
+    const cx = centerX ?? el.clientWidth / 2;
+    const cy = centerY ?? el.clientHeight / 2;
+    setMapView(prev => zoomMapViewAt({
+      view: prev,
+      factor,
+      centerX: cx,
+      centerY: cy,
+      width: el.clientWidth,
+      height: el.clientHeight,
+    }));
+  }, [setMapView]);
 
   const handleWheel = useCallback((e) => {
     e.preventDefault();
     const rect = mapRef.current.getBoundingClientRect();
     const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
     const factor = e.deltaY > 0 ? 0.88 : 1.14;
-    setMapView(prev => {
-      const nz = Math.max(0.5, Math.min(24, prev.zoom * factor)); // 최대 24배
-      const { x, y } = clampXY(cx - (cx - prev.x) * nz / prev.zoom, cy - (cy - prev.y) * nz / prev.zoom, nz);
-      return { zoom: nz, x, y };
-    });
-  }, [clampXY, setMapView]);
+    zoomAt(factor, cx, cy);
+  }, [zoomAt]);
 
   useEffect(() => {
     const el = mapRef.current; if (!el) return;
@@ -614,11 +621,19 @@ const OceanTycoon = () => {
     if (n === 1 && zoomDragRef.current.active) {
       // 더블탭 드래그 줌: 위=줌인, 아래=줌아웃
       const dy = zoomDragRef.current.startY - e.clientY;
-      const nz = Math.max(0.5, Math.min(24, zoomDragRef.current.startZoom * Math.pow(1.012, dy)));
+      const factor = Math.pow(1.012, dy);
       const { cx, cy } = zoomDragRef.current;
       setMapView(prev => {
-        const { x, y } = clampXY(cx - (cx - prev.x) * nz / prev.zoom, cy - (cy - prev.y) * nz / prev.zoom, nz);
-        return { zoom: nz, x, y };
+        const el = mapRef.current;
+        if (!el) return prev;
+        return zoomMapViewAt({
+          view: { ...prev, zoom: zoomDragRef.current.startZoom },
+          factor,
+          centerX: cx,
+          centerY: cy,
+          width: el.clientWidth,
+          height: el.clientHeight,
+        });
       });
       dragRef.current.moved = true;
     } else if (n === 1 && dragRef.current.active) {
@@ -633,15 +648,39 @@ const OceanTycoon = () => {
       const rect = mapRef.current.getBoundingClientRect();
       const cx = (ptrsRef.current[ids[0]].x + ptrsRef.current[ids[1]].x) / 2 - rect.left;
       const cy = (ptrsRef.current[ids[0]].y + ptrsRef.current[ids[1]].y) / 2 - rect.top;
-      setMapView(prev => {
-        const nz = Math.max(0.5, Math.min(24, prev.zoom * ratio));
-        const { x, y } = clampXY(cx - (cx - prev.x) * nz / prev.zoom, cy - (cy - prev.y) * nz / prev.zoom, nz);
-        return { zoom: nz, x, y };
-      });
+      setMapView(prev => zoomMapViewAt({
+        view: prev,
+        factor: ratio,
+        centerX: cx,
+        centerY: cy,
+        width: rect.width,
+        height: rect.height,
+      }));
     }
   }, [clampXY, setMapView]);
 
   const addLog = useCallback((m) => setLog(p => [m, ...p.slice(0, 29)]), []);
+
+  const chooseDestinationPort = useCallback((pk) => {
+    const sid = selShipRef.current;
+    const p = PORTS[pk];
+    if (!p) return;
+    setShowPortPrice(null);
+    setSelectedPortRes(null);
+    setGs(prev => {
+      const s = prev.ships.find(x => x.id === sid); if (!s) return prev;
+      if (prev.crew.filter(c => c.shipId === sid).length < 1) { addLog('🚫 출항하려면 승무원이 최소 1명 필요!'); return prev; }
+      const access = getPortAccessState(pk, prev.totalEarned);
+      if (!access.unlocked) { addLog(`🔒 ${p.name} 항로는 잠겨 있습니다. 해금 조건: ${access.label}`); return prev; }
+      if (Math.hypot(s.x - p.x, s.y - p.y) < 1) return prev;
+      addLog(`${s.name}이(가) ${p.name}으로 ${s.isMoving ? '항로 변경' : '항해 중'}...`);
+      const sourcePort = findPortForShip(s, PORTS);
+      return { ...prev, ships: prev.ships.map(s2 => s2.id === sid
+        ? createDepartureState(s2, p, sourcePort) : s2) };
+    });
+    setRouteMode(false);
+    if (tutorialPhase === 'depart') setTutorialPhase('sailing');
+  }, [addLog, setGs, setRouteMode, tutorialPhase, setTutorialPhase]);
 
   const onPtrUp = useCallback((e) => {
     const wasMoved = dragRef.current.moved || zoomDragRef.current.active;
@@ -726,6 +765,8 @@ const OceanTycoon = () => {
         if (routeModeRef.current) {
           if (portEntry) {
             const [pk] = portEntry;
+            chooseDestinationPort(pk);
+            return;
             const sid = selShipRef.current;
             setGs(prev => {
               const s = prev.ships.find(x => x.id === sid); if (!s) return prev;
@@ -754,7 +795,7 @@ const OceanTycoon = () => {
         }
       }
     }
-  }, [setGs, setSelShip, setRouteMode, tutorialPhase, setTutorialPhase, addLog, setShowPortPrice]);
+  }, [setGs, setSelShip, setRouteMode, tutorialPhase, setTutorialPhase, addLog, setShowPortPrice, chooseDestinationPort]);
 
   // ── 저장/불러오기 ──
   const saveGame = useCallback(() => {
@@ -1193,7 +1234,7 @@ const OceanTycoon = () => {
           if (cell.type === 'empty') {
             return <div key={`empty-${idx}`} className={`${compact ? 'h-12' : 'h-14'} rounded-lg border border-dashed border-slate-700 bg-slate-950/45`} />;
           }
-          const sellP = atPort ? getSell(cell.res) : null;
+          const sellP = atPort ? getSellTotal(getSell(cell.res), 1, getFeeRate(st?.tradePct)) : null;
           return (
             <div key={cell.res} title={`${cell.res} ×${cell.qty}${sellP ? ` - ${(sellP * cell.qty).toLocaleString()}금` : ''}`}
               className={`${compact ? 'h-12' : 'h-14'} relative rounded-lg border border-gold/35 bg-gradient-to-b from-slate-800 to-slate-950 p-1.5 flex flex-col items-center justify-center shadow-inner group`}>
@@ -1214,14 +1255,13 @@ const OceanTycoon = () => {
     if (!cur || !portKey || n < 1 || cur.isMoving) return;
     const tradePct = calcStats(cur, gs.crew).tradePct;
     const price = calcBuyPrice(prices[portKey]?.[res] || 0, tradePct);
-    const feeRate = getFeeRate(tradePct);
-    const total = Math.ceil(price * n * (1 + feeRate / 100));
+    const total = getBuyTotal(price, n);
     if (gsRef.current.gold < total) { addLog(`❌ 금 부족! 필요: ${total.toLocaleString()}금`); return; }
     const cap = calcStats(cur, gs.crew).capacity;
     if (cargoN(cur) + n > cap) { addLog(`❌ 화물 공간 부족! 여유: ${cap - cargoN(cur)}개`); return; }
     setGs(prev => ({ ...prev, gold: prev.gold - total,
       ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo: { ...s.cargo, [res]: (s.cargo[res] || 0) + n } } : s) }));
-    addLog(`✅ ${RESOURCES[res].icon} ${res} ×${n} 구매 -${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
+    addLog(`✅ ${RESOURCES[res].icon} ${res} ×${n} 구매 -${total.toLocaleString()}금 (구매 수수료 없음)`);
   }, [cur, portKey, prices, setGs, gs.crew, addLog]);
 
   const doSell = useCallback((res, n) => {
@@ -1232,7 +1272,7 @@ const OceanTycoon = () => {
     const tradePct = calcStats(cur, gs.crew).tradePct;
     const price = calcSellPrice(prices[portKey]?.[res] || 0, tradePct);
     const feeRate = getFeeRate(tradePct);
-    const total = Math.floor(price * qty * (1 - feeRate / 100));
+    const total = getSellTotal(price, qty, feeRate);
     const prevEarned = gsRef.current?.totalEarned || 0;
     const newEarned = prevEarned + total;
     const milestoneCrossed = EARN_MILESTONES.filter(m => m > prevEarned && m <= newEarned).length;
@@ -1878,10 +1918,10 @@ const OceanTycoon = () => {
 
                         {/* 거래 안내 */}
                         <div className="rounded-lg px-4 py-3 flex items-center justify-between" style={{background:'#0f1e30', border:'1px solid #1e3a5f'}}>
-                          <span className="text-xs text-slate-400">거래 수수료 {TRADE_FEE_PCT}%</span>
+                          <span className="text-xs text-slate-400">판매 수수료 {TRADE_FEE_PCT}% · 구매 수수료 없음</span>
                           <div className="flex gap-4 text-sm font-bold">
-                            <span className="text-yellow-400">매입 {Math.ceil(cur2*(1+TRADE_FEE_PCT/100)).toLocaleString()}</span>
-                            <span className="text-emerald-400">판매 {Math.floor(cur2*(1-TRADE_FEE_PCT/100)).toLocaleString()}</span>
+                            <span className="text-yellow-400">매입 {getBuyTotal(cur2, 1).toLocaleString()}</span>
+                            <span className="text-emerald-400">판매 {getSellTotal(cur2, 1, TRADE_FEE_PCT).toLocaleString()}</span>
                           </div>
                         </div>
                       </>
@@ -1911,8 +1951,8 @@ const OceanTycoon = () => {
           const prevPrice = hist[hist.length - 2] ?? curPrice;
           const delta = curPrice - prevPrice;
           const pct = prevPrice > 0 ? (delta / prevPrice) * 100 : 0;
-          const buyP = Math.ceil(getBuy(res) * (1 + feeR / 100));
-          const sellP = Math.floor(getSell(res) * (1 - feeR / 100));
+          const buyP = getBuyTotal(getBuy(res), 1);
+          const sellP = getSellTotal(getSell(res), 1, feeR);
           const owned = cur.cargo[res] || 0;
           const canBuy = unlocked && spaceLeft > 0 && gs.gold >= buyP;
           const canSell = owned > 0;
@@ -1960,10 +2000,10 @@ const OceanTycoon = () => {
         return (
           <div key="market-modal" className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 backdrop-blur-[1px] p-4" onClick={() => setShowMarket(false)}>
             <div className="w-[860px] max-w-[96vw] max-h-[92vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between px-4 py-3 border-b border-gold/50 flex-shrink-0">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-gold">🏪 {port.country} {port.name} 거래소</span>
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gold/50 flex-shrink-0">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg font-bold text-gold truncate">🏪 {port.country} {port.name} 거래소</span>
                     <span className="text-xs px-2 py-1 rounded-full font-bold" style={{background:rs.color+'22', color:rs.color, border:`1px solid ${rs.color}55`}}>{rs.icon} {rs.label}</span>
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
@@ -1983,8 +2023,8 @@ const OceanTycoon = () => {
                 </button>
               )}
 
-              <div className="flex flex-row-reverse flex-1 min-h-0 p-4 gap-4">
-                <div className="w-72 flex-shrink-0 rounded-lg overflow-hidden border border-gold/40 bg-slate-950/70 shadow-inner">
+              <div className="flex flex-row-reverse flex-1 min-h-0 p-4 gap-4 overflow-hidden">
+                <div className="w-72 max-w-[34vw] min-w-[240px] flex-shrink-0 rounded-lg overflow-hidden border border-gold/40 bg-slate-950/70 shadow-inner">
                   <div className="px-3 py-2 text-xs font-bold text-gold border-b border-gold/30 bg-ocean-blue/60 flex items-center justify-between">
                     <span>물품 목록</span>
                     <span className="text-[10px] text-emerald-200">거래 가능 우선</span>
@@ -2051,7 +2091,7 @@ const OceanTycoon = () => {
                         <div className="grid grid-cols-3 gap-2 mt-2 text-center">
                           <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">최고가</div><div className="text-sm font-bold text-green-300">{detail.maxH.toLocaleString()}</div></div>
                           <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">최저가</div><div className="text-sm font-bold text-red-300">{detail.minH.toLocaleString()}</div></div>
-                          <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">수수료</div><div className="text-sm font-bold text-gold">{feeR}%</div></div>
+                          <div className="rounded bg-ocean-blue/50 px-3 py-2"><div className="text-[11px] text-gray-400">판매 수수료</div><div className="text-sm font-bold text-gold">{feeR}%</div></div>
                         </div>
                       </div>
 
@@ -2086,7 +2126,7 @@ const OceanTycoon = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-[1fr_auto] gap-3 items-stretch">
+                        <div className="grid grid-cols-[minmax(0,1fr)_minmax(208px,240px)] gap-3 items-stretch">
                           <div className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-bold text-white">거래 수량</span>
@@ -2110,7 +2150,7 @@ const OceanTycoon = () => {
                                 className="h-9 rounded border border-gold/60 text-gold bg-yellow-950/50 hover:bg-yellow-900">최대</button>
                             </div>
                           </div>
-                          <div className="w-64 grid grid-rows-2 gap-3">
+                          <div className="min-w-0 grid grid-rows-2 gap-3">
                             <button onClick={() => doBuy(detail.res, buyQty)} disabled={buyQty < 1}
                               className="rounded-lg border border-yellow-500 bg-yellow-600 text-ocean-dark hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
                               {buyPreview && <div className="mb-1 text-[11px] font-bold opacity-80">거래 후 {buyPreview.nextGold.toLocaleString()}금 · 화물 {buyPreview.nextCargo}/{st?.capacity}</div>}
@@ -2133,7 +2173,7 @@ const OceanTycoon = () => {
                 </div>
               </div>
 
-              <div className="px-4 py-3 border-t border-gold/30 flex-shrink-0 flex gap-2 bg-black/20">
+              <div className="px-4 py-3 border-t border-gold/30 flex-shrink-0 flex flex-wrap gap-2 bg-black/20">
                 {cargoN(cur) > 0 && (
                   <button onClick={() => Object.entries(cur.cargo).forEach(([r,n]) => doSell(r,n))}
                     className="h-10 px-4 rounded font-bold bg-green-800 hover:bg-green-600 text-green-100 border border-green-600">
@@ -2198,8 +2238,8 @@ const OceanTycoon = () => {
               const isNative = r === nativeRes;
               const unlocked = isNative || tier === 1 || (gs.totalEarned || 0) >= (TIER_GOLD_REQ[tier] || 0);
               const baseP = getBuy(r);
-              const buyP = Math.ceil(baseP * (1 + feeR / 100));
-              const sellP = Math.floor(baseP * (1 - feeR / 100));
+              const buyP = getBuyTotal(baseP, 1);
+              const sellP = getSellTotal(baseP, 1, feeR);
               const owned = cur.cargo[r] || 0;
               const canAfford = gs.gold >= buyP;
               if (!unlocked) {
@@ -2337,12 +2377,12 @@ const OceanTycoon = () => {
       {/* 판매 모달 — 시장으로 통합됨 */}
 
       {/* 헤더 */}
-      <div className="flex justify-between items-center px-4 py-2 border-b border-gold border-opacity-30">
-        <div>
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-gold border-opacity-30 flex-shrink-0">
+        <div className="flex-shrink-0">
           <h1 className="text-3xl font-bold text-gold">⛵ Pioneer</h1>
           <p className="text-xs text-ocean-light">항해와 정보의 시대</p>
         </div>
-        <div className="bg-ocean-dark rounded p-2 border border-gold flex gap-3 items-center">
+        <div className="ml-auto bg-ocean-dark rounded p-2 border border-gold flex flex-wrap justify-end gap-2 items-center min-w-0 max-w-[calc(100vw-230px)]">
           <div className="text-right">
             <CurrencyPill type="gold" value={gs.gold} label="금" />
             <div className="text-xs text-gray-400 mt-1">시세: <span className="text-yellow-300">{fmt(nextUpd)}</span></div>
@@ -2359,29 +2399,29 @@ const OceanTycoon = () => {
           <div className="border-l border-gold pl-3 text-center">
             <CurrencyPill type="gem" value={gs.gems} label="보석" />
           </div>
-          <button onClick={() => setShowAllCrew(true)} className="border-l border-gold pl-3 text-xs text-gray-300 hover:text-gold whitespace-nowrap">
+          <button onClick={() => setShowAllCrew(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap">
             👥 승무원<br/><span className="text-gray-500">{gs.crew.length}명</span>
           </button>
-          <button onClick={() => setShowDailyGoals(true)} className="border-l border-gold pl-3 text-xs text-gray-300 hover:text-yellow-400 whitespace-nowrap relative">
+          <button onClick={() => setShowDailyGoals(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-yellow-400 whitespace-nowrap relative">
             🌅 일일목표<br/>
             <span className="text-gray-500">{dailyGoals.filter(g=>g.completed).length}/{dailyGoals.length}완료</span>
             {dailyGoals.some(g=>g.completed) && <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"/>}
           </button>
-          <button onClick={() => setShowQuests(true)} className="border-l border-gold pl-3 text-xs text-gray-300 hover:text-gold whitespace-nowrap relative">
+          <button onClick={() => setShowQuests(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap relative">
             📋 퀘스트<br/><span className="text-gray-500">{gs.activeQuests.length}/3</span>
             {completedQuests > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"/>}
           </button>
-          <button onClick={saveGame} className="border-l border-gold pl-3 text-xs text-gray-300 hover:text-gold whitespace-nowrap">
+          <button onClick={saveGame} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap">
             💾 저장<br/><span className="text-gray-600">{lastSaved || '—'}</span>
           </button>
-          <button onClick={() => setIntroSlide(0)} className="border-l border-gold pl-3 text-xs text-gray-400 hover:text-gold">❓</button>
+          <button onClick={() => setIntroSlide(0)} className="border-l border-gold pl-2 text-xs text-gray-400 hover:text-gold">❓</button>
         </div>
       </div>
 
       {/* 본문 */}
-      <div className="flex flex-1 min-h-0 gap-2 p-2">
+      <div className="flex flex-1 min-h-0 gap-2 p-2 overflow-hidden">
         {/* 지도 */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           {(() => {
             const colorMap = {
               select:  'border-blue-400 bg-blue-950',
@@ -2394,13 +2434,13 @@ const OceanTycoon = () => {
               blue:    'border-blue-400 bg-blue-950',
             };
             return (
-              <div className={`mb-1 rounded-lg border px-3 py-2 flex items-start gap-2 ${colorMap[advisor.tone] || colorMap.done}`}>
+              <div className={`mb-1 rounded-lg border px-3 py-2 flex items-start gap-2 min-h-[58px] max-h-20 overflow-y-auto ${colorMap[advisor.tone] || colorMap.done}`}>
                 <span className="text-xl flex-shrink-0 mt-0.5">{advisor.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-bold text-white mb-0.5">
                     {advisor.title}
                   </div>
-                  <div className="text-xs text-gray-200 whitespace-pre-line leading-relaxed">{advisor.text}</div>
+                   <div className="text-xs text-gray-200 whitespace-pre-line leading-snug pr-1">{advisor.text}</div>
                   {cur?.isMoving && (
                     <button
                       onClick={() => {
@@ -2423,16 +2463,16 @@ const OceanTycoon = () => {
                   )}
                 </div>
                 {tutorialPhase !== 'done' && (
-                  <button onClick={() => setTutorialPhase('done')} className="text-gray-400 hover:text-white flex-shrink-0 text-xs leading-none mt-1">튜토리얼 숨김</button>
+                   <button onClick={() => setTutorialPhase('done')} className="text-gray-400 hover:text-white flex-shrink-0 text-xs leading-none mt-1 whitespace-nowrap">튜토리얼 숨김</button>
                 )}
               </div>
             );
           })()}
-          <div className="flex justify-between items-center mb-1">
+          <div className="flex justify-between items-center gap-2 mb-1 min-w-0">
             <span className="text-sm font-bold text-gold">🗺️ 세계 항해도 <span className="text-xs text-gray-500 font-normal">({Object.keys(PORTS).length}개 항구 | {mapView.zoom.toFixed(1)}x)</span></span>
-            <div className="flex gap-1 items-center">
-              <button onClick={() => setMapView(p => { const nz=Math.min(24,p.zoom*1.5); const {x,y}=clampXY(p.x,p.y,nz); return {zoom:nz,x,y}; })} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">＋</button>
-              <button onClick={() => setMapView(p => { const nz=Math.max(0.5,p.zoom/1.5); const {x,y}=clampXY(p.x,p.y,nz); return {zoom:nz,x,y}; })} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">－</button>
+            <div className="flex gap-1 items-center flex-shrink-0">
+              <button onClick={() => zoomAt(1.5)} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">＋</button>
+              <button onClick={() => zoomAt(1 / 1.5)} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">－</button>
               <button onClick={() => setMapView({x:0,y:0,zoom:1})} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">⊡</button>
               <button
                 onClick={() => {
@@ -2462,7 +2502,7 @@ const OceanTycoon = () => {
 
           <div className="flex-1 relative min-h-0">
             {/* 지도 버튼 — overflow-hidden 바깥에 배치해 모달 위에 표시 */}
-            <div className="absolute top-2 right-2 z-[60] flex flex-col gap-1 pointer-events-auto">
+            <div className="absolute top-2 right-2 z-[60] flex flex-col gap-1 pointer-events-auto max-w-[112px]">
               {atPort && !cur?.isMoving && <button onClick={() => setShowMarket(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
               <button onClick={() => setShowInfo(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showInfo?'bg-ocean-dark text-blue-300 border border-blue-500':'bg-blue-800 text-blue-200 hover:bg-blue-700 border border-blue-600'}`}>{showInfo?'✕ 정보':'📰 정보'}</button>
             </div>
@@ -2470,11 +2510,11 @@ const OceanTycoon = () => {
               style={{ cursor: grabbing?'grabbing':routeMode?'crosshair':'grab', touchAction:'none' }}
               onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp}
               onPointerLeave={(e) => { if (e.buttons === 0 && e.pointerType === 'mouse') onPtrUp(e); }}>
-              {routeMode && <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 bg-gold text-ocean-dark px-4 py-1 rounded-full text-xs font-bold animate-pulse pointer-events-none">🎯 목적지 항구를 클릭하세요</div>}
+              {routeMode && <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 bg-gold text-ocean-dark px-4 py-1 rounded-full text-xs font-bold animate-pulse pointer-events-none whitespace-nowrap shadow-lg">🎯 목적지 항구를 클릭하세요</div>}
 
               {/* 화물 인벤토리 — 지도 우측 하단 */}
               {cur && (
-                <div className="absolute bottom-3 right-3 z-20 w-72 bg-slate-950/88 border border-gold/55 rounded-xl shadow-2xl backdrop-blur-sm" onPointerDown={e => e.stopPropagation()}>
+                <div className="absolute bottom-3 left-3 z-20 w-64 max-w-[42vw] max-h-[36vh] overflow-hidden bg-slate-950/88 border border-gold/55 rounded-xl shadow-2xl backdrop-blur-sm pointer-events-auto" onPointerDown={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gold/30">
                     <span className="text-xs font-bold text-gold">{SHIP_TYPES[cur.type].icon} {cur.name}</span>
                     <div className="flex items-center gap-1.5">
@@ -2560,7 +2600,11 @@ const OceanTycoon = () => {
                         <div key={k} className="absolute" style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:10}}
                           onPointerDown={e => e.stopPropagation()}
                           onClick={e => {
-                            if (routeMode) return;
+                            if (routeMode) {
+                              e.stopPropagation();
+                              chooseDestinationPort(k);
+                              return;
+                            }
                             e.stopPropagation();
                             if (portKey === k) { setShowMarket(prev => !prev); return; }
                             if (visited) { setShowPortPrice(k); }
@@ -2576,9 +2620,9 @@ const OceanTycoon = () => {
                             }}>
                             {visited || access.unlocked ? rs.icon : '🔒'}
                           </div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 pointer-events-none whitespace-nowrap font-bold"
-                            style={{color: visited || access.unlocked ? rs.color : '#9ca3af', textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.65rem'}}>
-                            {visited || access.unlocked ? `${p.country} ${p.name}` : access.label}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 pointer-events-none whitespace-nowrap font-bold rounded bg-black/65 px-1.5 py-0.5 border border-black/40"
+                            style={{color: visited || access.unlocked ? rs.color : '#9ca3af', textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.62rem'}}>
+                            {visited || access.unlocked ? `${p.country} ${p.name}` : access.shortLabel}
                           </div>
                         </div>
                       );
@@ -2635,8 +2679,16 @@ const OceanTycoon = () => {
                         const isStormed = s.stormUntil && Date.now() < s.stormUntil;
                         const crewCnt   = gs.crew.filter(c => c.shipId === s.id).length;
                         return (
-                          <div key={s.id} className="absolute select-none"
-                            style={{left: sx + ox, top: sy + oy, transform:'translate(-50%,-50%)', zIndex:20}}>
+                          <button key={s.id} type="button" className="absolute select-none pointer-events-auto cursor-pointer"
+                            style={{left: sx + ox, top: sy + oy, transform:'translate(-50%,-50%)', zIndex:20}}
+                            title={`${s.name} 목적지 선택`}
+                            onPointerDown={e => e.stopPropagation()}
+                            onClick={e => {
+                              e.stopPropagation();
+                              setSelShip(s.id);
+                              setRouteMode(true);
+                              if (tutorialPhase === 'select') setTutorialPhase('depart');
+                            }}>
                             {isSel && <div className="absolute rounded-full border-4 border-gold animate-ping opacity-50 pointer-events-none" style={{width:44,height:44,top:-6,left:-6}}/>}
                             {isSel && <div className="absolute rounded-full border-2 border-yellow-300 pointer-events-none" style={{width:38,height:38,top:-3,left:-3,boxShadow:'0 0 12px #facc15'}}/>}
                             {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
@@ -2645,7 +2697,7 @@ const OceanTycoon = () => {
                             <div className={`text-2xl ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
                               {SHIP_TYPES[s.type].icon}
                             </div>
-                          </div>
+                          </button>
                         );
                       });
                     })()}
@@ -2702,7 +2754,7 @@ const OceanTycoon = () => {
         </div>
 
         {/* 우측 패널 */}
-        <div className="w-72 flex flex-col gap-2 overflow-y-auto flex-shrink-0">
+        <div className="w-72 max-w-[31vw] min-w-[272px] flex flex-col gap-2 overflow-y-auto flex-shrink-0">
           {/* 함대 */}
           <div className="card">
             <div className="flex justify-between items-center mb-1.5">
@@ -2761,7 +2813,7 @@ const OceanTycoon = () => {
             <div className="card flex-1 min-h-0 flex flex-col">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="text-sm font-bold text-gold">{SHIP_TYPES[cur.type].icon} {cur.name}</div>
-                <button onClick={() => setRouteMode(!routeMode)} className={`px-2 py-0.5 rounded text-xs font-bold ${routeMode?'bg-gold text-ocean-dark animate-pulse':'bg-ocean-blue text-gray-300 hover:text-gold'}`}>{routeMode?'🎯 항로중':'🗺️ 항로'}</button>
+                <button onClick={() => setRouteMode(!routeMode)} className={`px-2 py-0.5 rounded text-xs font-bold ${routeMode?'bg-gold text-ocean-dark animate-pulse':'bg-ocean-blue text-gray-300 hover:text-gold'}`}>{routeMode?'🎯 목적지 선택중':'🧭 목적지'}</button>
               </div>
               <div className="flex gap-0.5 mb-2">
                 {[['info','현황'],['crew','승무원'],['cargo','화물'],['upgrade','강화'],['mission','임무']].map(([k,l]) => (

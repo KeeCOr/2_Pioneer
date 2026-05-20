@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clampTradeQuantity, getTradePreview } from './trade.js';
+import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
 
 test('clamps trade quantity to the available limit', () => {
   assert.equal(clampTradeQuantity(8, 20), 8);
@@ -22,4 +22,9 @@ test('previews buy and sell results', () => {
     getTradePreview({ mode: 'sell', unitPrice: 40, quantity: 2, gold: 500, cargo: 10, capacity: 20 }),
     { total: 80, nextGold: 580, nextCargo: 8, remainingCargo: 12 },
   );
+});
+
+test('applies trade fee only when selling', () => {
+  assert.equal(getBuyTotal(50, 3), 150);
+  assert.equal(getSellTotal(50, 3, 10), 135);
 });

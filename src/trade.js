@@ -5,6 +5,19 @@ export const clampTradeQuantity = (requested, limit) => {
   return Math.min(max, Math.max(1, qty));
 };
 
+export const TRADE_FEE_PCT = 10;
+
+export const getBuyTotal = (unitPrice, quantity) => {
+  const qty = Math.max(0, Math.floor(Number(quantity) || 0));
+  return Math.max(0, Math.ceil((Number(unitPrice) || 0) * qty));
+};
+
+export const getSellTotal = (unitPrice, quantity, feePct = TRADE_FEE_PCT) => {
+  const qty = Math.max(0, Math.floor(Number(quantity) || 0));
+  const feeRate = Math.max(0, Number(feePct) || 0);
+  return Math.max(0, Math.floor((Number(unitPrice) || 0) * qty * (1 - feeRate / 100)));
+};
+
 export const getTradePreview = ({ mode, unitPrice, quantity, gold, cargo, capacity }) => {
   const qty = Math.max(0, Math.floor(Number(quantity) || 0));
   const total = Math.max(0, Math.floor((Number(unitPrice) || 0) * qty));
