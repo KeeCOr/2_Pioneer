@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Ocean Current - swirling wave pattern -->
+  <!-- Outer large spiral arm -->
+  <path d="M32 8 Q54 8 58 28 Q62 48 44 56 Q26 64 14 50 Q2 36 10 20 Q18 6 34 8"
+        fill="none" stroke="#0D9488" stroke-width="3.5" stroke-linecap="round"
+        stroke-dasharray="0"/>
+  <!-- Main central spiral -->
+  <path d="M32 12 Q50 12 54 28 Q58 44 42 52 Q26 60 16 46 Q6 32 14 20 Q22 8 36 12"
+        fill="none" stroke="#14b8a6" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+  <!-- Inner spiral -->
+  <path d="M32 18 Q46 18 48 30 Q50 42 38 48 Q26 54 18 44 Q10 34 18 24 Q26 16 36 18"
+        fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+  <!-- Tighter inner loop -->
+  <path d="M32 23 Q42 23 43 32 Q44 41 35 45 Q26 49 20 41 Q14 33 22 27 Q28 22 34 24"
+        fill="none" stroke="#14b8a6" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+  <!-- Innermost curl -->
+  <path d="M32 28 Q38 28 38 34 Q38 40 32 41 Q26 42 24 36 Q22 30 28 29"
+        fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+  <!-- Center vortex -->
+  <circle cx="32" cy="34" r="3.5" fill="#0D9488"/>
+  <circle cx="32" cy="34" r="2" fill="#5eead4"/>
+  <!-- Arrow heads on the main current to show direction -->
+  <!-- Arrow 1 - top right -->
+  <path d="M50 16 L54 20 L48 20" fill="none" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Arrow 2 - right -->
+  <path d="M58 36 L56 42 L52 38" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Arrow 3 - bottom left -->
+  <path d="M16 54 L10 50 L16 48" fill="none" stroke="#0D9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Arrow 4 - left -->
+  <path d="M8 28 L10 22 L14 26" fill="none" stroke="#14b8a6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Water foam/bubble particles along current -->
+  <circle cx="52" cy="12" r="2" fill="#5eead4" opacity="0.7"/>
+  <circle cx="58" cy="24" r="1.5" fill="#5eead4" opacity="0.6"/>
+  <circle cx="56" cy="46" r="2" fill="#5eead4" opacity="0.7"/>
+  <circle cx="40" cy="58" r="1.5" fill="#5eead4" opacity="0.6"/>
+  <circle cx="16" cy="58" r="2" fill="#5eead4" opacity="0.7"/>
+  <circle cx="6" cy="42" r="1.5" fill="#5eead4" opacity="0.6"/>
+  <circle cx="8" cy="18" r="2" fill="#5eead4" opacity="0.7"/>
+  <circle cx="22" cy="8" r="1.5" fill="#5eead4" opacity="0.6"/>
+  <!-- Speed lines emanating from center -->
+  <line x1="32" y1="34" x2="44" y2="26" stroke="#5eead4" stroke-width="0.8" stroke-linecap="round" opacity="0.4"/>
+  <line x1="32" y1="34" x2="46" y2="38" stroke="#5eead4" stroke-width="0.8" stroke-linecap="round" opacity="0.4"/>
+  <line x1="32" y1="34" x2="20" y2="44" stroke="#5eead4" stroke-width="0.8" stroke-linecap="round" opacity="0.4"/>
+  <line x1="32" y1="34" x2="18" y2="28" stroke="#5eead4" stroke-width="0.8" stroke-linecap="round" opacity="0.4"/>
+</svg>

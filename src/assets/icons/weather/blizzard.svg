@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Wind lines -->
+  <path d="M6 22 Q18 16 30 22 Q42 28 56 22" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M6 42 Q18 36 30 42 Q42 48 56 42" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- Snowflakes -->
+  <!-- Snowflake 1 (center-left) -->
+  <line x1="18" y1="28" x2="18" y2="38" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <line x1="13" y1="33" x2="23" y2="33" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <line x1="14.5" y1="29.5" x2="21.5" y2="36.5" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <line x1="21.5" y1="29.5" x2="14.5" y2="36.5" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <!-- Snowflake 2 (right) -->
+  <line x1="44" y1="26" x2="44" y2="34" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <line x1="40" y1="30" x2="48" y2="30" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <line x1="41.2" y1="27.2" x2="46.8" y2="32.8" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <line x1="46.8" y1="27.2" x2="41.2" y2="32.8" stroke="#E2E8F0" stroke-width="2" stroke-linecap="round"/>
+  <!-- Snowflake 3 (bottom center) -->
+  <line x1="31" y1="44" x2="31" y2="52" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+  <line x1="27" y1="48" x2="35" y2="48" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+  <line x1="28.3" y1="45.3" x2="33.7" y2="50.7" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+  <line x1="33.7" y1="45.3" x2="28.3" y2="50.7" stroke="#CBD5E1" stroke-width="2" stroke-linecap="round"/>
+  <!-- Small snow dots -->
+  <circle cx="10" cy="33" r="1.5" fill="#E2E8F0" opacity="0.8"/>
+  <circle cx="54" cy="44" r="1.5" fill="#E2E8F0" opacity="0.8"/>
+  <circle cx="32" cy="14" r="2" fill="#CBD5E1" opacity="0.6"/>
+</svg>

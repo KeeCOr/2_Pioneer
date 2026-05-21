@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Cotton fabric bundle / bale -->
+  <defs>
+    <linearGradient id="cottonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5ECD0;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#E8D8A8;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#C8B870;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="cottonSide" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#B8A860;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#D4C888;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="32" cy="56" rx="18" ry="4" fill="rgba(0,0,0,0.2)"/>
+  <!-- Bale main face -->
+  <rect x="12" y="18" width="38" height="34" rx="3" fill="url(#cottonGrad)"/>
+  <!-- Fabric fold lines (horizontal) -->
+  <path d="M12 24 L50 24" stroke="#C8B870" stroke-width="1" opacity="0.6"/>
+  <path d="M12 30 L50 30" stroke="#C8B870" stroke-width="1" opacity="0.6"/>
+  <path d="M12 36 L50 36" stroke="#C8B870" stroke-width="1" opacity="0.6"/>
+  <path d="M12 42 L50 42" stroke="#C8B870" stroke-width="1" opacity="0.6"/>
+  <path d="M12 48 L50 48" stroke="#C8B870" stroke-width="1" opacity="0.6"/>
+  <!-- Fabric weave texture (subtle vertical) -->
+  <path d="M20 18 L20 52" stroke="#D4C888" stroke-width="0.5" opacity="0.4"/>
+  <path d="M28 18 L28 52" stroke="#D4C888" stroke-width="0.5" opacity="0.4"/>
+  <path d="M36 18 L36 52" stroke="#D4C888" stroke-width="0.5" opacity="0.4"/>
+  <path d="M44 18 L44 52" stroke="#D4C888" stroke-width="0.5" opacity="0.4"/>
+  <!-- Binding rope/strap -->
+  <rect x="12" y="30" width="38" height="4" fill="#D4A547" opacity="0.85" rx="1"/>
+  <!-- Rope texture on strap -->
+  <path d="M14 31 L48 31" stroke="#8B6914" stroke-width="0.7" opacity="0.4"/>
+  <path d="M14 33 L48 33" stroke="#8B6914" stroke-width="0.7" opacity="0.4"/>
+  <!-- Vertical strap -->
+  <rect x="28" y="18" width="4" height="34" fill="#D4A547" opacity="0.75" rx="1"/>
+  <path d="M29 20 L29 50" stroke="#8B6914" stroke-width="0.7" opacity="0.4"/>
+  <path d="M31 20 L31 50" stroke="#8B6914" stroke-width="0.7" opacity="0.4"/>
+  <!-- Strap crossing knot -->
+  <rect x="26" y="28" width="8" height="8" rx="2" fill="#C8940A"/>
+  <circle cx="30" cy="32" r="2.5" fill="#D4A547"/>
+  <circle cx="30" cy="32" r="1.2" fill="#8B6914"/>
+  <!-- Corner reinforcement -->
+  <rect x="12" y="18" width="38" height="34" rx="3" fill="none" stroke="#D4A547" stroke-width="1.5"/>
+  <!-- Bale side (3D depth) -->
+  <path d="M50 18 L56 12 L56 46 L50 52" fill="url(#cottonSide)"/>
+  <path d="M50 18 L56 12 L56 46 L50 52" fill="none" stroke="#B8A860" stroke-width="1"/>
+  <!-- Bale top -->
+  <path d="M12 18 L18 12 L56 12 L50 18" fill="#EEE0B0"/>
+  <path d="M12 18 L18 12 L56 12 L50 18" fill="none" stroke="#C8B870" stroke-width="1"/>
+  <!-- Light sheen on top -->
+  <path d="M14 18 L20 12 L34 12 L28 18" fill="white" opacity="0.1"/>
+</svg>

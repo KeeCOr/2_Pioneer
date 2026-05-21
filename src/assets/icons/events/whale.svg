@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Whale - dramatic whale breach/tail -->
+  <!-- Ocean background water -->
+  <path d="M2 46 Q10 42 18 46 Q26 50 34 46 Q42 42 50 46 Q58 42 64 46 L64 64 L2 64 Z" fill="#1e3a8a" opacity="0.4"/>
+  <!-- Water surface -->
+  <path d="M2 46 Q10 42 18 46 Q26 50 34 46 Q42 42 50 46 Q58 42 64 46" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Whale body (breaching - large arc) -->
+  <path d="M8 52 Q10 30 20 16 Q28 6 36 10 Q44 14 46 26 Q48 38 44 52 Z" fill="#3B82F6"/>
+  <!-- Whale belly (lighter) -->
+  <path d="M16 50 Q18 34 26 22 Q32 14 38 18 Q42 26 42 42 Z" fill="#60a5fa" opacity="0.6"/>
+  <!-- Whale head details -->
+  <path d="M18 18 Q22 12 28 10 Q34 9 38 14" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Mouth line -->
+  <path d="M19 24 Q22 22 26 23" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Eye -->
+  <circle cx="22" cy="19" r="2.5" fill="#1e3a8a"/>
+  <circle cx="21.5" cy="18.5" r="1" fill="#93c5fd"/>
+  <!-- Barnacles / texture spots -->
+  <circle cx="30" cy="30" r="1.2" fill="#2563eb" opacity="0.5"/>
+  <circle cx="26" cy="38" r="1" fill="#2563eb" opacity="0.5"/>
+  <circle cx="34" cy="24" r="0.9" fill="#2563eb" opacity="0.5"/>
+  <!-- Pectoral fin -->
+  <path d="M36 40 Q50 36 54 44 Q46 46 36 44 Z" fill="#2563eb"/>
+  <!-- Flukes (tail) - dramatic and raised above water -->
+  <path d="M8 52 Q4 44 2 38 Q6 34 12 40 Q14 44 16 48 Z" fill="#3B82F6"/>
+  <path d="M8 52 Q6 46 4 40" fill="none" stroke="#2563eb" stroke-width="1" stroke-linecap="round"/>
+  <!-- Left fluke -->
+  <path d="M2 38 Q-2 28 4 24 Q10 26 12 34 Z" fill="#3B82F6"/>
+  <!-- Right small fluke hint -->
+  <path d="M12 40 Q14 32 18 30 Q22 32 18 40 Z" fill="#2563eb"/>
+  <!-- Blowhole spout -->
+  <path d="M30 10 Q28 4 26 2" fill="none" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <path d="M30 10 Q32 3 34 1" fill="none" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M30 10 Q29 5 28 4" fill="none" stroke="#bfdbfe" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Splash at water entry point -->
+  <path d="M40 50 Q44 46 50 48" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M42 52 Q46 50 52 52" fill="none" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- Water droplets from breach -->
+  <circle cx="48" cy="38" r="1.5" fill="#93c5fd" opacity="0.7"/>
+  <circle cx="52" cy="34" r="1" fill="#93c5fd" opacity="0.6"/>
+  <circle cx="54" cy="40" r="1.2" fill="#93c5fd" opacity="0.5"/>
+</svg>

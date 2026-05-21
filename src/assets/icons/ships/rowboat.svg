@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Waterline hint -->
+  <path d="M6 50 Q16 48 26 50 Q36 52 46 50 Q52 48 58 50" stroke="#1a3a5c" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+  <!-- Hull -->
+  <path d="M10 44 Q12 38 15 36 L49 36 Q52 38 54 44 Q32 48 10 44Z" fill="#8B6914"/>
+  <!-- Hull highlight -->
+  <path d="M14 39 L50 39 Q52 41 53 43 Q32 46 11 43 Q12 41 14 39Z" fill="#D4A547" opacity="0.4"/>
+  <!-- Gunwale rim -->
+  <rect x="10" y="35" width="44" height="3" rx="1.5" fill="#D4A547"/>
+  <!-- Rowing bench -->
+  <rect x="22" y="33" width="20" height="3" rx="1" fill="#5C4033"/>
+  <!-- Oar left -->
+  <line x1="18" y1="37" x2="6" y2="46" stroke="#5C4033" stroke-width="2" stroke-linecap="round"/>
+  <ellipse cx="5.5" cy="46.5" rx="3" ry="1.2" fill="#5C4033" transform="rotate(-30 5.5 46.5)"/>
+  <!-- Oar right -->
+  <line x1="46" y1="37" x2="58" y2="46" stroke="#5C4033" stroke-width="2" stroke-linecap="round"/>
+  <ellipse cx="58.5" cy="46.5" rx="3" ry="1.2" fill="#5C4033" transform="rotate(30 58.5 46.5)"/>
+  <!-- Bow pointed end -->
+  <path d="M49 36 L55 40 L54 44 Q52 42 49 39Z" fill="#8B6914"/>
+  <!-- Stern flat -->
+  <rect x="8" y="36" width="4" height="8" rx="1" fill="#5C4033"/>
+</svg>

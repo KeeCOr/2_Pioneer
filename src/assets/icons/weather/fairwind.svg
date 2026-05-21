@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Rainbow arc -->
+  <path d="M8 48 Q8 20 32 20 Q56 20 56 48" stroke="#EF4444" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M12 48 Q12 24 32 24 Q52 24 52 48" stroke="#F97316" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M16 48 Q16 28 32 28 Q48 28 48 48" stroke="#F59E0B" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M20 48 Q20 32 32 32 Q44 32 44 48" stroke="#22C55E" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M24 48 Q24 36 32 36 Q40 36 40 48" stroke="#3B82F6" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Favorable wind lines below -->
+  <line x1="14" y1="54" x2="28" y2="54" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="36" y1="54" x2="50" y2="54" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="8" y1="59" x2="56" y2="59" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+</svg>

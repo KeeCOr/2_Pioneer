@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Wind gust lines -->
+  <path d="M8 20 Q20 14 32 20 Q44 26 56 20" stroke="#60A5FA" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M8 32 Q22 26 38 32 Q50 36 58 30" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M8 44 Q18 38 30 44 Q42 50 54 44" stroke="#60A5FA" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- Wind swirl at right end -->
+  <path d="M56 20 Q62 16 60 22 Q58 28 52 26" stroke="#BFDBFE" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M58 44 Q64 40 62 46 Q60 52 54 50" stroke="#BFDBFE" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- Small motion dashes -->
+  <line x1="12" y1="27" x2="20" y2="27" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <line x1="10" y1="38" x2="16" y2="38" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+</svg>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Waterline -->
+  <path d="M3 53 Q18 51 32 53 Q46 55 60 53" stroke="#1a3a5c" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+  <!-- Hull - flat bottom junk style -->
+  <path d="M8 48 L8 53 L56 53 L56 48Z" fill="#5C4033"/>
+  <!-- Hull main - high freeboard, box-like -->
+  <path d="M8 36 L8 48 L56 48 L58 44 L58 36 Q44 34 24 34 Q14 34 8 36Z" fill="#8B6914"/>
+  <!-- Raised bow (junk has raised bow and stern) -->
+  <path d="M54 28 L60 28 L60 36 L54 36Z" fill="#8B6914"/>
+  <path d="M53 26 L61 26 L61 29 L53 29Z" fill="#D4A547" opacity="0.9"/>
+  <!-- Raised stern castle -->
+  <path d="M6 24 L14 24 L14 36 L6 36Z" fill="#8B6914"/>
+  <path d="M5 22 L15 22 L15 25 L5 25Z" fill="#D4A547" opacity="0.9"/>
+  <rect x="7" y="26" width="3" height="3" rx="0.5" fill="#D4A547" opacity="0.7"/>
+  <!-- Hull decorative red stripe (Chinese junk style) -->
+  <path d="M8 36 L58 36 L58 38 L8 38Z" fill="#D4A547" opacity="0.6"/>
+  <path d="M8 44 L56 44 L56 46 L8 46Z" fill="#D4A547" opacity="0.3"/>
+  <!-- Eye on bow (traditional junk) -->
+  <circle cx="57" cy="33" r="2.5" fill="#F5E6C8"/>
+  <circle cx="57" cy="33" r="1.2" fill="#5C4033"/>
+  <!-- Foremast -->
+  <line x1="48" y1="36" x2="46" y2="14" stroke="#5C4033" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Fore battened sail (junk characteristic) -->
+  <path d="M46 16 L60 20 L60 36 L48 36Z" fill="#F5E6C8" opacity="0.9"/>
+  <!-- Fore sail battens (horizontal ribs - junk hallmark) -->
+  <line x1="47" y1="19" x2="60" y2="22" stroke="#5C4033" stroke-width="1" opacity="0.8"/>
+  <line x1="47" y1="22" x2="60" y2="25" stroke="#5C4033" stroke-width="1" opacity="0.8"/>
+  <line x1="47" y1="25" x2="60" y2="28" stroke="#5C4033" stroke-width="1" opacity="0.8"/>
+  <line x1="47" y1="28" x2="60" y2="31" stroke="#5C4033" stroke-width="1" opacity="0.8"/>
+  <line x1="47" y1="31" x2="60" y2="34" stroke="#5C4033" stroke-width="1" opacity="0.8"/>
+  <!-- Main mast (taller) -->
+  <line x1="28" y1="36" x2="26" y2="8" stroke="#5C4033" stroke-width="3" stroke-linecap="round"/>
+  <!-- Main battened sail -->
+  <path d="M26 10 L46 16 L46 36 L28 36Z" fill="#F5E6C8" opacity="0.95"/>
+  <!-- Main battens -->
+  <line x1="27" y1="14" x2="46" y2="19" stroke="#5C4033" stroke-width="1.2" opacity="0.8"/>
+  <line x1="27" y1="18" x2="46" y2="22" stroke="#5C4033" stroke-width="1.2" opacity="0.8"/>
+  <line x1="27" y1="22" x2="46" y2="26" stroke="#5C4033" stroke-width="1.2" opacity="0.8"/>
+  <line x1="27" y1="26" x2="46" y2="30" stroke="#5C4033" stroke-width="1.2" opacity="0.8"/>
+  <line x1="27" y1="30" x2="46" y2="34" stroke="#5C4033" stroke-width="1.2" opacity="0.8"/>
+  <!-- Mizzen mast (aft) -->
+  <line x1="14" y1="36" x2="12" y2="20" stroke="#5C4033" stroke-width="2" stroke-linecap="round"/>
+  <!-- Mizzen battened sail -->
+  <path d="M12 22 L26 26 L26 36 L14 36Z" fill="#F5E6C8" opacity="0.85"/>
+  <line x1="13" y1="25" x2="26" y2="28" stroke="#5C4033" stroke-width="1" opacity="0.8"/>
+  <line x1="13" y1="29" x2="26" y2="32" stroke="#5C4033" stroke-width="1" opacity="0.8"/>
+</svg>

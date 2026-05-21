@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Rain cloud -->
+  <circle cx="24" cy="24" r="9" fill="#64748B"/>
+  <circle cx="36" cy="20" r="11" fill="#94A3B8"/>
+  <ellipse cx="46" cy="26" rx="9" ry="8" fill="#94A3B8"/>
+  <rect x="15" y="26" width="40" height="8" rx="4" fill="#94A3B8"/>
+  <!-- Rain drops -->
+  <line x1="22" y1="40" x2="19" y2="52" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="32" y1="40" x2="29" y2="52" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="42" y1="40" x2="39" y2="52" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="27" y1="44" x2="24" y2="56" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+  <line x1="37" y1="44" x2="34" y2="56" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+</svg>

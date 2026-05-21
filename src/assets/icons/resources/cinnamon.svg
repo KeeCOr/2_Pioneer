@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Cinnamon sticks bundle -->
+  <defs>
+    <linearGradient id="stickGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6B2E08;stop-opacity:1"/>
+      <stop offset="30%" style="stop-color:#9B4A18;stop-opacity:1"/>
+      <stop offset="60%" style="stop-color:#8B3E12;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4A1E06;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="stickGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7B3410;stop-opacity:1"/>
+      <stop offset="30%" style="stop-color:#B05820;stop-opacity:1"/>
+      <stop offset="70%" style="stop-color:#9A4A18;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#5A2808;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="32" cy="56" rx="20" ry="4" fill="rgba(0,0,0,0.2)"/>
+  <!-- Background sticks (partially hidden) -->
+  <!-- Stick far left -->
+  <rect x="8" y="14" width="11" height="40" rx="5.5" fill="#6B2E08" transform="rotate(-12 13.5 34)"/>
+  <ellipse cx="11" cy="16" rx="5.5" ry="3" fill="#4A1E06" transform="rotate(-12 11 16)"/>
+  <!-- Stick far right -->
+  <rect x="44" y="14" width="11" height="40" rx="5.5" fill="#6B2E08" transform="rotate(12 49.5 34)"/>
+  <ellipse cx="53" cy="16" rx="5.5" ry="3" fill="#4A1E06" transform="rotate(12 53 16)"/>
+  <!-- Main center sticks (3 prominent) -->
+  <!-- Left center stick -->
+  <rect x="16" y="12" width="11" height="42" rx="5.5" fill="url(#stickGrad1)"/>
+  <!-- Hollow end (cinnamon is rolled bark) -->
+  <ellipse cx="21.5" cy="12" rx="5.5" ry="3" fill="#3A1406"/>
+  <ellipse cx="21.5" cy="12" rx="4" ry="2" fill="#6B2E08"/>
+  <ellipse cx="21.5" cy="12" rx="2.5" ry="1.2" fill="#2A0E04"/>
+  <ellipse cx="21.5" cy="54" rx="5.5" ry="3" fill="#3A1406"/>
+  <ellipse cx="21.5" cy="54" rx="4" ry="2" fill="#6B2E08"/>
+  <!-- Bark texture lines -->
+  <path d="M17 20 L27 20" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M17 26 L27 26" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M17 32 L27 32" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M17 38 L27 38" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M17 44 L27 44" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M18 16 C17 18 17 24 18 28" stroke="#9B4A18" stroke-width="1" opacity="0.3"/>
+  <!-- Center stick -->
+  <rect x="26" y="10" width="12" height="44" rx="6" fill="url(#stickGrad2)"/>
+  <ellipse cx="32" cy="10" rx="6" ry="3.5" fill="#3A1406"/>
+  <ellipse cx="32" cy="10" rx="4.5" ry="2.3" fill="#7B3410"/>
+  <ellipse cx="32" cy="10" rx="2.8" ry="1.4" fill="#1E0802"/>
+  <ellipse cx="32" cy="54" rx="6" ry="3.5" fill="#3A1406"/>
+  <ellipse cx="32" cy="54" rx="4.5" ry="2.3" fill="#7B3410"/>
+  <!-- Bark texture -->
+  <path d="M27 18 L38 18" stroke="#5A2808" stroke-width="0.8" opacity="0.5"/>
+  <path d="M27 25 L38 25" stroke="#5A2808" stroke-width="0.8" opacity="0.5"/>
+  <path d="M27 32 L38 32" stroke="#5A2808" stroke-width="0.8" opacity="0.5"/>
+  <path d="M27 39 L38 39" stroke="#5A2808" stroke-width="0.8" opacity="0.5"/>
+  <path d="M27 46 L38 46" stroke="#5A2808" stroke-width="0.8" opacity="0.5"/>
+  <path d="M28 14 C27 17 27 23 28 30" stroke="#B05820" stroke-width="1.2" opacity="0.3"/>
+  <!-- Right center stick -->
+  <rect x="37" y="12" width="11" height="42" rx="5.5" fill="url(#stickGrad1)"/>
+  <ellipse cx="42.5" cy="12" rx="5.5" ry="3" fill="#3A1406"/>
+  <ellipse cx="42.5" cy="12" rx="4" ry="2" fill="#6B2E08"/>
+  <ellipse cx="42.5" cy="12" rx="2.5" ry="1.2" fill="#2A0E04"/>
+  <ellipse cx="42.5" cy="54" rx="5.5" ry="3" fill="#3A1406"/>
+  <ellipse cx="42.5" cy="54" rx="4" ry="2" fill="#6B2E08"/>
+  <path d="M38 20 L48 20" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M38 26 L48 26" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M38 32 L48 32" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M38 38 L48 38" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <path d="M38 44 L48 44" stroke="#4A1E06" stroke-width="0.8" opacity="0.5"/>
+  <!-- Gold twine binding -->
+  <path d="M10 34 C14 36 20 37 32 37 C44 37 50 36 54 34" fill="none" stroke="#D4A547" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M10 34 C14 32 20 31 32 31 C44 31 50 32 54 34" fill="none" stroke="#D4A547" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Twine knot center -->
+  <circle cx="32" cy="34" r="3.5" fill="#C8940A"/>
+  <circle cx="32" cy="34" r="2" fill="#D4A547"/>
+  <circle cx="32" cy="34" r="1" fill="#8B6914"/>
+</svg>

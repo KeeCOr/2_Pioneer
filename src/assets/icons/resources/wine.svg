@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Wine barrel -->
+  <defs>
+    <linearGradient id="barrelGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5C2B0A;stop-opacity:1"/>
+      <stop offset="30%" style="stop-color:#8B4A1A;stop-opacity:1"/>
+      <stop offset="60%" style="stop-color:#7A3E14;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#3E1A06;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="barrelShine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:white;stop-opacity:0"/>
+      <stop offset="30%" style="stop-color:white;stop-opacity:0.2"/>
+      <stop offset="50%" style="stop-color:white;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="32" cy="57" rx="17" ry="4" fill="rgba(0,0,0,0.25)"/>
+  <!-- Barrel body (bulging shape) -->
+  <path d="M16 14 C12 14 10 20 10 32 C10 44 12 50 16 50 L48 50 C52 50 54 44 54 32 C54 20 52 14 48 14 Z" fill="url(#barrelGrad)"/>
+  <!-- Barrel wood planks (vertical lines) -->
+  <path d="M22 14 C21 20 21 44 22 50" stroke="#3E1A06" stroke-width="1" opacity="0.6"/>
+  <path d="M27 13 C26 19 26 45 27 51" stroke="#3E1A06" stroke-width="1" opacity="0.6"/>
+  <path d="M32 13 C32 19 32 45 32 51" stroke="#3E1A06" stroke-width="1" opacity="0.5"/>
+  <path d="M37 13 C38 19 38 45 37 51" stroke="#3E1A06" stroke-width="1" opacity="0.6"/>
+  <path d="M42 14 C43 20 43 44 42 50" stroke="#3E1A06" stroke-width="1" opacity="0.6"/>
+  <!-- Metal hoops (iron bands) -->
+  <!-- Top hoop -->
+  <path d="M16 18 C12 18 10 20 10 22 C12 22 16 22 20 22 L44 22 C48 22 52 22 54 22 C54 20 52 18 48 18 Z" fill="#D4A547" opacity="0.9"/>
+  <path d="M16 18 C12 18 10 20 10 22" fill="none" stroke="#8B6914" stroke-width="1"/>
+  <path d="M54 18 C52 18 48 18 48 18 C52 18 54 20 54 22" fill="none" stroke="#8B6914" stroke-width="1"/>
+  <!-- Middle hoop -->
+  <path d="M10 29 L54 29" stroke="#D4A547" stroke-width="3" stroke-linecap="round"/>
+  <path d="M10 35 L54 35" stroke="#D4A547" stroke-width="3" stroke-linecap="round"/>
+  <!-- Bottom hoop -->
+  <path d="M16 46 C12 46 10 44 10 42 C12 42 16 42 20 42 L44 42 C48 42 52 42 54 42 C54 44 52 46 48 46 Z" fill="#D4A547" opacity="0.9"/>
+  <!-- End caps (barrel ends) -->
+  <ellipse cx="10" cy="32" rx="4" ry="18" fill="#5C2B0A"/>
+  <ellipse cx="54" cy="32" rx="4" ry="18" fill="#5C2B0A"/>
+  <ellipse cx="10" cy="32" rx="3" ry="17" fill="none" stroke="#D4A547" stroke-width="1.5"/>
+  <ellipse cx="54" cy="32" rx="3" ry="17" fill="none" stroke="#D4A547" stroke-width="1.5"/>
+  <!-- Tap/spigot -->
+  <rect x="29" y="30" width="6" height="5" rx="1.5" fill="#8B6914"/>
+  <rect x="31" y="35" width="2" height="3" rx="1" fill="#5C4010"/>
+  <!-- Shine -->
+  <path d="M16 14 C12 14 10 20 10 32" fill="url(#barrelShine)" opacity="0.5"/>
+  <!-- Wine stain/drip hint -->
+  <path d="M32 35 L32 38 C31 39 33 39 32 38 Z" fill="#6B0000" opacity="0.5"/>
+</svg>
