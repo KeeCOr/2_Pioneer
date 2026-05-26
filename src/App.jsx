@@ -738,6 +738,14 @@ const OceanTycoon = () => {
             addLog(`🔒 ${pData.name}은 아직 미개척 항구입니다. ${access.label} 달성 후 항해해 개척하세요.`);
             return;
           }
+          const selected = curGs.ships.find(s => s.id === selShipRef.current);
+          if (selected && !selected.isMoving && portOf(selected) === pk) {
+            setShowPortPrice(null);
+            setSelectedPortRes(null);
+            setShowMarket(true);
+            return;
+          }
+          setShowMarket(false);
           setShowPortPrice(pk);
           return;
         }
@@ -795,7 +803,7 @@ const OceanTycoon = () => {
         }
       }
     }
-  }, [setGs, setSelShip, setRouteMode, tutorialPhase, setTutorialPhase, addLog, setShowPortPrice, chooseDestinationPort]);
+  }, [setGs, setSelShip, setRouteMode, tutorialPhase, setTutorialPhase, addLog, setShowPortPrice, setShowMarket, chooseDestinationPort]);
 
   // ── 저장/불러오기 ──
   const saveGame = useCallback(() => {
@@ -1207,7 +1215,11 @@ const OceanTycoon = () => {
     }
   }, [tutorialPhase, cur?.isMoving, addLog]);
   useEffect(() => {
-    if (atPort && !cur?.isMoving) setShowMarket(true);
+    if (atPort && !cur?.isMoving) {
+      setShowPortPrice(null);
+      setSelectedPortRes(null);
+      setShowMarket(true);
+    }
     else { setShowMarket(false); setShowSellModal(false); }
   }, [atPort, cur?.isMoving]);
 
@@ -2503,7 +2515,7 @@ const OceanTycoon = () => {
           <div className="flex-1 relative min-h-0">
             {/* 지도 버튼 — overflow-hidden 바깥에 배치해 모달 위에 표시 */}
             <div className="absolute top-2 right-2 z-[60] flex flex-col gap-1 pointer-events-auto max-w-[112px]">
-              {atPort && !cur?.isMoving && <button onClick={() => setShowMarket(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
+              {atPort && !cur?.isMoving && <button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); setShowMarket(p => !p); }} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
               <button onClick={() => setShowInfo(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showInfo?'bg-ocean-dark text-blue-300 border border-blue-500':'bg-blue-800 text-blue-200 hover:bg-blue-700 border border-blue-600'}`}>{showInfo?'✕ 정보':'📰 정보'}</button>
             </div>
             <div ref={mapRef} className="absolute inset-0 rounded border-2 border-gold overflow-hidden bg-gradient-to-b from-blue-950 to-black"
@@ -2533,7 +2545,7 @@ const OceanTycoon = () => {
                         <span className="text-xs text-gray-400">합계</span>
                         <span className="text-xs font-bold text-green-400">{cargoN(cur) > 0 ? `${cargoSellTotal(cur,portKey).toLocaleString()}금` : '비어 있음'}</span>
                       </div>
-                      <button onClick={() => setShowMarket(true)}
+                      <button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); setShowMarket(true); }}
                         className="w-full py-1.5 rounded-lg text-sm font-bold bg-green-700 hover:bg-green-500 text-white border border-green-500 transition-colors">
                         🏪 시장 (판매/매입)
                       </button>
@@ -2606,8 +2618,16 @@ const OceanTycoon = () => {
                               return;
                             }
                             e.stopPropagation();
-                            if (portKey === k) { setShowMarket(prev => !prev); return; }
-                            if (visited) { setShowPortPrice(k); }
+                            if (portKey === k) {
+                              setShowPortPrice(null);
+                              setSelectedPortRes(null);
+                              setShowMarket(prev => !prev);
+                              return;
+                            }
+                            if (visited) {
+                              setShowMarket(false);
+                              setShowPortPrice(k);
+                            }
                             else if (access.unlocked) { addLog(`🧭 ${p.name}은 항해 가능한 미개척 항구입니다. 배를 선택한 뒤 목적지로 지정하세요.`); }
                             else { addLog(`🔒 ${p.name}은 아직 항로가 잠겨 있습니다. 해금 조건: ${access.label}`); }
                           }}>
@@ -3018,7 +3038,7 @@ const OceanTycoon = () => {
                       </div>
                       {renderCargoInventory(cur, st.capacity)}
                     </div>
-                    {atPort&&cargoN(cur)>0&&<button onClick={() => setShowMarket(true)} className="w-full mt-2 py-1.5 rounded text-xs font-bold bg-green-900 hover:bg-green-700 text-green-200 border border-green-600">🏪 시장 (판매/매입)</button>}
+                    {atPort&&cargoN(cur)>0&&<button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); setShowMarket(true); }} className="w-full mt-2 py-1.5 rounded text-xs font-bold bg-green-900 hover:bg-green-700 text-green-200 border border-green-600">🏪 시장 (판매/매입)</button>}
                   </div>
                 )}
                 {tab==='mission'&&(
