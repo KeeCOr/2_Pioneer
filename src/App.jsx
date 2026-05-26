@@ -2518,7 +2518,7 @@ const OceanTycoon = () => {
               {atPort && !cur?.isMoving && <button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); setShowMarket(p => !p); }} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showMarket?'bg-ocean-dark text-gold border border-gold':'bg-gold text-ocean-dark hover:bg-yellow-300'} ${(tutorialPhase==='sell'||tutorialPhase==='buy')&&!showMarket?'ring-2 ring-white animate-pulse':''}`}>{showMarket?'✕ 시장':'🏪 시장'}</button>}
               <button onClick={() => setShowInfo(p => !p)} className={`px-3 py-1.5 font-bold text-xs rounded-lg shadow-lg ${showInfo?'bg-ocean-dark text-blue-300 border border-blue-500':'bg-blue-800 text-blue-200 hover:bg-blue-700 border border-blue-600'}`}>{showInfo?'✕ 정보':'📰 정보'}</button>
             </div>
-            <div ref={mapRef} className="absolute inset-0 rounded border-2 border-gold overflow-hidden bg-gradient-to-b from-blue-950 to-black"
+            <div ref={mapRef} className={`absolute inset-0 rounded border-2 border-gold overflow-hidden ocean-map ${st?.weatherId === 'rainy' || st?.weatherId === 'roughsea' ? 'brightness-90' : st?.weatherId === 'sunny' || st?.weatherId === 'fairwind' ? 'brightness-110' : ''}`}
               style={{ cursor: grabbing?'grabbing':routeMode?'crosshair':'grab', touchAction:'none' }}
               onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp}
               onPointerLeave={(e) => { if (e.buttons === 0 && e.pointerType === 'mouse') onPtrUp(e); }}>
@@ -2563,9 +2563,41 @@ const OceanTycoon = () => {
                 const H = mapRef.current?.clientHeight || 400;
                 const { x: vx, y: vy, zoom } = mapView;
                 const ws = (wx, wy) => ({ sx: Math.round(vx + (wx/100)*W*zoom), sy: Math.round(vy + (wy/100)*H*zoom) });
+                const currents = [
+                  [[3, 22], [18, 18], [34, 24], [48, 18], [64, 25], [84, 20]],
+                  [[8, 70], [24, 62], [42, 66], [59, 58], [78, 64], [96, 55]],
+                  [[24, 42], [38, 48], [54, 44], [68, 50], [83, 45]],
+                  [[12, 86], [32, 82], [48, 88], [68, 80], [91, 84]],
+                ];
+                const currentPath = (pts) => pts.map(([wx, wy], idx) => {
+                  const { sx, sy } = ws(wx, wy);
+                  return `${idx === 0 ? 'M' : 'L'}${sx},${sy}`;
+                }).join(' ');
 
                 return (
                   <>
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:0}}>
+                      <defs>
+                        <radialGradient id="sea-depth-west" cx="20%" cy="22%" r="55%">
+                          <stop offset="0%" stopColor="#1d5f86" stopOpacity="0.42"/>
+                          <stop offset="65%" stopColor="#0b3158" stopOpacity="0.22"/>
+                          <stop offset="100%" stopColor="#020712" stopOpacity="0"/>
+                        </radialGradient>
+                        <radialGradient id="sea-depth-east" cx="78%" cy="52%" r="64%">
+                          <stop offset="0%" stopColor="#0c6f7b" stopOpacity="0.22"/>
+                          <stop offset="70%" stopColor="#05213f" stopOpacity="0.2"/>
+                          <stop offset="100%" stopColor="#020712" stopOpacity="0"/>
+                        </radialGradient>
+                      </defs>
+                      <rect width={W} height={H} fill="url(#sea-depth-west)"/>
+                      <rect width={W} height={H} fill="url(#sea-depth-east)"/>
+                      <path d={`M${W * 0.05},${H * 0.78} C${W * 0.28},${H * 0.62} ${W * 0.43},${H * 0.9} ${W * 0.67},${H * 0.72} S${W * 0.92},${H * 0.62} ${W * 1.08},${H * 0.48}`} fill="none" stroke="#7dd3fc" strokeOpacity="0.1" strokeWidth="34"/>
+                      <path d={`M${W * -0.08},${H * 0.36} C${W * 0.2},${H * 0.18} ${W * 0.38},${H * 0.46} ${W * 0.62},${H * 0.28} S${W * 0.9},${H * 0.32} ${W * 1.06},${H * 0.18}`} fill="none" stroke="#f8c96a" strokeOpacity="0.08" strokeWidth="22"/>
+                      {currents.map((pts, idx) => (
+                        <path key={`current-${idx}`} d={currentPath(pts)} fill="none" stroke={idx % 2 ? '#67e8f9' : '#f8c96a'} strokeOpacity={idx % 2 ? '0.22' : '0.18'} strokeWidth="2" strokeLinecap="round" className="ocean-current-line"/>
+                      ))}
+                    </svg>
+
                     {/* ① 격자 — SVG, 고정 strokeWidth */}
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:1}} shapeRendering="crispEdges">
                       {Array.from({length:21}).map((_,i) => {
@@ -2586,11 +2618,17 @@ const OceanTycoon = () => {
                       <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto"><polygon points="0 0,8 2.5,0 5" fill="#d4a574"/></marker></defs>
                       {cur?.isMoving && cur.startX != null && (() => {
                         const a = ws(cur.startX, cur.startY), b = ws(cur.x, cur.y);
-                        return <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#facc15" strokeWidth="2" opacity="0.5"/>;
+                        return (
+                          <g>
+                            <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#e0f2fe" strokeWidth="8" strokeLinecap="round" opacity="0.18" className="ship-wake-line"/>
+                            <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#bae6fd" strokeWidth="3" strokeLinecap="round" opacity="0.46" className="ship-wake-line"/>
+                            <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#facc15" strokeWidth="1.5" opacity="0.42"/>
+                          </g>
+                        );
                       })()}
                       {cur?.isMoving && (() => {
                         const a = ws(cur.x, cur.y), b = ws(cur.targetX, cur.targetY);
-                        return <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#d4a574" strokeWidth="2" strokeDasharray="8,4" opacity="0.7" markerEnd="url(#arr)"/>;
+                        return <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#d4a574" strokeWidth="2.5" strokeDasharray="10,6" opacity="0.78" markerEnd="url(#arr)"/>;
                       })()}
                       {routeMode && cur && Object.entries(PORTS).map(([k, p]) => {
                         if (Math.hypot(p.x-cur.x, p.y-cur.y) < 0.5) return null;
@@ -2714,7 +2752,7 @@ const OceanTycoon = () => {
                             {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
                             {s.booster && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
                             {isStormed && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
-                            <div className={`text-2xl ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
+                            <div className={`text-2xl ${s.isMoving ? 'ship-at-sea' : ''} ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
                               {SHIP_TYPES[s.type].icon}
                             </div>
                           </button>
