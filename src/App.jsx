@@ -153,13 +153,23 @@ const WEATHER_POOL = (y) => {
   if (y < 65) return ['sunny','tradewind','roughsea','rainy','heatwave','fairwind'];
   return ['tradewind','tradewind','rainy','roughsea','sunny','heatwave'];
 };
-// 배 위치 + 3분 주기 시드로 날씨 결정 (순수 함수, 상태 불필요)
+const WEATHER_CHANGE_INTERVAL = 15 * 60 * 1000; // 15분 단위로만 날씨가 바뀐다.
+// 배 위치 + 느린 주기 시드로 날씨 결정. 항해 중에는 항로 중간 위도를 사용해 이동 중 잦은 흔들림을 줄인다.
 const getShipWeather = (ship) => {
-  const timeSeed = Math.floor(Date.now() / 180000);
-  const pool = WEATHER_POOL(ship.y);
-  const hash = Math.abs(Math.round(Math.sin(ship.id * 1.7 + ship.y * 0.31 + timeSeed * 2.13) * 10000)) % pool.length;
+  const timeSeed = Math.floor(Date.now() / WEATHER_CHANGE_INTERVAL);
+  const routeY = ship.isMoving && ship.targetY != null
+    ? (((ship.startY ?? ship.y) + ship.targetY) / 2)
+    : ship.y;
+  const weatherBand = Math.floor(routeY / 15);
+  const pool = WEATHER_POOL(routeY);
+  const hash = Math.abs(Math.round(Math.sin(ship.id * 1.7 + weatherBand * 2.91 + timeSeed * 2.13) * 10000)) % pool.length;
   return pool[hash];
 };
+
+const EVENT_SPAWN_INTERVAL = 20 * 1000;
+const EVENT_SPAWN_CHANCE = 0.16;
+const EVENT_SHIP_COOLDOWN = 60 * 1000;
+const MAX_ACTIVE_MAP_EVENTS = 4;
 
 const PORT_SHIPS = {
   london:['sloop','brigantine','merchant','galleon'], bristol:['rowboat','sloop'],
@@ -560,6 +570,7 @@ const OceanTycoon = () => {
   const pinchRef   = useRef({ dist: 0 });
   const lastTapRef = useRef({ time: 0, x: 0, y: 0 });
   const zoomDragRef= useRef({ active: false, startY: 0, startZoom: 1, cx: 0, cy: 0 });
+  const shipEventCooldownRef = useRef({});
 
   const clampXY = useCallback((x, y, zoom) => {
     const el = mapRef.current; if (!el) return { x, y };
@@ -1034,21 +1045,28 @@ const OceanTycoon = () => {
     return () => clearInterval(id);
   }, [paused, pricesReady, addLog]);
 
-  // ── 이벤트 생성 (5초 간격) ──
+  // ── 이벤트 생성 (느린 간격 + 선박별 쿨다운) ──
   useEffect(() => {
     if (paused) return;
     const id = setInterval(() => {
       const now = Date.now();
-      setMapEvents(prev => prev.filter(e => now - e.createdAt < e.duration));
+      let activeEventCount = 0;
+      setMapEvents(prev => {
+        const alive = prev.filter(e => now - e.createdAt < e.duration);
+        activeEventCount = alive.filter(e => !e.claimed).length;
+        return alive;
+      });
       const ships = gsRef.current.ships.filter(s => s.isMoving);
       ships.forEach(s => {
-        if (Math.random() > 0.35) return; // 35% per 5s per ship — 강제 이벤트 빈도 증가
+        if (activeEventCount >= MAX_ACTIVE_MAP_EVENTS) return;
+        const lastAt = shipEventCooldownRef.current[s.id] || 0;
+        if (now - lastAt < EVENT_SHIP_COOLDOWN) return;
+        if (Math.random() > EVENT_SPAWN_CHANCE) return;
         const types  = ['wreck', 'storm', 'pirate', 'whale', 'treasure', 'current'];
         const icons  = ['🪵',    '⛈️',   '🏴‍☠️', '🐋',    '💰',       '🌊'    ];
         const labels = ['난파선 발견!', '폭풍우 접근!', '해적 출몰!', '고래 출몰!', '보물 발견!', '순조로운 해류!'];
-        // 강제 이벤트(storm/pirate/whale/current) 가중치 대폭 증가, 클릭형 축소
-        const weights   = [8, 35, 30, 20, 5, 25];
-        const durations = [55000, 50000, 20000, 40000, 50000, 35000];
+        const weights   = [14, 12, 8, 8, 10, 16];
+        const durations = [55000, 50000, 22000, 40000, 50000, 35000];
         const clickable = [true, false, false, false, true, false];
         const total = weights.reduce((a, b) => a + b, 0);
         let r = Math.random() * total, idx = 0;
@@ -1091,9 +1109,11 @@ const OceanTycoon = () => {
           setGs(prev => ({ ...prev, ships: prev.ships.map(x => x.id === s.id ? { ...x, fuel: Math.min(100, (x.fuel ?? 100) + fuelGain) } : x) }));
           addLog(`🌊 ${s.name}에 순조로운 해류! 연료 +${fuelGain}% 회복.`);
         }
-        setMapEvents(prev => [...prev, evt]);
+        shipEventCooldownRef.current[s.id] = now;
+        activeEventCount += 1;
+        setMapEvents(prev => [...prev, evt].slice(-MAX_ACTIVE_MAP_EVENTS));
       });
-    }, 5000);
+    }, EVENT_SPAWN_INTERVAL);
     return () => clearInterval(id);
   }, [paused, addLog]);
 
