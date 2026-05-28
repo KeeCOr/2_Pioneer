@@ -157,7 +157,9 @@ const WEATHER_CHANGE_INTERVAL = 15 * 60 * 1000; // 15분 단위로만 날씨가 
 // 배 위치 + 느린 주기 시드로 날씨 결정. 항해 중에는 항로 중간 위도를 사용해 이동 중 잦은 흔들림을 줄인다.
 const getShipWeather = (ship) => {
   const timeSeed = Math.floor(Date.now() / WEATHER_CHANGE_INTERVAL);
-  const routeY = ship.isMoving && ship.targetY != null
+  const routeY = ship.isMoving && ship.destinationY != null
+    ? (((ship.startY ?? ship.y) + ship.destinationY) / 2)
+    : ship.isMoving && ship.targetY != null
     ? (((ship.startY ?? ship.y) + ship.targetY) / 2)
     : ship.y;
   const weatherBand = Math.floor(routeY / 15);
@@ -166,10 +168,23 @@ const getShipWeather = (ship) => {
   return pool[hash];
 };
 
-const EVENT_SPAWN_INTERVAL = 20 * 1000;
-const EVENT_SPAWN_CHANCE = 0.16;
-const EVENT_SHIP_COOLDOWN = 60 * 1000;
-const MAX_ACTIVE_MAP_EVENTS = 4;
+const EVENT_SPAWN_INTERVAL = 45 * 1000;
+const EVENT_SPAWN_CHANCE = 0.1;
+const EVENT_SHIP_COOLDOWN = 180 * 1000;
+const MAX_ACTIVE_MAP_EVENTS = 2;
+const SAILING_PACE_MULT = 0.55;
+const BOOSTER_SPEED_MULT = 1.2;
+const BOOSTER_FUEL_COST_MULT = 1.5;
+const PRICE_INTERVAL_BASE = 3600;
+const PRICE_INTERVAL_MIN = 1200;
+const LANDMASSES = [
+  { id: 'europe', label: '유럽', color: '#355f45', points: [[0,0],[34,0],[38,18],[31,33],[18,35],[6,28],[0,18]] },
+  { id: 'africa', label: '아프리카', color: '#6f5b38', points: [[30,34],[51,36],[55,64],[47,92],[32,88],[24,62]] },
+  { id: 'arabia', label: '아라비아', color: '#76553a', points: [[53,32],[70,35],[73,52],[61,60],[51,48]] },
+  { id: 'india', label: '인도', color: '#536b3d', points: [[58,58],[72,61],[75,82],[65,91],[55,76]] },
+  { id: 'eastAsia', label: '동아시아', color: '#49664e', points: [[74,18],[100,5],[100,47],[89,59],[76,50]] },
+  { id: 'americas', label: '아메리카', color: '#3d6354', points: [[0,0],[8,0],[12,24],[13,55],[7,82],[0,100]] },
+];
 
 const PORT_SHIPS = {
   london:['sloop','brigantine','merchant','galleon'], bristol:['rowboat','sloop'],
@@ -255,6 +270,13 @@ const portOf = (s) => {
 };
 const routeRegionOf = (s) => {
   if (s.targetX !== null && s.targetY !== null) {
+    if (s.destinationX != null && s.destinationY != null) {
+      const best = Object.entries(PORTS).reduce((b, [, p]) => {
+        const d = Math.hypot(s.destinationX - p.x, s.destinationY - p.y);
+        return d < b.d ? { d, region: p.region } : b;
+      }, { d: Infinity, region: null });
+      if (best.region) return best.region;
+    }
     const best = Object.entries(PORTS).reduce((b, [, p]) => {
       const d = Math.hypot(s.targetX - p.x, s.targetY - p.y);
       return d < b.d ? { d, region: p.region } : b;
@@ -298,7 +320,7 @@ const calcStats = (s, crew) => {
   const hullDmgMult  = 1 - avgHullEff * 0.002;
   const extraCargo   = Math.floor(avgLogistics * 0.2);
   return {
-    speed:        Math.max(0.0005, t.baseSpeed * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
+    speed:        Math.max(0.0005, t.baseSpeed * SAILING_PACE_MULT * (1 + (n-50)/200 + s.upgrades.speed*0.15) * fuelMult),
     capacity:     t.baseCapacity + s.upgrades.cargo * 25 + extraCargo,
     maxCrew:      Math.min(14, t.maxCrew + s.upgrades.crew),
     tradePct:     Math.round((tr - 50) / 2 * hullMult),
@@ -486,7 +508,7 @@ const OceanTycoon = () => {
     const v = {
       gold: 0, gems: 3,
       ships: [{ id: 1, type: 'rowboat', name: '황금 수호자호',
-        x: 4, y: 30, targetX: null, targetY: null, startX: null, startY: null,
+        x: 4, y: 30, targetX: null, targetY: null, destinationX: null, destinationY: null, route: null, routeIndex: 0, startX: null, startY: null,
         isMoving: false, booster: false, stormUntil: null,
         cargo: { '양털': 8 }, fuel: 100, hull: 100,
         upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 }],
@@ -951,17 +973,27 @@ const OceanTycoon = () => {
           const dx = s.targetX - s.x, dy = s.targetY - s.y;
           const d  = Math.hypot(dx, dy);
           if (d < 1.0) {
+            const route = s.route || [];
+            const nextRouteIndex = (s.routeIndex || 0) + 1;
+            if (route.length > nextRouteIndex) {
+              const nextPoint = route[nextRouteIndex];
+              return { ...s, x: s.targetX, y: s.targetY, targetX: nextPoint.x, targetY: nextPoint.y, routeIndex: nextRouteIndex,
+                hull: Math.min(100, (s.hull ?? 100) + hullRepairBase) };
+            }
             addLog(`✅ ${s.name}이(가) 도착했습니다!`);
-            const arrivedPk = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - s.targetX, p.y - s.targetY) < 3.5)?.[0];
+            const finalX = s.destinationX ?? s.targetX;
+            const finalY = s.destinationY ?? s.targetY;
+            const arrivedPk = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - finalX, p.y - finalY) < 3.5)?.[0];
             if (arrivedPk) ap.push({ shipId: s.id, portKey: arrivedPk });
-            return { ...s, x: s.targetX, y: s.targetY, isMoving: false, targetX: null, targetY: null,
+            return { ...s, x: finalX, y: finalY, isMoving: false, targetX: null, targetY: null,
+              destinationX: null, destinationY: null, route: null, routeIndex: 0,
               startX: null, startY: null, booster: false, stormUntil: null,
               hull: Math.min(100, (s.hull ?? 100) + hullRepairBase) };
           }
           const isStormed = s.stormUntil && Date.now() < s.stormUntil;
           const effectiveBooster = s.booster && (s.fuel ?? 100) > 5;
-          const sp = st.speed * (effectiveBooster ? 1.43 : 1.0) * (isStormed ? 0.4 : 1.0) * st.weather.speedMult;
-          const baseFuel = effectiveBooster ? 0.030 : 0.015;
+          const sp = st.speed * (effectiveBooster ? BOOSTER_SPEED_MULT : 1.0) * (isStormed ? 0.4 : 1.0) * st.weather.speedMult;
+          const baseFuel = effectiveBooster ? 0.015 * BOOSTER_FUEL_COST_MULT : 0.015;
           const fuelCost = baseFuel * st.fuelEffMult * st.weather.fuelMult;
           const a  = Math.atan2(dy, dx);
           const newFuel = Math.max(0, (s.fuel ?? 100) - fuelCost);
@@ -1065,8 +1097,8 @@ const OceanTycoon = () => {
         const types  = ['wreck', 'storm', 'pirate', 'whale', 'treasure', 'current'];
         const icons  = ['🪵',    '⛈️',   '🏴‍☠️', '🐋',    '💰',       '🌊'    ];
         const labels = ['난파선 발견!', '폭풍우 접근!', '해적 출몰!', '고래 출몰!', '보물 발견!', '순조로운 해류!'];
-        const weights   = [14, 12, 8, 8, 10, 16];
-        const durations = [55000, 50000, 22000, 40000, 50000, 35000];
+        const weights   = [22, 4, 3, 8, 14, 20];
+        const durations = [70000, 42000, 22000, 50000, 70000, 50000];
         const clickable = [true, false, false, false, true, false];
         const total = weights.reduce((a, b) => a + b, 0);
         let r = Math.random() * total, idx = 0;
@@ -1082,7 +1114,7 @@ const OceanTycoon = () => {
           claimed: false, reward };
         // 즉각 효과
         if (type === 'storm') {
-          const stormDur = 45000 + Math.floor(Math.random() * 45000); // 45~90초 랜덤
+          const stormDur = 30000 + Math.floor(Math.random() * 30000); // 30~60초 랜덤
           setGs(prev => ({ ...prev, ships: prev.ships.map(x => x.id === s.id ? { ...x, stormUntil: now + stormDur } : x) }));
           addLog(`⛈️ ${s.name}에 폭풍우! ${Math.round(stormDur/1000)}초간 속도 60% 감소.`);
         } else if (type === 'pirate') {
@@ -1091,7 +1123,7 @@ const OceanTycoon = () => {
             if (!ship || Object.keys(ship.cargo).length === 0) return prev;
             const newCargo = {};
             Object.entries(ship.cargo).forEach(([rr, n]) => {
-              const lost = Math.ceil(n * (0.08 + Math.random() * 0.12)); // 8~20% 약탈
+              const lost = Math.ceil(n * (0.03 + Math.random() * 0.05)); // 3~8% 약탈
               const remain = Math.max(0, n - lost);
               if (remain > 0) newCargo[rr] = remain;
             });
@@ -1122,7 +1154,7 @@ const OceanTycoon = () => {
     if (paused) return;
     const id = setInterval(() => {
       const el = Math.floor((Date.now() - lastPrice) / 1000);
-      const priceInterval = Math.max(300, 3600 - (gsRef.current.taxLevel - 1) * 300); // Lv.1=1h, Lv.5=20min, Lv.11+=5min
+      const priceInterval = Math.max(PRICE_INTERVAL_MIN, PRICE_INTERVAL_BASE - (gsRef.current.taxLevel - 1) * 240); // Lv.1=1h, 후반에도 최소 20분
       if (el >= priceInterval) {
         setPrices(p => {
           const n = { ...p };
@@ -1205,15 +1237,26 @@ const OceanTycoon = () => {
   const cargoN  = (s) => Object.values(s?.cargo || {}).reduce((a, v) => a + v, 0);
   const journeyProgress = (s) => {
     if (!s?.isMoving || s.startX == null) return 0;
-    const total = Math.hypot(s.targetX - s.startX, s.targetY - s.startY);
-    const done  = Math.hypot(s.x - s.startX, s.y - s.startY);
+    const route = s.route?.length ? s.route : [{ x: s.startX, y: s.startY }, { x: s.targetX, y: s.targetY }];
+    const total = route.slice(1).reduce((sum, pt, i) => sum + Math.hypot(pt.x - route[i].x, pt.y - route[i].y), 0);
+    const currentIndex = Math.max(1, s.routeIndex || 1);
+    const doneBefore = route.slice(1, currentIndex).reduce((sum, pt, i) => sum + Math.hypot(pt.x - route[i].x, pt.y - route[i].y), 0);
+    const legStart = route[currentIndex - 1] || { x: s.startX, y: s.startY };
+    const done = doneBefore + Math.hypot(s.x - legStart.x, s.y - legStart.y);
     return total > 0 ? Math.min(100, (done / total) * 100) : 0;
   };
   const eta = (s) => {
     if (!s?.isMoving || s.targetX === null) return null;
-    const remaining = Math.max(0, Math.hypot(s.targetX - s.x, s.targetY - s.y) - 1.0); // 도착 판정 d<1.0 반영
+    const route = s.route?.length ? s.route : [{ x: s.x, y: s.y }, { x: s.targetX, y: s.targetY }];
+    const currentIndex = Math.max(1, s.routeIndex || 1);
+    const legRemaining = Math.max(0, Math.hypot(s.targetX - s.x, s.targetY - s.y) - 1.0);
+    const laterRemaining = route.slice(currentIndex + 1).reduce((sum, pt, i) => {
+      const prev = route[currentIndex + i];
+      return sum + Math.hypot(pt.x - prev.x, pt.y - prev.y);
+    }, 0);
+    const remaining = legRemaining + laterRemaining;
     const isStormed = s.stormUntil && Date.now() < s.stormUntil;
-    const sp = calcStats(s, gs.crew).speed * (s.booster ? 1.43 : 1.0) * (isStormed ? 0.4 : 1.0);
+    const sp = calcStats(s, gs.crew).speed * (s.booster ? BOOSTER_SPEED_MULT : 1.0) * (isStormed ? 0.4 : 1.0);
     const secs = Math.round(remaining / (sp / 0.3));
     if (secs >= 3600) return `${Math.floor(secs/3600)}h ${String(Math.floor((secs%3600)/60)).padStart(2,'0')}m`;
     return `${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;
@@ -1234,11 +1277,11 @@ const OceanTycoon = () => {
       return { icon: step.icon, title: `${step.step}/${step.total} ${step.title}`, text: step.text, tone: tutorialPhase };
     }
     if (routeMode) return { icon: '🧭', title: '목적지 선택 중', text: '항구를 눌러 시세를 확인한 뒤 시세창의 [목적지 확정]으로 출항하세요. 잠긴 항구는 해금 조건이 표시됩니다.', tone: 'depart' };
-    if (cur.isMoving) return { icon: '⛵', title: '항해 중', text: `도착 예정 ${eta(cur) || '--:--'} · 배 추적을 켜면 이동 상황을 더 쉽게 볼 수 있습니다.`, tone: 'sailing' };
-    if (atPort && cargoCount > 0) return { icon: '💰', title: '판매 기회', text: `${PORTS[portKey].name}에 정박 중입니다. 거래소에서 보유 화물의 판매가를 확인하고 수익을 실현하세요.`, tone: 'sell' };
-    if (atPort && cargoCount === 0) return { icon: '📦', title: '화물 적재', text: '빈 화물칸입니다. 거래소에서 구매 가능한 상품을 싣고 다음 항구로 출발하세요.', tone: 'buy' };
+    if (cur.isMoving) return { icon: '⛵', title: '항해 관찰 중', text: `도착 예정 ${eta(cur) || '--:--'} · 항로와 날씨를 지켜보며 다음 항구의 시세를 천천히 비교해보세요.`, tone: 'sailing' };
+    if (atPort && cargoCount > 0) return { icon: '💰', title: '시세 확인', text: `${PORTS[portKey].name}에 정박 중입니다. 보유 화물을 바로 팔기보다 주변 항구 흐름과 비교해도 좋습니다.`, tone: 'sell' };
+    if (atPort && cargoCount === 0) return { icon: '📦', title: '화물 적재', text: '화물칸이 비었습니다. 거래소에서 가격이 낮은 상품을 고르고, 목적지 후보의 시세를 확인해보세요.', tone: 'buy' };
     if (nextUnlock) return { icon: '🔓', title: '다음 항로 해금', text: `${nextUnlock.port.name} 항로는 ${nextUnlock.access.label} 달성 후 열립니다.`, tone: 'unlock' };
-    return { icon: '🧭', title: '자유 항해', text: '가격이 낮은 항구에서 사고 높은 항구에서 팔며 선박과 승무원을 키워보세요.', tone: 'done' };
+    return { icon: '🧭', title: '자유 항해', text: '바다를 지켜보며 가격 흐름이 좋은 항구를 기다리고, 여유 있을 때 선박과 승무원을 정비하세요.', tone: 'done' };
   })();
 
   // 'sailing' → 'sell': 배 도착 시
@@ -1435,7 +1478,7 @@ const OceanTycoon = () => {
     const nid = Math.max(...gs.ships.map(s => s.id), 0) + 1;
     const ns = { id: nid, type: tk, name: `${t.name} ${nid}호`,
       x: PORTS[portKey].x, y: PORTS[portKey].y,
-      targetX: null, targetY: null, startX: null, startY: null,
+      targetX: null, targetY: null, destinationX: null, destinationY: null, route: null, routeIndex: 0, startX: null, startY: null,
       isMoving: false, booster: false, stormUntil: null,
       cargo: {}, fuel: 100, hull: 100, upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 };
     setGs(prev => ({ ...prev, gold: prev.gold - t.cost, ships: [...prev.ships, ns], taxLevel: prev.taxLevel + 1 }));
@@ -1473,22 +1516,12 @@ const OceanTycoon = () => {
     const shipId = sid ?? cur?.id;
     setGs(prev => {
       const s = prev.ships.find(x => x.id === shipId); if (!s?.isMoving) return prev;
-      if (!s.booster && (s.fuel ?? 100) < 20) { addLog('❌ 연료 부족! 부스터는 연료 20% 이상 필요.'); return prev; }
+    if (!s.booster && (s.fuel ?? 100) < 20) { addLog('❌ 연료 부족! 순항 보조는 연료 20% 이상 필요.'); return prev; }
       const nb = !s.booster;
-      addLog(nb ? '⚡ 부스터 가동! 연료 2배, 속도 +43%' : '⚡ 부스터 해제');
+      addLog(nb ? '⚡ 순항 보조 가동. 연료 소모 +50%, 속도 +20%' : '⚡ 순항 보조 해제');
       return { ...prev, ships: prev.ships.map(x => x.id === shipId ? { ...x, booster: nb } : x) };
     });
   }, [cur, setGs, addLog]);
-  const boost = (sid) => {
-    const shipId = sid ?? cur?.id;
-    const target = gsRef.current.ships.find(s => s.id === shipId);
-    if (!target?.isMoving || gsRef.current.gems < 1) { addLog('❌ 보석 부족!'); return; }
-    setGs(prev => ({ ...prev, gems: prev.gems - 1,
-      ships: prev.ships.map(s => s.id === shipId
-        ? { ...s, x: s.targetX, y: s.targetY, isMoving: false, targetX: null, targetY: null, startX: null, startY: null, booster: false } : s) }));
-    addLog('💎 즉시 도착!');
-  };
-
   // 퀘스트
   const acceptQuest = (qid) => {
     if (gs.activeQuests.length >= 3) { addLog('❌ 퀘스트 슬롯 가득! (최대 3개)'); return; }
@@ -2632,6 +2665,38 @@ const OceanTycoon = () => {
                 const H = mapRef.current?.clientHeight || 400;
                 const { x: vx, y: vy, zoom } = mapView;
                 const ws = (wx, wy) => ({ sx: Math.round(vx + (wx/100)*W*zoom), sy: Math.round(vy + (wy/100)*H*zoom) });
+                const routeD = (points) => points.map((pt, idx) => {
+                  const { sx, sy } = ws(pt.x, pt.y);
+                  return `${idx === 0 ? 'M' : 'L'}${sx},${sy}`;
+                }).join(' ');
+                const layoutPorts = (() => {
+                  const items = Object.entries(PORTS).map(([k, p]) => ({ k, p, ...ws(p.x, p.y) }));
+                  const minDist = 52;
+                  for (let pass = 0; pass < 6; pass++) {
+                    for (let i = 0; i < items.length; i++) {
+                      for (let j = i + 1; j < items.length; j++) {
+                        const a = items[i], b = items[j];
+                        let dx = b.sx - a.sx, dy = b.sy - a.sy;
+                        let d = Math.hypot(dx, dy);
+                        if (d === 0) { dx = 1; dy = 0; d = 1; }
+                        if (d < minDist) {
+                          const push = (minDist - d) / 2;
+                          const ux = dx / d, uy = dy / d;
+                          a.sx -= ux * push; a.sy -= uy * push;
+                          b.sx += ux * push; b.sy += uy * push;
+                        }
+                      }
+                    }
+                  }
+                  const out = {};
+                  items.forEach(item => {
+                    out[item.k] = {
+                      sx: Math.round(Math.max(24, Math.min(W - 24, item.sx))),
+                      sy: Math.round(Math.max(24, Math.min(H - 24, item.sy))),
+                    };
+                  });
+                  return out;
+                })();
                 const currents = [
                   [[3, 22], [18, 18], [34, 24], [48, 18], [64, 25], [84, 20]],
                   [[8, 70], [24, 62], [42, 66], [59, 58], [78, 64], [96, 55]],
@@ -2660,6 +2725,20 @@ const OceanTycoon = () => {
                       </defs>
                       <rect width={W} height={H} fill="url(#sea-depth-west)"/>
                       <rect width={W} height={H} fill="url(#sea-depth-east)"/>
+                      {LANDMASSES.map(land => (
+                        <g key={land.id} opacity="0.86">
+                          <polygon points={land.points.map(([lx, ly]) => {
+                            const { sx, sy } = ws(lx, ly);
+                            return `${sx},${sy}`;
+                          }).join(' ')} fill={land.color} stroke="#d4a574" strokeOpacity="0.22" strokeWidth="1.5"/>
+                          {(() => {
+                            const cx = land.points.reduce((a, [lx]) => a + lx, 0) / land.points.length;
+                            const cy = land.points.reduce((a, [, ly]) => a + ly, 0) / land.points.length;
+                            const { sx, sy } = ws(cx, cy);
+                            return <text x={sx} y={sy} fill="#f8e1a5" opacity="0.34" fontSize="18" fontWeight="800" textAnchor="middle">{land.label}</text>;
+                          })()}
+                        </g>
+                      ))}
                       <path d={`M${W * 0.05},${H * 0.78} C${W * 0.28},${H * 0.62} ${W * 0.43},${H * 0.9} ${W * 0.67},${H * 0.72} S${W * 0.92},${H * 0.62} ${W * 1.08},${H * 0.48}`} fill="none" stroke="#7dd3fc" strokeOpacity="0.1" strokeWidth="34"/>
                       <path d={`M${W * -0.08},${H * 0.36} C${W * 0.2},${H * 0.18} ${W * 0.38},${H * 0.46} ${W * 0.62},${H * 0.28} S${W * 0.9},${H * 0.32} ${W * 1.06},${H * 0.18}`} fill="none" stroke="#f8c96a" strokeOpacity="0.08" strokeWidth="22"/>
                       {currents.map((pts, idx) => (
@@ -2686,18 +2765,22 @@ const OceanTycoon = () => {
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:5}}>
                       <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto"><polygon points="0 0,8 2.5,0 5" fill="#d4a574"/></marker></defs>
                       {cur?.isMoving && cur.startX != null && (() => {
-                        const a = ws(cur.startX, cur.startY), b = ws(cur.x, cur.y);
+                        const route = cur.route?.length ? cur.route : [{ x: cur.startX, y: cur.startY }, { x: cur.targetX, y: cur.targetY }];
+                        const currentIndex = Math.max(1, cur.routeIndex || 1);
+                        const traveled = [...route.slice(0, currentIndex), { x: cur.x, y: cur.y }];
                         return (
                           <g>
-                            <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#e0f2fe" strokeWidth="8" strokeLinecap="round" opacity="0.18" className="ship-wake-line"/>
-                            <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#bae6fd" strokeWidth="3" strokeLinecap="round" opacity="0.46" className="ship-wake-line"/>
-                            <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#facc15" strokeWidth="1.5" opacity="0.42"/>
+                            <path d={routeD(traveled)} fill="none" stroke="#e0f2fe" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" opacity="0.18" className="ship-wake-line"/>
+                            <path d={routeD(traveled)} fill="none" stroke="#bae6fd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.46" className="ship-wake-line"/>
+                            <path d={routeD(traveled)} fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinejoin="round" opacity="0.42"/>
                           </g>
                         );
                       })()}
                       {cur?.isMoving && (() => {
-                        const a = ws(cur.x, cur.y), b = ws(cur.targetX, cur.targetY);
-                        return <line x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#d4a574" strokeWidth="2.5" strokeDasharray="10,6" opacity="0.78" markerEnd="url(#arr)"/>;
+                        const route = cur.route?.length ? cur.route : [{ x: cur.x, y: cur.y }, { x: cur.targetX, y: cur.targetY }];
+                        const currentIndex = Math.max(1, cur.routeIndex || 1);
+                        const future = [{ x: cur.x, y: cur.y }, ...route.slice(currentIndex)];
+                        return <path d={routeD(future)} fill="none" stroke="#d4a574" strokeWidth="2.5" strokeDasharray="10,6" opacity="0.78" markerEnd="url(#arr)"/>;
                       })()}
                       {routeMode && cur && Object.entries(PORTS).map(([k, p]) => {
                         if (Math.hypot(p.x-cur.x, p.y-cur.y) < 0.5) return null;
@@ -2709,7 +2792,7 @@ const OceanTycoon = () => {
 
                     {/* ③ 항구 — 스크린 좌표, 고정 크기 */}
                     {Object.entries(PORTS).map(([k, p]) => {
-                      const { sx, sy } = ws(p.x, p.y);
+                      const { sx, sy } = layoutPorts[k] || ws(p.x, p.y);
                       if (sx < -80 || sx > W+80 || sy < -80 || sy > H+80) return null;
                       const rs = REGION_STYLE[p.region];
                       const isTutTarget = tutorialPhase==='depart'&&(k==='london'||k==='antwerp');
@@ -2831,7 +2914,7 @@ const OceanTycoon = () => {
                       });
                     })()}
 
-                    {/* ⑥ 부스터 버튼 — 스크린 좌표 */}
+                    {/* ⑥ 순항 보조 버튼 — 스크린 좌표 */}
                     {gs.ships.filter(s => s.isMoving).map(s => {
                       const { sx, sy } = ws(s.x, s.y);
                       const isSel = s.id === selShip;
@@ -2842,7 +2925,7 @@ const OceanTycoon = () => {
                           className={`absolute text-xs font-bold rounded-lg px-2 py-1 shadow-lg border transition-colors pointer-events-auto
                             ${s.booster?'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse':isSel?'bg-blue-700 hover:bg-blue-500 text-blue-100 border-blue-400':'bg-blue-900 text-blue-300 border-blue-700 opacity-75 hover:opacity-100'}`}
                           style={{left:bx, top:by, zIndex:25}}>
-                          ⚡ {s.booster?'부스터 ON':'부스터'}
+                          ⚡ {s.booster?'순항 보조 ON':'순항 보조'}
                         </button>
                       );
                     })}
@@ -2905,7 +2988,7 @@ const OceanTycoon = () => {
                       <span className="text-xs opacity-75">{cargoN(s)}/{st2.capacity}</span>
                     </div>
                     <div className="flex justify-between opacity-80 mb-1">
-                      <span>{s.isMoving?(s.booster?'⚡ 부스터':isStormed?'⛈️ 폭풍':'🔄 항해 중'):'⚓ 정박'}</span>
+                      <span>{s.isMoving?(s.booster?'⚡ 순항 보조':isStormed?'⛈️ 폭풍':'🔄 항해 중'):'⚓ 정박'}</span>
                       <span className={crewCnt===0?(isSel?'text-red-700 font-bold':'text-red-400 font-bold'):''}>
                         {crewCnt===0?'⚠️ 무승원':`👥 ${crewCnt}/${st2.maxCrew}`}
                       </span>
@@ -2994,11 +3077,7 @@ const OceanTycoon = () => {
                       <div className="bg-ocean-dark rounded p-2 space-y-1.5">
                         <button onClick={() => toggleBooster()} disabled={(cur.fuel??100)<20&&!cur.booster}
                           className={`w-full px-2 py-1.5 rounded text-xs font-bold border transition-all ${cur.booster?'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse':(cur.fuel??100)>=20?'bg-orange-900 hover:bg-orange-700 text-orange-200 border border-orange-700':'bg-gray-800 text-gray-500 border-gray-700 cursor-not-allowed'}`}>
-                          ⚡ {cur.booster?'부스터 ON — 클릭해서 해제':(cur.fuel??100)>=20?'부스터 OFF (연료2배, 시간-30%)':'부스터 불가 (연료 20% 필요)'}
-                        </button>
-                        <button onClick={() => boost()} className="w-full px-2 py-1 rounded text-xs font-bold bg-sky-950 hover:bg-sky-900 text-sky-100 border border-sky-500 flex items-center justify-center gap-2">
-                          <span>즉시 도착</span>
-                          <CurrencyPill type="gem" value={gs.gems} compact />
+                          ⚡ {cur.booster?'순항 보조 ON — 클릭해서 해제':(cur.fuel??100)>=20?'순항 보조 (연료+50%, 속도+20%)':'순항 보조 불가 (연료 20% 필요)'}
                         </button>
                       </div>
                     )}
@@ -3096,8 +3175,8 @@ const OceanTycoon = () => {
                         const curNavAvg = onBoard.length ? curNavSum / onBoard.length : 50;
                         const t2 = SHIP_TYPES[cur.type];
                         const fm = (cur.fuel??100)<30?0.5:(cur.fuel??100)<60?0.75:1.0;
-                        const curSpd = t2.baseSpeed*(1+(curNavAvg-50)/200+cur.upgrades.speed*0.15)*fm;
-                        const newSpd = t2.baseSpeed*(1+(newNavAvg-50)/200+cur.upgrades.speed*0.15)*fm;
+                        const curSpd = t2.baseSpeed*SAILING_PACE_MULT*(1+(curNavAvg-50)/200+cur.upgrades.speed*0.15)*fm;
+                        const newSpd = t2.baseSpeed*SAILING_PACE_MULT*(1+(newNavAvg-50)/200+cur.upgrades.speed*0.15)*fm;
                         const spdDiff = ((newSpd-curSpd)/Math.max(curSpd,0.0001)*100);
                         const canAfford = gs.gold >= c.hireCost;
                         return (
