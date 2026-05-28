@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pioneer — UX & 튜토리얼 개선안</title>
+<style>
+  :root {
+    --bg: #0b1623;
+    --bg2: #0f1e30;
+    --bg3: #132233;
+    --border: #1e3a5f;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --gold: #f59e0b;
+    --green: #34d399;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --orange: #fb923c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  /* ── 헤더 ── */
+  .doc-header {
+    background: linear-gradient(135deg, #0f1e30 0%, #1a2f4a 50%, #0d2137 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 56px 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(59,130,246,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .doc-header .tag {
+    display: inline-block;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.35);
+    color: var(--accent2);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  .doc-header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .doc-header .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .doc-header .meta {
+    display: flex;
+    gap: 24px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .doc-header .meta span { display: flex; align-items: center; gap: 6px; }
+  .doc-header .meta .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+  }
+  /* ── 레이아웃 ── */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+  /* ── 섹션 ── */
+  .section {
+    margin-bottom: 56px;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .section-desc {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+    max-width: 680px;
+  }
+  /* ── 진단 카드 ── */
+  .diag-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 680px) { .diag-grid { grid-template-columns: 1fr; } }
+  .diag-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .diag-card.bad  { border-left: 3px solid var(--red);    background: rgba(248,113,113,0.04); }
+  .diag-card.warn { border-left: 3px solid var(--orange); background: rgba(251,146,60,0.04); }
+  .diag-card.ok   { border-left: 3px solid var(--green);  background: rgba(52,211,153,0.04); }
+  .diag-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .diag-card h4 .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .bad  .badge { background: rgba(248,113,113,0.15); color: var(--red);    border: 1px solid rgba(248,113,113,0.3); }
+  .warn .badge { background: rgba(251,146,60,0.15);  color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+  .ok   .badge { background: rgba(52,211,153,0.15);  color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
+  .diag-card ul {
+    margin: 0; padding-left: 16px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.85;
+  }
+  /* ── 우선순위 테이블 ── */
+  .priority-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .priority-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .priority-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(30,58,95,0.5);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .priority-table tr:last-child td { border-bottom: none; }
+  .priority-table tr:hover td { background: rgba(59,130,246,0.04); }
+  .p-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .p-high   { background: rgba(248,113,113,0.15); color: var(--red);    border: 1px solid rgba(248,113,113,0.3); }
+  .p-mid    { background: rgba(251,146,60,0.15);  color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+  .p-low    { background: rgba(148,163,184,0.12); color: #94a3b8;       border: 1px solid rgba(148,163,184,0.2); }
+  .p-effort {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(59,130,246,0.1);
+    color: var(--accent2);
+    border: 1px solid rgba(59,130,246,0.25);
+    white-space: nowrap;
+  }
+  /* ── 튜토리얼 플로우 ── */
+  .flow-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .flow-phase {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .flow-spine {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 40px;
+  }
+  .flow-node {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+    border: 2px solid;
+    position: relative;
+    z-index: 1;
+  }
+  .flow-spine .flow-line {
+    width: 2px;
+    flex: 1;
+    min-height: 32px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+  .flow-phase:last-child .flow-line { display: none; }
+  .flow-body {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    flex: 1;
+    margin-bottom: 8px;
+  }
+  .flow-phase-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .flow-phase-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .flow-step {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .flow-step .num {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: var(--accent2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    margin-top: 1px;
+  }
+  .ux-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .ux-tag.new    { background: rgba(52,211,153,0.15); color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
+  .ux-tag.fix    { background: rgba(251,146,60,0.15); color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+  .ux-tag.keep   { background: rgba(148,163,184,0.1); color: #94a3b8;       border: 1px solid rgba(148,163,184,0.2); }
+  /* ── 구현 스펙 카드 ── */
+  .spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 680px) { .spec-grid { grid-template-columns: 1fr; } }
+  .spec-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .spec-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .spec-card ul {
+    padding-left: 16px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.9;
+  }
+  .spec-card ul li { margin-bottom: 2px; }
+  .spec-card code {
+    font-size: 11px;
+    background: rgba(59,130,246,0.1);
+    color: var(--accent2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+  }
+  /* ── 와이어프레임 ── */
+  .wireframe {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Consolas', monospace;
+    white-space: pre;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+  .wireframe .hl { color: #60a5fa; }
+  .wireframe .hl2 { color: #34d399; }
+  .wireframe .hl3 { color: #f59e0b; }
+  /* ── 구분선 ── */
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+  /* ── 인용/강조 박스 ── */
+  .callout {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13.5px;
+    color: var(--text);
+    margin: 20px 0;
+  }
+  .callout.warn {
+    background: rgba(251,146,60,0.08);
+    border-color: rgba(251,146,60,0.25);
+    border-left-color: var(--orange);
+  }
+  .callout.green {
+    background: rgba(52,211,153,0.08);
+    border-color: rgba(52,211,153,0.25);
+    border-left-color: var(--green);
+  }
+  .callout strong { color: #fff; }
+  /* ── 목차 ── */
+  .toc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 48px;
+  }
+  .toc h3 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .toc ol {
+    padding-left: 20px;
+    color: var(--accent2);
+    font-size: 13.5px;
+    line-height: 2;
+  }
+  .toc ol li a {
+    color: var(--accent2);
+    text-decoration: none;
+  }
+  .toc ol li a:hover { text-decoration: underline; }
+  .toc ol li span {
+    color: var(--muted);
+    font-size: 12px;
+    margin-left: 8px;
+  }
+  /* ── 비교 ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  @media (max-width: 680px) { .compare-grid { grid-template-columns: 1fr; } }
+  .compare-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .compare-card h5 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .compare-card.as-is h5 { color: var(--red); }
+  .compare-card.to-be h5 { color: var(--green); }
+  .compare-card ul {
+    padding-left: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.85;
+  }
+  /* ── 피드백 타이밍 테이블 ── */
+  .event-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .event-table th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .event-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(30,58,95,0.4);
+    color: var(--text);
+    vertical-align: top;
+    font-size: 12.5px;
+  }
+  .event-table tr:last-child td { border-bottom: none; }
+  .event-table .trigger { color: var(--gold); font-weight: 600; }
+  .event-table .feedback { color: var(--green); }
+  /* ── 푸터 ── */
+  .doc-footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 48px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 헤더 ── -->
+<div class="doc-header">
+  <div class="tag">Design Review</div>
+  <h1>Pioneer — UX & 튜토리얼 개선안</h1>
+  <div class="subtitle">현재 온보딩·가이드의 미비점을 진단하고, 구체적인 개선 방향과 구현 스펙을 제안합니다.</div>
+  <div class="meta">
+    <span><span class="dot"></span>Pioneer v1.2.27 기준</span>
+    <span>작성: 2026-05-28</span>
+    <span>대상: App.jsx / TUTORIAL_STEPS / INTRO_SLIDES</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 목차 -->
+  <div class="toc">
+    <h3>목차</h3>
+    <ol>
+      <li><a href="#s1">현황 진단</a> <span>— 무엇이 문제인가</span></li>
+      <li><a href="#s2">개선 우선순위 매트릭스</a> <span>— 임팩트 × 구현 비용</span></li>
+      <li><a href="#s3">튜토리얼 재설계</a> <span>— 3단계 점진적 공개</span></li>
+      <li><a href="#s4">UX 피드백 시스템</a> <span>— 주요 액션별 피드백 정의</span></li>
+      <li><a href="#s5">정보 구조 개선</a> <span>— 지도 화면 정보 위계</span></li>
+      <li><a href="#s6">구체적 구현 사항</a> <span>— 파일·컴포넌트·상태 변수</span></li>
+    </ol>
+  </div>
+
+  <!-- ── 1. 현황 진단 ── -->
+  <div class="section" id="s1">
+    <div class="section-label">Section 01</div>
+    <div class="section-title">현황 진단</div>
+    <div class="section-desc">코드와 기획서를 기반으로 현재 온보딩·UX의 강점과 약점을 분류했습니다.</div>
+
+    <div class="diag-grid">
+      <div class="diag-card bad">
+        <h4>튜토리얼 커버리지 <span class="badge">심각</span></h4>
+        <ul>
+          <li><code>TUTORIAL_STEPS</code>는 5단계(배 선택→출항→항해→판매→구매)뿐</li>
+          <li>승무원·업그레이드·정보 구매·세금·배달 의뢰·일일 목표·날씨·지도 이벤트 등 핵심 10+ 시스템에 튜토리얼 없음</li>
+          <li>튜토리얼 완료 후 <code>'done'</code> 상태에서 플레이어는 무엇을 해야 하는지 알 수 없음</li>
+          <li>인트로 슬라이드 1장 — 세계관만 전달하고 플레이 방법은 설명 없음</li>
+        </ul>
+      </div>
+      <div class="diag-card bad">
+        <h4>시각적 유도 부재 <span class="badge">심각</span></h4>
+        <ul>
+          <li>튜토리얼 스텝이 텍스트 바 형태 → 어떤 UI 요소를 눌러야 하는지 시각적으로 가리키지 않음</li>
+          <li>중요 버튼 하이라이트(스포트라이트 오버레이) 없음</li>
+          <li>배 선택 → 목적지 선택 → 거래소 흐름이 맥락 없이 이어짐</li>
+          <li>항구 이름만 있고 "어디가 싸고 비싼지" 초반에 시각적 단서 없음</li>
+        </ul>
+      </div>
+      <div class="diag-card warn">
+        <h4>정보 과부하 <span class="badge">주의</span></h4>
+        <ul>
+          <li>첫 화면에 함대 목록·HUD·조언 바·화물 미니창·지도 버튼·항구 라벨·이벤트 아이콘이 동시에 노출</li>
+          <li>우측 패널 4개 탭(정보·함대·퀘스트·승무원)이 항상 접근 가능 → 초반 플레이어에게 의미 없는 노이즈</li>
+          <li>항로 잠김 항구도 동일한 시각 비중 → 방문 가능한 항구가 강조되지 않음</li>
+        </ul>
+      </div>
+      <div class="diag-card warn">
+        <h4>빈 상태 & 오류 처리 <span class="badge">주의</span></h4>
+        <ul>
+          <li>첫 세션: 금 0, 선원 0~1, 화물 8개 — 거래소 열면 "판매 가능한 화물 없음" 빈 슬롯만 표시 가능성</li>
+          <li>항구 해금 실패 시 로그 텍스트만 출력 (시각 피드백 없음)</li>
+          <li>연료·내구도가 낮을 때 출항 경고 없음</li>
+          <li>승무원 0명 출항 시도 → 로그 텍스트 출력 후 묻힘</li>
+        </ul>
+      </div>
+      <div class="diag-card ok">
+        <h4>잘 되고 있는 것 <span class="badge">유지</span></h4>
+        <ul>
+          <li>상시 조언 바: 맥락 기반 다음 행동 안내 — 방향성은 올바름</li>
+          <li>항구 해금 라벨: 지도 위 누적 판매금 조건 표시</li>
+          <li>거래소 분할 레이아웃: 차트·조작부·목록 분리</li>
+          <li>가격 방향 힌트: 상품별 ▲▼ 변동률 표시</li>
+          <li>항로 확정형 UX: 시세 확인 후 목적지 확정 버튼</li>
+        </ul>
+      </div>
+      <div class="diag-card warn">
+        <h4>첫 세션 목표 불명확 <span class="badge">주의</span></h4>
+        <ul>
+          <li>"양털을 어디에서 팔면 좋은가"를 플레이어가 스스로 발견해야 함</li>
+          <li>퀘스트·일일 목표가 처음부터 열려 있지만 화면 밖 탭에 숨어 있음</li>
+          <li>최초 목표(양털 8개 판매)가 HUD나 지도에 시각적으로 표시되지 않음</li>
+          <li>누적 판매금 진행 바(다음 지역 해금까지 얼마 남았는지) 없음</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>핵심 문제 요약:</strong> 튜토리얼이 "무엇을 클릭하라"를 알려주지만 "왜 그 행동을 해야 하는가"와 "다음에 뭘 해야 하는가"를 알려주지 않는다. 처음 플레이하는 사람은 5단계 튜토리얼 이후 방향을 잃는다.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 2. 우선순위 매트릭스 ── -->
+  <div class="section" id="s2">
+    <div class="section-label">Section 02</div>
+    <div class="section-title">개선 우선순위 매트릭스</div>
+    <div class="section-desc">임팩트(플레이어 혼란 감소 효과) 대비 구현 비용 기준으로 정렬했습니다.</div>
+
+    <table class="priority-table">
+      <thead>
+        <tr>
+          <th style="width:36%">개선 항목</th>
+          <th style="width:14%">우선순위</th>
+          <th style="width:14%">구현 비용</th>
+          <th>기대 효과</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>첫 항해 목표 카드</strong><br><span style="color:var(--muted);font-size:12px">지도 위 "지금 할 일" 카드 고정 표시</span></td>
+          <td><span class="p-badge p-high">P0 긴급</span></td>
+          <td><span class="p-effort">소</span></td>
+          <td>신규 플레이어가 첫 5분 내 방향 확보. 튜토리얼 완료율 대폭 향상.</td>
+        </tr>
+        <tr>
+          <td><strong>UI 스포트라이트 오버레이</strong><br><span style="color:var(--muted);font-size:12px">튜토리얼 스텝별 대상 요소 하이라이트</span></td>
+          <td><span class="p-badge p-high">P0 긴급</span></td>
+          <td><span class="p-effort">중</span></td>
+          <td>"지금 어디를 눌러야 하나" 혼란 제거. 스텝 완료율 상승.</td>
+        </tr>
+        <tr>
+          <td><strong>인트로 슬라이드 보강 (3장)</strong><br><span style="color:var(--muted);font-size:12px">핵심 루프 3장으로 압축 설명</span></td>
+          <td><span class="p-badge p-high">P0 긴급</span></td>
+          <td><span class="p-effort">소</span></td>
+          <td>게임 목표 이해도 향상. 첫 세션 이탈률 감소.</td>
+        </tr>
+        <tr>
+          <td><strong>누적 판매금 진행 바</strong><br><span style="color:var(--muted);font-size:12px">HUD에 다음 지역 해금까지 진행도</span></td>
+          <td><span class="p-badge p-high">P1 중요</span></td>
+          <td><span class="p-effort">소</span></td>
+          <td>장기 목표 가시화. 반복 플레이 동기 부여.</td>
+        </tr>
+        <tr>
+          <td><strong>지역별 가격 힌트 지도 오버레이</strong><br><span style="color:var(--muted);font-size:12px">초반 보유 화물의 "비싼 항구" 표시</span></td>
+          <td><span class="p-badge p-high">P1 중요</span></td>
+          <td><span class="p-effort">중</span></td>
+          <td>첫 항해 목적지 결정 마찰 제거. 핵심 루프(싸게 사서 비싸게 팔기) 직관화.</td>
+        </tr>
+        <tr>
+          <td><strong>시스템별 첫 노출 툴팁</strong><br><span style="color:var(--muted);font-size:12px">승무원·정보 구매·세금 패널 첫 오픈 시</span></td>
+          <td><span class="p-badge p-mid">P2</span></td>
+          <td><span class="p-effort">중</span></td>
+          <td>복잡 시스템 진입 장벽 완화. 각 기능의 "왜"를 설명.</td>
+        </tr>
+        <tr>
+          <td><strong>경고 다이얼로그 강화</strong><br><span style="color:var(--muted);font-size:12px">저연료·저내구도 출항 시 모달 경고</span></td>
+          <td><span class="p-badge p-mid">P2</span></td>
+          <td><span class="p-effort">소</span></td>
+          <td>실수로 인한 항해 실패 방지. 시스템 이해도 향상.</td>
+        </tr>
+        <tr>
+          <td><strong>조언 바 맥락 확장</strong><br><span style="color:var(--muted);font-size:12px">세금 임박·승무원 부족·화물 만재 등 상황 추가</span></td>
+          <td><span class="p-badge p-mid">P2</span></td>
+          <td><span class="p-effort">소</span></td>
+          <td>튜토리얼 완료 이후 자연스러운 가이드 연속성 확보.</td>
+        </tr>
+        <tr>
+          <td><strong>점진적 UI 공개 (탭 잠금)</strong><br><span style="color:var(--muted);font-size:12px">초반엔 퀘스트·선원 탭을 단계별로 해금</span></td>
+          <td><span class="p-badge p-low">P3</span></td>
+          <td><span class="p-effort">중</span></td>
+          <td>첫 화면 정보 과부하 감소. 시스템 소개 타이밍 조절.</td>
+        </tr>
+        <tr>
+          <td><strong>완료 애니메이션 & 효과음 연출</strong><br><span style="color:var(--muted);font-size:12px">항구 도착·판매 완료·퀘스트 달성 피드백</span></td>
+          <td><span class="p-badge p-low">P3</span></td>
+          <td><span class="p-effort">대</span></td>
+          <td>긍정 강화. 시스템 상태 변화를 직관적으로 전달.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 3. 튜토리얼 재설계 ── -->
+  <div class="section" id="s3">
+    <div class="section-label">Section 03</div>
+    <div class="section-title">튜토리얼 재설계 — 3단계 점진적 공개</div>
+    <div class="section-desc">기존 5-스텝 선형 튜토리얼을 "필수 루프 → 확장 시스템 → 자유 플레이" 3단계로 재구성합니다.</div>
+
+    <div class="callout green">
+      <strong>설계 원칙:</strong> 각 단계는 플레이어가 직접 행동하고 즉각적인 보상을 받은 뒤 다음 단계가 열립니다. 설명보다 행동이 먼저입니다.
+    </div>
+
+    <!-- Phase 1 -->
+    <div style="margin-bottom: 32px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent2);margin-bottom:12px;">Phase 1 — 필수 루프 (약 3~5분)</div>
+      <div class="flow-container">
+
+        <div class="flow-phase">
+          <div class="flow-spine">
+            <div class="flow-node" style="background:rgba(59,130,246,0.15);border-color:var(--accent);color:var(--accent2);">1</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-phase-title">
+              인트로 슬라이드 개편 (3장)
+              <span class="ux-tag fix">개편</span>
+            </div>
+            <div class="flow-phase-sub">기존 1장(세계관 텍스트) → 3장으로 확장. 각 장은 10초 이내로 읽힌다.</div>
+            <div class="flow-steps">
+              <div class="flow-step"><div class="num">①</div><div><strong style="color:var(--text)">슬라이드 1: 상황 설정</strong> — "당신은 리스본의 초보 상인. 통통배 1척, 양털 8개가 전부입니다." 지도 미리보기 배경 포함.</div></div>
+              <div class="flow-step"><div class="num">②</div><div><strong style="color:var(--text)">슬라이드 2: 핵심 루프 도식</strong> — "싼 곳에서 사서 → 비싼 곳에서 팔고 → 더 큰 배와 승무원을 산다" 3아이콘 흐름도.</div></div>
+              <div class="flow-step"><div class="num">③</div><div><strong style="color:var(--text)">슬라이드 3: 첫 목표 제시</strong> — "양털은 런던·함부르크·앤트워프에서 비싸게 팔립니다. 항해해서 팔아보세요!" 지도 위 3개 항구를 명시적으로 하이라이트한 미니맵 이미지 포함.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-phase">
+          <div class="flow-spine">
+            <div class="flow-node" style="background:rgba(59,130,246,0.15);border-color:var(--accent);color:var(--accent2);">2</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-phase-title">
+              배 선택 — 스포트라이트 오버레이
+              <span class="ux-tag new">신규</span>
+            </div>
+            <div class="flow-phase-sub">함대 목록 또는 지도 위 배 아이콘에 펄싱 링 애니메이션 + 화살표 툴팁 표시.</div>
+            <div class="flow-steps">
+              <div class="flow-step"><div class="num">①</div><div>반투명 오버레이로 배경 어둡게 처리. 함대 목록 영역과 지도 위 배 아이콘만 밝게 유지.</div></div>
+              <div class="flow-step"><div class="num">②</div><div>배 아이콘 주변에 pulse 링 애니메이션 (CSS <code>@keyframes</code> ring-pulse).</div></div>
+              <div class="flow-step"><div class="num">③</div><div>배 클릭 즉시 오버레이 해제 → 다음 스텝(목적지 선택) 자동 진입.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-phase">
+          <div class="flow-spine">
+            <div class="flow-node" style="background:rgba(59,130,246,0.15);border-color:var(--accent);color:var(--accent2);">3</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-phase-title">
+              목적지 선택 — 가격 힌트 오버레이
+              <span class="ux-tag new">신규</span>
+            </div>
+            <div class="flow-phase-sub">목적지 선택 모드 진입 시, 보유 화물(양털)이 비싼 항구를 지도 위에서 강조 표시.</div>
+            <div class="flow-steps">
+              <div class="flow-step"><div class="num">①</div><div>항구 라벨 아래에 "<strong style="color:var(--green)">양털 ▲ 비쌈</strong>" 배지를 런던·함부르크·앤트워프에 표시. (<code>RESOURCE_REGIONS</code> 데이터 활용)</div></div>
+              <div class="flow-step"><div class="num">②</div><div>해당 항구 아이콘에 금색 테두리 하이라이트 적용.</div></div>
+              <div class="flow-step"><div class="num">③</div><div>조언 바: "💡 양털은 유럽 항구에서 비쌉니다. 항구를 눌러 시세를 확인하세요." 텍스트 유지.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-phase">
+          <div class="flow-spine">
+            <div class="flow-node" style="background:rgba(59,130,246,0.15);border-color:var(--accent);color:var(--accent2);">4</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-phase-title">
+              항해 중 — 미니 HUD 보조
+              <span class="ux-tag fix">개선</span>
+            </div>
+            <div class="flow-phase-sub">항해 시작 후 "도착까지 N% 완료" 진행 바와 현재 날씨·연료·내구도를 지도 하단에 컴팩트하게 표시.</div>
+            <div class="flow-steps">
+              <div class="flow-step"><div class="num">①</div><div>지도 하단 화물 미니창 옆에 항해 진행 바 (선택된 배가 항해 중일 때만 노출).</div></div>
+              <div class="flow-step"><div class="num">②</div><div>튜토리얼 sailing 스텝 중: "📍 추적 버튼을 눌러 배를 따라가 보세요" 버튼을 툴팁으로 강조.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-phase">
+          <div class="flow-spine">
+            <div class="flow-node" style="background:rgba(52,211,153,0.15);border-color:var(--green);color:var(--green);">5</div>
+            <div class="flow-line" style="display:none;"></div>
+          </div>
+          <div class="flow-body">
+            <div class="flow-phase-title">
+              도착 & 첫 판매 — 완료 연출
+              <span class="ux-tag new">신규</span>
+            </div>
+            <div class="flow-phase-sub">항구 도착 시 토스트 알림 + 시장 버튼 스포트라이트. 판매 완료 후 Phase 1 완료 팝업 표시.</div>
+            <div class="flow-steps">
+              <div class="flow-step"><div class="num">①</div><div>도착 시 중앙 상단 토스트: "⚓ [항구명] 도착! 시장에서 화물을 판매하세요." + 시장 버튼 스포트라이트.</div></div>
+              <div class="flow-step"><div class="num">②</div><div>판매 완료 시: 골드 증가 애니메이션 (+XXX 금 플로팅 텍스트) + 토스트 알림.</div></div>
+              <div class="flow-step"><div class="num">③</div><div><strong style="color:var(--gold)">Phase 1 완료 팝업</strong>: "첫 무역 성공! 이제 더 멀리 항해하려면 화물을 사야 합니다." + "Phase 2: 무역 루프 확장" 프리뷰.</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div style="margin-bottom: 32px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--purple);margin-bottom:12px;">Phase 2 — 확장 시스템 소개 (첫 판매 완료 이후)</div>
+
+      <table class="priority-table">
+        <thead>
+          <tr>
+            <th>시스템</th>
+            <th>트리거 조건</th>
+            <th>노출 방식</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>화물 매입</strong></td>
+            <td>첫 판매 완료 후 즉시</td>
+            <td>시장 탭 "매입"에 깜빡이는 배지 + 조언 바 "이 항구에서 싼 화물을 사서 돌아가세요"</td>
+          </tr>
+          <tr>
+            <td><strong>선원 고용</strong></td>
+            <td>첫 항해 완료 (누적 판매금 500+)</td>
+            <td>우측 패널 선원 탭에 뱃지(!) + 첫 오픈 시 "선원을 고용하면 항해 속도와 거래 효율이 오릅니다" 1회 툴팁</td>
+          </tr>
+          <tr>
+            <td><strong>정보 구매</strong></td>
+            <td>누적 판매금 1,500+ (지중해 해금 조건 근접)</td>
+            <td>항구 시세창 하단에 "거리 소문(300금)" 버튼 강조 + 첫 클릭 시 정보 구매 설명 팝업</td>
+          </tr>
+          <tr>
+            <td><strong>퀘스트</strong></td>
+            <td>3번째 항해 완료</td>
+            <td>우측 패널 퀘스트 탭 뱃지(!) 추가 + "새 퀘스트가 생겼습니다" 토스트</td>
+          </tr>
+          <tr>
+            <td><strong>일일 목표</strong></td>
+            <td>첫 세금 납부 이후</td>
+            <td>일일 목표 버튼에 배지 + "오늘 목표를 달성하면 보석을 얻습니다" 1회 설명</td>
+          </tr>
+          <tr>
+            <td><strong>세금 시스템</strong></td>
+            <td>세금 납부 D-30분 전</td>
+            <td>HUD 세금 카운트다운 빨간색 전환 + 조언 바 "세금이 [N]분 뒤 징수됩니다. 보석으로 면제 가능합니다"</td>
+          </tr>
+          <tr>
+            <td><strong>배 업그레이드</strong></td>
+            <td>두 번째 배 구매 또는 누적 판매금 5,000+</td>
+            <td>함대 탭 배 카드에 "업그레이드 가능" 배지 + 첫 오픈 시 설명</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Phase 3 -->
+    <div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">Phase 3 — 자유 플레이 (튜토리얼 완전 종료)</div>
+      <div class="diag-card ok" style="margin-bottom:0;">
+        <h4>진입 조건 <span class="badge">달성 목표</span></h4>
+        <ul>
+          <li>조건: 누적 판매금 3,000금 달성 OR 3개 시스템(선원·퀘스트·화물 매입) 사용 경험</li>
+          <li>튜토리얼 오버레이 완전 제거, 조언 바는 계속 동작 (상황별 맥락 힌트로 전환)</li>
+          <li>Phase 3 진입 시 1회 요약 팝업: "이제 당신은 진정한 상인입니다. 동아시아까지 항해해 보세요!" + 다음 지역(지중해) 해금 진행 바 표시</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 4. UX 피드백 시스템 ── -->
+  <div class="section" id="s4">
+    <div class="section-label">Section 04</div>
+    <div class="section-title">UX 피드백 시스템</div>
+    <div class="section-desc">플레이어의 주요 행동 순간마다 즉각적인 시각 피드백이 필요합니다. 현재 대부분 로그 텍스트에만 의존하고 있습니다.</div>
+
+    <div class="compare-grid">
+      <div class="compare-card as-is">
+        <h5>AS-IS (현재)</h5>
+        <ul>
+          <li>판매 완료 → 로그에 텍스트 1줄</li>
+          <li>출항 → 로그에 "항해 중..." 텍스트</li>
+          <li>퀘스트 완료 → 로그 텍스트</li>
+          <li>항구 해금 실패 → 로그에 묻힘</li>
+          <li>연료 부족 출항 → 별도 경고 없음</li>
+          <li>세금 임박 → 카운트다운만</li>
+        </ul>
+      </div>
+      <div class="compare-card to-be">
+        <h5>TO-BE (개선 후)</h5>
+        <ul>
+          <li>판매 완료 → 골드 +N 플로팅 텍스트 + 토스트</li>
+          <li>출항 → 화면 중앙 상단 토스트 "항해 시작"</li>
+          <li>퀘스트 완료 → 중앙 완료 팝업 + 보상 애니메이션</li>
+          <li>해금 실패 → 지도 위 잠금 아이콘 흔들림 + 토스트</li>
+          <li>저연료/저내구도 → 출항 전 경고 모달</li>
+          <li>세금 임박 10분 → 화면 가장자리 빨간 테두리 펄스</li>
+        </ul>
+      </div>
+    </div>
+
+    <table class="event-table">
+      <thead>
+        <tr>
+          <th>트리거 이벤트</th>
+          <th>피드백 형태</th>
+          <th>위치</th>
+          <th>지속시간</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="trigger">화물 판매 완료</td>
+          <td class="feedback">플로팅 텍스트 "+[N]금" + 토스트 "판매 완료"</td>
+          <td>HUD 금화 위치에서 위로 떠오름</td>
+          <td>1.5초</td>
+        </tr>
+        <tr>
+          <td class="trigger">항구 도착</td>
+          <td class="feedback">상단 중앙 토스트 "[항구명] 도착! 시장 버튼 하이라이트"</td>
+          <td>화면 상단 중앙</td>
+          <td>4초</td>
+        </tr>
+        <tr>
+          <td class="trigger">퀘스트 완료</td>
+          <td class="feedback">중앙 완료 팝업 (보상 표시 + "완료!" 텍스트)</td>
+          <td>화면 중앙</td>
+          <td>클릭 시 닫힘</td>
+        </tr>
+        <tr>
+          <td class="trigger">새 항구 발견</td>
+          <td class="feedback">토스트 "새 항구 발견! [항구명] 항로 개통" + 지도 핀 이펙트</td>
+          <td>화면 상단 우측</td>
+          <td>3초</td>
+        </tr>
+        <tr>
+          <td class="trigger">항로 해금 실패</td>
+          <td class="feedback">토스트 (오렌지) "[항구명] 해금 조건: [N]금 더 필요"</td>
+          <td>화면 상단 중앙</td>
+          <td>3초</td>
+        </tr>
+        <tr>
+          <td class="trigger">세금 임박 (10분 미만)</td>
+          <td class="feedback">HUD 세금 카운트다운 빨간 배경 + 화면 가장자리 펄스</td>
+          <td>HUD + 화면 테두리</td>
+          <td>세금 납부까지</td>
+        </tr>
+        <tr>
+          <td class="trigger">세금 납부</td>
+          <td class="feedback">토스트 "세금 [N]금 납부됨" + 금화 감소 애니메이션</td>
+          <td>화면 상단 중앙</td>
+          <td>2초</td>
+        </tr>
+        <tr>
+          <td class="trigger">저연료 출항 시도</td>
+          <td class="feedback">경고 모달 "연료가 [N]% 입니다. 그래도 출항하시겠습니까?"</td>
+          <td>화면 중앙 모달</td>
+          <td>확인/취소 선택까지</td>
+        </tr>
+        <tr>
+          <td class="trigger">지도 이벤트 발생</td>
+          <td class="feedback">이벤트 아이콘 등장 애니메이션 (스케일 업 + 글로우)</td>
+          <td>지도 위 해당 위치</td>
+          <td>이벤트 소멸까지</td>
+        </tr>
+        <tr>
+          <td class="trigger">배 업그레이드 완료</td>
+          <td class="feedback">토스트 "[배 이름] 업그레이드!" + 함대 목록 해당 배 하이라이트</td>
+          <td>화면 상단 우측</td>
+          <td>3초</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 5. 정보 구조 개선 ── -->
+  <div class="section" id="s5">
+    <div class="section-label">Section 05</div>
+    <div class="section-title">정보 구조 개선 — 지도 화면 위계</div>
+    <div class="section-desc">현재 지도 화면에 6~8개 UI 레이어가 동시에 경쟁합니다. 정보 위계를 재정의합니다.</div>
+
+    <div class="callout warn">
+      <strong>현재 문제:</strong> HUD, 조언 바, 함대 목록, 화물 미니창, 줌 버튼, 지도 이벤트, 항구 라벨, 팔로우 버튼, 일시정지 버튼이 전부 동시에 노출. 플레이어의 시선이 분산되고 "지금 뭘 해야 하나"가 묻힘.
+    </div>
+
+    <div style="margin-bottom: 24px;">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px;">지도 화면 레이아웃 개선안 (와이어프레임)</div>
+      <div class="wireframe">
+<span class="hl">┌─────────────────────────────────────────────────────────────┐</span>
+<span class="hl">│</span>  [<span class="hl2">금화 N,NNN</span>] [<span class="hl2">보석 N</span>]  ··  [세금 HH:MM]  ··  [일시정지]    <span class="hl">│ ← HUD (최상위)</span>
+<span class="hl">│</span>  <span class="hl3">[ 조언: 💡 배를 선택하고 목적지를 정해 출항하세요 ]</span>         <span class="hl">│ ← 조언 바</span>
+<span class="hl">├─────────────────────────────────────────────────────────────┤</span>
+<span class="hl">│</span>  ┌──────┐                                       ┌─────────┐ <span class="hl">│</span>
+<span class="hl">│</span>  │함대  │         <span class="hl2">[ 지  도  영  역 ]</span>           │우측패널 │ <span class="hl">│</span>
+<span class="hl">│</span>  │목록  │                                       │         │ <span class="hl">│</span>
+<span class="hl">│</span>  │      │    ⛵  항해 중                         │ [탭들]  │ <span class="hl">│</span>
+<span class="hl">│</span>  │ P1:  │                  🏴 런던              │         │ <span class="hl">│</span>
+<span class="hl">│</span>  │황금  │                  <span class="hl2">[양털 ▲ 비쌈]</span>        │         │ <span class="hl">│</span>
+<span class="hl">│</span>  │수호자│                                       │         │ <span class="hl">│</span>
+<span class="hl">│</span>  │ P2:  │                                       │         │ <span class="hl">│</span>
+<span class="hl">│</span>  │(잠김)│                                       └─────────┘ <span class="hl">│</span>
+<span class="hl">│</span>  └──────┘                                                   <span class="hl">│</span>
+<span class="hl">├─────────────────────────────────────────────────────────────┤</span>
+<span class="hl">│</span>  [📦 화물: 양털 8]  <span class="hl3">[항해 중 N% ████░░░░░]</span>  [+] [-] [🔍]  <span class="hl">│ ← 하단 바</span>
+<span class="hl">└─────────────────────────────────────────────────────────────┘</span>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px;">항구 라벨 개선 — 상태별 시각 구분</div>
+    <table class="event-table">
+      <thead>
+        <tr>
+          <th>항구 상태</th>
+          <th>현재</th>
+          <th>개선 후</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>방문 가능 (해금됨)</strong></td>
+          <td>일반 텍스트 라벨</td>
+          <td>흰색 라벨 + 항구 아이콘 정상 밝기</td>
+        </tr>
+        <tr>
+          <td><strong>보유 화물 판매 유리</strong></td>
+          <td>표시 없음</td>
+          <td><span style="color:var(--gold)">★ 금색 테두리</span> + "[화물명] ▲ 비쌈" 서브 라벨 (튜토리얼 Phase 1 중만)</td>
+        </tr>
+        <tr>
+          <td><strong>미방문 (해금됨)</strong></td>
+          <td>기존 "미방문" 배지</td>
+          <td><span style="color:var(--accent2)">청록색</span> 점(·) 표시 — 눈에 띄되 과하지 않게</td>
+        </tr>
+        <tr>
+          <td><strong>항로 잠김 (해금 조건 미달)</strong></td>
+          <td>50% 불투명도 + "Nk금 필요" 라벨</td>
+          <td>30% 불투명도 + 자물쇠 아이콘만 (텍스트 조건은 마우스 호버/탭 시만 표시)</td>
+        </tr>
+        <tr>
+          <td><strong>현재 정박 중</strong></td>
+          <td>일반 라벨</td>
+          <td><span style="color:var(--green)">앵커 아이콘</span> + 초록 테두리 강조</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 24px;">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px;">누적 판매금 진행 바 — HUD 추가</div>
+      <div class="wireframe">
+<span class="hl">[ 금화 12,450 ]  [ 보석 3 ]  |  <span class="hl3">다음: 지중해 해금  [████████░░] 83%  (1,500금 필요)</span>  |  세금 23:12</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:8px;">
+        HUD 중앙에 "다음 지역 해금까지 진행 바" 추가. 목표 지역 아이콘(예: ⛪ 지중해)과 남은 금액 표시. 해금 달성 시 토스트 + 지도에서 해당 지역 항구 언락 연출.
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 6. 구체적 구현 사항 ── -->
+  <div class="section" id="s6">
+    <div class="section-label">Section 06</div>
+    <div class="section-title">구체적 구현 사항</div>
+    <div class="section-desc">모든 개선 사항을 App.jsx 중심으로 구현할 때 필요한 상태·컴포넌트·데이터를 명세합니다.</div>
+
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h4>인트로 슬라이드 확장</h4>
+        <ul>
+          <li><code>INTRO_SLIDES</code> 배열: 1개 → 3개</li>
+          <li>슬라이드 2: <code>type: 'loop-diagram'</code> 필드 추가 → 아이콘 흐름도 렌더링</li>
+          <li>슬라이드 3: <code>highlightPorts: ['london','hamburg','antwerp']</code> → 미니맵 위 하이라이트</li>
+          <li>슬라이드 자동 진행: <code>autoAdvance: true, delay: 8000</code> (클릭으로 건너뛰기 가능)</li>
+          <li>인트로 스킵 버튼: 2회차 이상 플레이어용</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>스포트라이트 오버레이</h4>
+        <ul>
+          <li>상태: <code>tutorialSpotlight: string | null</code> (대상 요소 selector)</li>
+          <li><code>TutorialSpotlight</code> 컴포넌트: 반투명 오버레이 + 구멍(clip-path) + 툴팁 화살표</li>
+          <li>튜토리얼 스텝 → 스포트라이트 매핑:
+            <br>· <code>select</code>: <code>'.fleet-list, .ship-icon-on-map'</code>
+            <br>· <code>depart</code>: <code>'.port-icon.highlight'</code>
+            <br>· <code>sell</code>: <code>'.market-button'</code>
+          </li>
+          <li>스포트라이트 대상 클릭 시 자동 해제</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>토스트 알림 시스템</h4>
+        <ul>
+          <li>상태: <code>toasts: Array&lt;{id, msg, type, duration}&gt;</code></li>
+          <li><code>type</code>: <code>'success' | 'warn' | 'info' | 'error'</code></li>
+          <li><code>addToast(msg, type, duration)</code> 헬퍼 함수</li>
+          <li>위치: 화면 상단 중앙, 최대 3개 스택, 오래된 것 아래</li>
+          <li>애니메이션: 위에서 슬라이드인 → duration 후 페이드아웃</li>
+          <li>기존 <code>addLog</code>에서 분기: 중요 이벤트는 토스트 + 로그 동시 기록</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>플로팅 텍스트 (+N금)</h4>
+        <ul>
+          <li>상태: <code>floatingTexts: Array&lt;{id, text, x, y, color}&gt;</code></li>
+          <li><code>addFloatingText(text, anchorEl, color)</code> 헬퍼</li>
+          <li>판매 완료 시 HUD 금화 위치에서 위로 이동하며 페이드아웃</li>
+          <li>CSS: <code>@keyframes float-up { 0% translateY(0); 100% translateY(-40px) opacity 0 }</code></li>
+          <li>색상: 금 판매 → <code>#f59e0b</code>, 보석 획득 → <code>#38bdf8</code>, 손실 → <code>#f87171</code></li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>누적 판매금 진행 바</h4>
+        <ul>
+          <li>현재 지역 → 다음 해금 지역 계산: <code>REGION_PORT_UNLOCK_GOLD_REQ</code> 순서대로</li>
+          <li>진행률: <code>gs.totalEarned / nextMilestone * 100</code></li>
+          <li>HUD에 <code>UnlockProgressBar</code> 컴포넌트 추가</li>
+          <li>마일스톤 달성 시: 토스트 + 지도에서 해당 지역 항구 language 파티클 이펙트</li>
+          <li>공간 없을 때: 축약 모드 <code>"지중해 83%"</code> 텍스트만</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>가격 힌트 지도 오버레이</h4>
+        <ul>
+          <li>조건: <code>tutorialPhase === 'depart'</code> AND <code>routeMode === true</code></li>
+          <li>보유 화물 목록에서 <code>RESOURCE_REGIONS[res].expensive</code> 지역 추출</li>
+          <li>해당 지역 항구에 <code>hintBadge</code> 렌더링: "[화물명] ▲ 비쌈"</li>
+          <li>배지는 항구 라벨 아래 별도 DOM 요소 (지도 좌표 변환 필요)</li>
+          <li>Phase 1 종료 후 자동 숨김 (<code>showCargoHints: boolean</code> 상태)</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>저연료/저내구도 경고</h4>
+        <ul>
+          <li><code>chooseDestinationPort</code> 내에서 출항 전 체크</li>
+          <li>연료 &lt; 30% OR 내구도 &lt; 30% → <code>showDepartureWarn: boolean</code> 상태 ON</li>
+          <li>경고 모달: 현재 연료·내구도 표시 + "그래도 출항" / "취소" 버튼</li>
+          <li>"그래도 출항" 클릭 시 <code>pendingDeparture</code> 실행 후 모달 닫기</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>시스템 첫 노출 툴팁</h4>
+        <ul>
+          <li>상태: <code>seenSystems: Set&lt;string&gt;</code> (localStorage 저장)</li>
+          <li>체크 항목: <code>'crew' | 'portInfo' | 'tax' | 'quest' | 'upgrade' | 'delivery'</code></li>
+          <li>각 탭/패널 첫 오픈 시 <code>!seenSystems.has(key)</code> → 1회 툴팁 표시</li>
+          <li>툴팁 닫으면 <code>seenSystems.add(key)</code> + localStorage 업데이트</li>
+          <li>툴팁 형태: 해당 UI 요소 옆에 나타나는 인라인 말풍선 (모달 X)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top: 24px;">
+      <strong>Phase 2 잠금 해제 트리거 정리</strong> — 아래 상태를 <code>gs</code> 또는 별도 <code>tutorialProgress</code> 상태에 추가:
+      <br><br>
+      <code>tutorialProgress: { firstSaleDone: bool, voyageCount: number, crewHired: bool, questOpened: bool, portInfoBought: bool }</code>
+      <br><br>
+      각 트리거 달성 시 해당 시스템 배지(<code>unreadBadge</code>) ON + 조언 바 메시지 갱신.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 요약 ── -->
+  <div class="section" style="margin-bottom: 0;">
+    <div class="section-label">Summary</div>
+    <div class="section-title">개선 요약 및 기대 효과</div>
+
+    <div class="diag-grid" style="margin-bottom: 0;">
+      <div class="diag-card ok">
+        <h4>Phase 1 개선 (P0/P1) <span class="badge">핵심</span></h4>
+        <ul>
+          <li>인트로 슬라이드 3장 → 첫 5분 이탈 방지</li>
+          <li>스포트라이트 오버레이 → 클릭 혼란 제거</li>
+          <li>가격 힌트 지도 오버레이 → 핵심 루프 즉시 이해</li>
+          <li>누적 진행 바 → 장기 목표 가시화</li>
+          <li>토스트 + 플로팅 텍스트 → 행동 피드백 즉각화</li>
+        </ul>
+      </div>
+      <div class="diag-card ok">
+        <h4>Phase 2 개선 (P2) <span class="badge">확장</span></h4>
+        <ul>
+          <li>시스템별 첫 노출 툴팁 → 10+ 시스템 점진적 학습</li>
+          <li>저연료 경고 모달 → 실수 방지</li>
+          <li>세금 임박 시각화 → 위기감 전달</li>
+          <li>조언 바 맥락 확장 → 튜토리얼 후에도 가이드 연속성</li>
+          <li>뱃지 시스템 → 새 기능 발견 유도</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout green" style="margin-top: 20px;">
+      <strong>구현 순서 권장:</strong>
+      ① 인트로 슬라이드 보강 (1~2시간) →
+      ② 토스트 시스템 추가 (2~3시간) →
+      ③ 스포트라이트 오버레이 (3~4시간) →
+      ④ 누적 진행 바 HUD 추가 (1~2시간) →
+      ⑤ 가격 힌트 오버레이 (2~3시간) →
+      ⑥ 시스템 첫 노출 툴팁 (3~4시간)
+    </div>
+  </div>
+
+</div>
+
+<!-- 푸터 -->
+<div class="doc-footer">
+  <span>Pioneer UX & 튜토리얼 개선안 v1.0</span>
+  <span>2026-05-28 | Pioneer v1.2.27 기준</span>
+</div>
+
+</body>
+</html>

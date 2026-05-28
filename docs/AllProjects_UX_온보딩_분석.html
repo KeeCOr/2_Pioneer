@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전 프로젝트 UX & 온보딩 분석</title>
+<style>
+  :root {
+    --bg: #08111c;
+    --bg2: #0d1a28;
+    --bg3: #111f30;
+    --bg4: #162438;
+    --border: #1a3050;
+    --text: #dce8f5;
+    --muted: #7b9ab8;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --gold: #f59e0b;
+    --green: #34d399;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --yellow: #fde047;
+    --teal: #2dd4bf;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  /* ── 헤더 ── */
+  .doc-header {
+    background: linear-gradient(135deg, #0d1a28 0%, #12263c 60%, #0a1622 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(167,139,250,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .doc-header .tag {
+    display: inline-block;
+    background: rgba(59,130,246,0.13);
+    border: 1px solid rgba(59,130,246,0.3);
+    color: var(--accent2);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .doc-header h1 {
+    font-size: 30px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .doc-header .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .doc-header .meta { display: flex; gap: 20px; font-size: 11.5px; color: var(--muted); flex-wrap: wrap; }
+  .doc-header .meta span { display: flex; align-items: center; gap: 5px; }
+
+  /* ── 레이아웃 ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  /* ── 섹션 ── */
+  .section { margin-bottom: 56px; }
+  .section-label {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent2); margin-bottom: 6px;
+  }
+  .section-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 5px; }
+  .section-desc { color: var(--muted); font-size: 13px; margin-bottom: 24px; max-width: 720px; }
+
+  /* ── 등급 뱃지 ── */
+  .grade {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .grade-A { background: rgba(52,211,153,0.15); color: var(--green);  border: 1px solid rgba(52,211,153,0.35); }
+  .grade-B { background: rgba(96,165,250,0.15); color: var(--accent2); border: 1px solid rgba(96,165,250,0.35); }
+  .grade-C { background: rgba(253,224,71,0.12); color: var(--yellow); border: 1px solid rgba(253,224,71,0.3); }
+  .grade-D { background: rgba(251,146,60,0.12); color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+  .grade-F { background: rgba(248,113,113,0.12); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
+
+  /* ── 전체 대시보드 테이블 ── */
+  .dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .dashboard-table th {
+    text-align: left;
+    padding: 9px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .dashboard-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(26,48,80,0.6);
+    vertical-align: middle;
+  }
+  .dashboard-table tr:hover td { background: rgba(59,130,246,0.03); }
+  .dashboard-table .project-name {
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .dashboard-table .project-id {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .check { font-size: 13px; }
+
+  /* ── 프로젝트 분석 카드 ── */
+  .project-section {
+    margin-bottom: 48px;
+  }
+  .project-grade-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .project-grade-header h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .project-grade-header .count {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .project-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 12px;
+  }
+  .project-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .project-card-meta {
+    flex: 1;
+    min-width: 0;
+  }
+  .project-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 3px;
+  }
+  .project-card-sub {
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .tag-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .tag-genre { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+  .tag-stack { background: rgba(45,212,191,0.1); color: var(--teal); border: 1px solid rgba(45,212,191,0.22); }
+  .tag-ver   { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+
+  .project-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 700px) { .project-body { grid-template-columns: 1fr; } }
+
+  .project-col h5 {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .project-col.has h5  { color: var(--green); }
+  .project-col.lack h5 { color: var(--red); }
+  .project-col.fix h5  { color: var(--orange); }
+
+  .project-col ul {
+    padding-left: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.85;
+  }
+  .project-col ul li { margin-bottom: 1px; }
+  code {
+    font-size: 11px;
+    background: rgba(59,130,246,0.1);
+    color: var(--accent2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+  }
+
+  /* ── 공통 개선 패턴 ── */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 800px) { .pattern-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 500px) { .pattern-grid { grid-template-columns: 1fr; } }
+
+  .pattern-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .pattern-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .pattern-card p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .pattern-card .applies {
+    margin-top: 8px;
+    font-size: 10.5px;
+    color: var(--accent2);
+  }
+
+  /* ── 빠른 처방 테이블 ── */
+  .rx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .rx-table th {
+    text-align: left;
+    padding: 9px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .rx-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid rgba(26,48,80,0.5);
+    vertical-align: top;
+    font-size: 12.5px;
+  }
+  .rx-table tr:last-child td { border-bottom: none; }
+  .effort {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    white-space: nowrap;
+    background: rgba(59,130,246,0.1);
+    color: var(--accent2);
+    border: 1px solid rgba(59,130,246,0.22);
+  }
+  .impact-high { color: var(--green); font-weight: 700; }
+  .impact-mid  { color: var(--yellow); font-weight: 700; }
+  .impact-low  { color: var(--muted); }
+
+  /* ── 분리선 ── */
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 44px 0; }
+
+  /* ── 콜아웃 ── */
+  .callout {
+    background: rgba(59,130,246,0.07);
+    border: 1px solid rgba(59,130,246,0.22);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--text);
+    margin: 16px 0;
+  }
+  .callout.warn  { background: rgba(251,146,60,0.07); border-color: rgba(251,146,60,0.22); border-left-color: var(--orange); }
+  .callout.green { background: rgba(52,211,153,0.07); border-color: rgba(52,211,153,0.22); border-left-color: var(--green); }
+  .callout strong { color: #fff; }
+
+  /* ── 목차 ── */
+  .toc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 44px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+  }
+  @media (max-width: 600px) { .toc { grid-template-columns: 1fr; } }
+  .toc h3 {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px;
+    grid-column: 1/-1;
+  }
+  .toc a { color: var(--accent2); text-decoration: none; font-size: 13px; line-height: 1.9; display: block; }
+  .toc a:hover { text-decoration: underline; }
+  .toc a .toc-sub { color: var(--muted); font-size: 11px; margin-left: 4px; }
+
+  /* ── 통계 카드 ── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 700px) { .stat-row { grid-template-columns: repeat(3, 1fr); } }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat-card .val {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card .lbl { font-size: 11px; color: var(--muted); }
+
+  /* ── 푸터 ── */
+  .doc-footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    font-size: 11.5px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="doc-header">
+  <div class="tag">Cross-Project Review</div>
+  <h1>전 프로젝트 UX & 온보딩 분석</h1>
+  <div class="subtitle">30개 프로젝트의 현재 온보딩·가이드 수준을 진단하고, 장르별 개선 처방을 제시합니다.</div>
+  <div class="meta">
+    <span>대상: 30개 프로젝트</span>
+    <span>기준일: 2026-05-28</span>
+    <span>Pioneer v1.2.27 · GuildManager v1.1.76 외</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 목차 -->
+  <div class="toc">
+    <h3>목차</h3>
+    <a href="#s1">1. 전체 대시보드 <span class="toc-sub">— 30개 프로젝트 등급 일람</span></a>
+    <a href="#s2">2. 등급 A — 잘 되어있는 것 <span class="toc-sub">— GuildManager</span></a>
+    <a href="#s3">3. 등급 B — 양호하나 개선 여지 <span class="toc-sub">— TOS, ChessSummon</span></a>
+    <a href="#s4">4. 등급 C — 부분 구현 <span class="toc-sub">— Pioneer, LOP, WorldBid, InkWarrior</span></a>
+    <a href="#s5">5. 등급 D — 최소 구현 <span class="toc-sub">— PokerStrike, GolemRush 외</span></a>
+    <a href="#s6">6. 등급 F — 온보딩 없음 <span class="toc-sub">— 15개 프로젝트</span></a>
+    <a href="#s7">7. 장르별 공통 개선 패턴 <span class="toc-sub">— 재사용 가능한 컴포넌트</span></a>
+    <a href="#s8">8. 빠른 처방 우선순위 <span class="toc-sub">— 임팩트 × 구현 비용</span></a>
+  </div>
+
+  <!-- ── 1. 전체 대시보드 ── -->
+  <div class="section" id="s1">
+    <div class="section-label">Section 01</div>
+    <div class="section-title">전체 대시보드</div>
+    <div class="section-desc">모든 프로젝트의 온보딩·UX 수준을 A~F로 평가했습니다. 판단 기준: 첫 실행 안내, 인게임 튜토리얼, 시스템 힌트, 빈 상태 처리.</div>
+
+    <!-- 통계 -->
+    <div class="stat-row">
+      <div class="stat-card"><div class="val" style="color:var(--green)">1</div><div class="lbl">Grade A</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--accent2)">2</div><div class="lbl">Grade B</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--yellow)">4</div><div class="lbl">Grade C</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--orange)">8</div><div class="lbl">Grade D</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--red)">15</div><div class="lbl">Grade F</div></div>
+    </div>
+
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>프로젝트</th>
+          <th>장르</th>
+          <th>스택</th>
+          <th>버전</th>
+          <th>등급</th>
+          <th>첫 화면 안내</th>
+          <th>인게임 튜토리얼</th>
+          <th>시스템 힌트</th>
+          <th>빈 상태</th>
+          <th>핵심 문제</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Grade A -->
+        <tr>
+          <td><div class="project-name">GuildManager</div><div class="project-id">4_GM</div></td>
+          <td>길드 경영</td>
+          <td>React+TS</td>
+          <td>v1.1.76</td>
+          <td><span class="grade grade-A">A</span></td>
+          <td><span class="check">✅</span> 17단계 인트로</td>
+          <td><span class="check">✅</span> 진행형</td>
+          <td><span class="check">✅</span> 20개 힌트</td>
+          <td><span class="check">⚠️</span> 부분</td>
+          <td>힌트 재열람 UX 미흡</td>
+        </tr>
+        <!-- Grade B -->
+        <tr>
+          <td><div class="project-name">SwordMastersAscent</div><div class="project-id">1_TOS</div></td>
+          <td>로그라이트 배틀</td>
+          <td>Next.js+TS</td>
+          <td>v1.5.60</td>
+          <td><span class="grade grade-B">B</span></td>
+          <td><span class="check">✅</span> 2 intro 슬라이드</td>
+          <td><span class="check">✅</span> 18 steps</td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">⚠️</span></td>
+          <td>중반 시스템 힌트 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">ChessSummon</div><div class="project-id">17_DC</div></td>
+          <td>체스 소환 전략</td>
+          <td>Phaser</td>
+          <td>v0.1.17</td>
+          <td><span class="grade grade-B">B</span></td>
+          <td><span class="check">⚠️</span> 메뉴 버튼</td>
+          <td><span class="check">✅</span> TutorialScene</td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>튜토리얼 스킵 후 재접근 어려움</td>
+        </tr>
+        <!-- Grade C -->
+        <tr>
+          <td><div class="project-name">Pioneer</div><div class="project-id">2_Pioneer</div></td>
+          <td>항해 경영</td>
+          <td>React+Vite</td>
+          <td>v1.2.27</td>
+          <td><span class="grade grade-C">C</span></td>
+          <td><span class="check">⚠️</span> 1 슬라이드</td>
+          <td><span class="check">⚠️</span> 5 steps만</td>
+          <td><span class="check">⚠️</span> 조언 바</td>
+          <td><span class="check">❌</span></td>
+          <td>10+ 시스템 무방비, 스포트라이트 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">Land of Power</div><div class="project-id">3_LOP</div></td>
+          <td>영토 전략 보드</td>
+          <td>Next.js</td>
+          <td>v0.4.9</td>
+          <td><span class="grade grade-C">C</span></td>
+          <td><span class="check">✅</span> 시작 화면 룰</td>
+          <td><span class="check">❌</span> 인게임 없음</td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>첫 턴 무엇을 해야 하는지 불명확</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">WorldBid</div><div class="project-id">19_AS</div></td>
+          <td>경매 보드게임</td>
+          <td>React</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-C">C</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">✅</span> actionGuide</td>
+          <td><span class="check">❌</span></td>
+          <td>룰 설명 없이 바로 경매 진입</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">InkWarrior</div><div class="project-id">21_NL</div></td>
+          <td>수묵화 액션 플랫포머</td>
+          <td>Phaser</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-C">C</span></td>
+          <td><span class="check">✅</span> 3 step 슬라이드</td>
+          <td><span class="check">⚠️</span> 조작법만</td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>인게임 연습 스테이지 없음</td>
+        </tr>
+        <!-- Grade D -->
+        <tr>
+          <td><div class="project-name">PokerStrike</div><div class="project-id">16_PS</div></td>
+          <td>포커 카드 디펜스</td>
+          <td>Phaser</td>
+          <td>v0.1.24</td>
+          <td><span class="grade grade-D">D</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span> 함수만 존재</td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>포커 핸드+디펜스 혼합 룰 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">GolemRush</div><div class="project-id">30_GJ</div></td>
+          <td>속성 변신 레이싱</td>
+          <td>Phaser+TS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-D">D</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">⚠️</span> RunHUD 최소</td>
+          <td><span class="check">❌</span></td>
+          <td>속성 변신 메카닉 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">HeroChronicle</div><div class="project-id">32_HC</div></td>
+          <td>턴제 컬렉션 RPG</td>
+          <td>Vanilla JS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-D">D</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">⚠️</span> StoryPlayer</td>
+          <td><span class="check">❌</span></td>
+          <td>스토리만 있고 배틀 시스템 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">GreatestWizard</div><div class="project-id">33_GW</div></td>
+          <td>마법사 로그라이크</td>
+          <td>Pixi.js+TS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-D">D</span></td>
+          <td><span class="check">⚠️</span> 타이틀 가이드 패널</td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>타이틀 텍스트로만 설명, 인게임 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">RTSLite</div><div class="project-id">34_RL</div></td>
+          <td>RTS (스타크래프트 라이트)</td>
+          <td>Vanilla JS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-D">D</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">⚠️</span> 패널 힌트</td>
+          <td><span class="check">❌</span></td>
+          <td>3개 진영 차이 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">DramaMaker</div><div class="project-id">18_DM</div></td>
+          <td>AI 드라마 제작 도구</td>
+          <td>React+TS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-D">D</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">⚠️</span></td>
+          <td>AI 기능 사용법 안내 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">KingsCitadel</div><div class="project-id">22_KC</div></td>
+          <td>웹 보드게임</td>
+          <td>React+TS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-D">D</span></td>
+          <td><span class="check">⚠️</span> LobbyScreen</td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>역할/행동 설명 없이 바로 게임 시작</td>
+        </tr>
+        <!-- Grade F -->
+        <tr>
+          <td><div class="project-name">InisLand</div><div class="project-id">6_IL</div></td>
+          <td>콜로니 서바이벌+오토배틀</td>
+          <td>TS (ECS)</td>
+          <td>v0.2.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>자원 관리+전투 복합 장르 설명 전무</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">GranRumble</div><div class="project-id">7_GR</div></td>
+          <td>오토체스 1v1</td>
+          <td>Vanilla JS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>배치 전략 / 시너지 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">TL</div><div class="project-id">8_TL</div></td>
+          <td>우주 전략 TRPG</td>
+          <td>Vanilla JS</td>
+          <td>v0.2.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>맵+전투+함선 시스템 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">DragonTactics</div><div class="project-id">10_DT</div></td>
+          <td>드래곤 전술 RPG</td>
+          <td>Vanilla JS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>카드 드래프트+전술 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">SquadVsMonster</div><div class="project-id">12_NIKKE</div></td>
+          <td>분대 vs 몬스터</td>
+          <td>Unity</td>
+          <td>-</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>Unity — 온보딩 씬 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">TowerOfCrowns</div><div class="project-id">13_TOC</div></td>
+          <td>로프 액션 서바이벌</td>
+          <td>Phaser</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>조작법 표시 없음, 로프 메카닉 미설명</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">LotteryFantasy</div><div class="project-id">14_LT</div></td>
+          <td>복권 판타지 RPG</td>
+          <td>Unity</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>Unity — 복권 메카닉 연결 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">MadDragon</div><div class="project-id">15_MD</div></td>
+          <td>드래곤 모바일 RTS</td>
+          <td>Unity</td>
+          <td>-</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>Unity — 터치 RTS 컨트롤 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">GridironTactics</div><div class="project-id">23_CT</div></td>
+          <td>미식축구 전술</td>
+          <td>Vanilla JS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>미식축구 룰 모르면 진입 불가</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">YugiohLegend</div><div class="project-id">24_YL</div></td>
+          <td>유희왕 스타일 TCG</td>
+          <td>React</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>TCG 페이즈/우선권 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">RhythmBlade</div><div class="project-id">25_TK</div></td>
+          <td>리듬 로그라이크</td>
+          <td>Phaser+TS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>박자 판정 기준 / 스킬 연동 미설명</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">ElementalCommand</div><div class="project-id">27_EC</div></td>
+          <td>속성 커맨드 전략</td>
+          <td>Phaser</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>속성 상성 / 배치 전략 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">IF (Fortress)</div><div class="project-id">28_IF</div></td>
+          <td>실시간 포트리스</td>
+          <td>Vanilla JS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>포트리스 물리/무기 설명 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">WesternTrainGuardian</div><div class="project-id">31_WT</div></td>
+          <td>서부 횡스크롤 슈팅</td>
+          <td>Vanilla JS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>조작법/승객 보호 목표 표시 없음</td>
+        </tr>
+        <tr>
+          <td><div class="project-name">SixteenMythology</div><div class="project-id">35_SM</div></td>
+          <td>16신화 컬렉션 RPG</td>
+          <td>Vite+TS</td>
+          <td>v0.1.0</td>
+          <td><span class="grade grade-F">F</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td><span class="check">❌</span></td>
+          <td>신화 캐릭터 시스템 / 배틀 설명 없음</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 2. Grade A ── -->
+  <div class="section" id="s2">
+    <div class="section-label">Section 02</div>
+    <div class="section-title">Grade A — 벤치마크</div>
+
+    <div class="project-card" style="border-left: 3px solid var(--green);">
+      <div class="project-card-header">
+        <span class="grade grade-A">A</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            GuildManager
+            <span class="tag-badge tag-genre">길드 경영</span>
+            <span class="tag-badge tag-stack">React + TypeScript</span>
+            <span class="tag-badge tag-ver">v1.1.76</span>
+          </div>
+          <div class="project-card-sub">17단계 INTRO_STEPS + 20개 HINT_STEPS. 전 프로젝트 중 온보딩 커버리지 최고.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col has">
+          <h5>잘 되어있는 것</h5>
+          <ul>
+            <li>17단계 인트로: 세계관 → 목표 → 각 시스템 순서대로 소개</li>
+            <li>20개 상황별 힌트: 고용·계약·자원·성장 등 각 메뉴 첫 오픈 시 자동 트리거</li>
+            <li>일일 목표 + 퀘스트 체인으로 지속적 행동 방향 제시</li>
+            <li>스토리 이벤트(storyAfter)로 퀘스트 완료에 서사 감부여</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>남은 개선 포인트</h5>
+          <ul>
+            <li>힌트 재열람 방법이 없음 — "?" 버튼으로 언제든 다시 볼 수 있어야 함</li>
+            <li>인트로 스킵 후 처음으로 돌아오는 UX 없음</li>
+            <li>자원 고갈 · 용병 전사 같은 위기 상황에 시각 경고 부족</li>
+            <li>Day 1 핵심 목표(첫 계약 수주)가 화면에 핀 고정되지 않음</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 3. Grade B ── -->
+  <div class="section" id="s3">
+    <div class="section-label">Section 03</div>
+    <div class="section-title">Grade B — 양호하나 개선 여지</div>
+
+    <!-- TOS -->
+    <div class="project-card" style="border-left: 3px solid var(--accent2);">
+      <div class="project-card-header">
+        <span class="grade grade-B">B</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            SwordMastersAscent
+            <span class="tag-badge tag-genre">로그라이트 배틀</span>
+            <span class="tag-badge tag-stack">Next.js + TypeScript</span>
+            <span class="tag-badge tag-ver">v1.5.60</span>
+          </div>
+          <div class="project-card-sub">18 TUTORIAL_STEPS (2 intro + 7+ system). 전투 메카닉까지 커버하는 가장 깊은 튜토리얼.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col has">
+          <h5>잘 되어있는 것</h5>
+          <ul>
+            <li>2장 인트로: 세계관(검의 탑) + 목표 선명하게 제시</li>
+            <li>전투 흐름 / 행동 상성 / 세부 기술 / 거리와 행 / 주사위&크리티컬 등 핵심 메카닉 직접 설명</li>
+            <li><code>TUTORIAL_KEY</code>로 localStorage 기반 1회 표시 관리</li>
+            <li>variant: 'intro' | 'system' 구분으로 서사 → 시스템 자연 전환</li>
+          </ul>
+        </div>
+        <div class="project-col lack">
+          <h5>미비한 것</h5>
+          <ul>
+            <li>튜토리얼 완료 후 인게임 중 힌트 전혀 없음 — 망각 구간 발생</li>
+            <li>첫 번째 보상 선택 화면에 선택지 설명 없음 (강화·스킬·아이템 차이)</li>
+            <li>스테미너/컨디션 실시간 경고 없음 (배틀 중 컨디션 저하 알림)</li>
+            <li>로그라이트 메타 진행(해금 시스템) 설명 없음</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ChessSummon -->
+    <div class="project-card" style="border-left: 3px solid var(--accent2);">
+      <div class="project-card-header">
+        <span class="grade grade-B">B</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            ChessSummon
+            <span class="tag-badge tag-genre">체스 소환 전략</span>
+            <span class="tag-badge tag-stack">Phaser</span>
+            <span class="tag-badge tag-ver">v0.1.17</span>
+          </div>
+          <div class="project-card-sub">전용 TutorialScene.js (162줄). 별도 씬으로 분리된 구조는 올바름.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col has">
+          <h5>잘 되어있는 것</h5>
+          <ul>
+            <li>메뉴 화면에서 튜토리얼 진입 버튼 분리</li>
+            <li>TutorialScene 별도 씬으로 격리 — 게임 씬과 충돌 없음</li>
+            <li>멀티플레이어 로비 씬 구조 분리 (MultiplayerLobbyScene)</li>
+          </ul>
+        </div>
+        <div class="project-col lack">
+          <h5>미비한 것</h5>
+          <ul>
+            <li>TutorialScene 내 실제 기물 조작 연습 가능한지 불분명 (설명형만 가능성)</li>
+            <li>소환 메카닉 (몬스터 소환 + 체스 이동 결합) 도식 설명 없음</li>
+            <li>튜토리얼 완료 후 "복습" 재진입 메뉴 없음</li>
+            <li>빈 상태: 기물 없을 때 / 소환 비용 부족 시 UI 피드백 미흡</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 4. Grade C ── -->
+  <div class="section" id="s4">
+    <div class="section-label">Section 04</div>
+    <div class="section-title">Grade C — 부분 구현</div>
+
+    <!-- Pioneer -->
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-C">C</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            Pioneer
+            <span class="tag-badge tag-genre">항해 경영</span>
+            <span class="tag-badge tag-stack">React + Vite</span>
+            <span class="tag-badge tag-ver">v1.2.27</span>
+          </div>
+          <div class="project-card-sub">5단계 TUTORIAL_STEPS + 상시 조언 바. 10+ 시스템 미커버. 별도 개선안 문서 존재.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col has">
+          <h5>잘 되어있는 것</h5>
+          <ul>
+            <li>상시 조언 바 (맥락 기반 다음 행동 안내)</li>
+            <li>항구 해금 조건 지도 표시</li>
+            <li>거래소 시세 차트 + 변동률</li>
+          </ul>
+        </div>
+        <div class="project-col lack">
+          <h5>미비한 것 (상세 개선안 별도 문서 참고)</h5>
+          <ul>
+            <li>스포트라이트 오버레이 없음</li>
+            <li>승무원·세금·정보구매·배달의뢰 튜토리얼 없음</li>
+            <li>토스트/플로팅 텍스트 피드백 없음</li>
+            <li>누적 판매금 진행 바 없음</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOP -->
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-C">C</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            Land of Power
+            <span class="tag-badge tag-genre">영토 전략 보드</span>
+            <span class="tag-badge tag-stack">Next.js</span>
+            <span class="tag-badge tag-ver">v0.4.9</span>
+          </div>
+          <div class="project-card-sub">시작 화면에 룰 3카드(굴리기·점령하기·키우기) + 승리 조건 패널 존재. 하지만 인게임 안내 없음.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col has">
+          <h5>잘 되어있는 것</h5>
+          <ul>
+            <li>시작 화면에 핵심 루프 3단계 카드 설명</li>
+            <li>승리 조건 3가지 명확히 나열</li>
+            <li>깔끔한 시작 화면 디자인</li>
+          </ul>
+        </div>
+        <div class="project-col lack">
+          <h5>미비한 것</h5>
+          <ul>
+            <li>첫 턴: 주사위를 굴린 후 어디로 이동해야 유리한지 안내 없음</li>
+            <li>영토 점령 조건 (전투 vs 구매) 판단 기준 인게임 표시 없음</li>
+            <li>건물 종류별 효과 툴팁 없음</li>
+            <li>AI 턴 진행 중 "AI가 무엇을 하는지" 설명 없음</li>
+            <li>경제 승리 / 영토 승리 달성 진행도 표시 없음</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- WorldBid -->
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-C">C</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            WorldBid
+            <span class="tag-badge tag-genre">경매 보드게임</span>
+            <span class="tag-badge tag-stack">React</span>
+            <span class="tag-badge tag-ver">v0.1.0</span>
+          </div>
+          <div class="project-card-sub">actionGuide.js로 단계별 액션 안내 텍스트 제공. 하지만 룰 입문 화면 없음.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col has">
+          <h5>잘 되어있는 것</h5>
+          <ul>
+            <li>phase별 getActionGuide() — 현재 할 수 있는 액션을 eyebrow/title/detail로 안내</li>
+            <li>경매/AI 턴/배치 등 상태별 다른 안내 텍스트</li>
+          </ul>
+        </div>
+        <div class="project-col lack">
+          <h5>미비한 것</h5>
+          <ul>
+            <li>게임 시작 전 룰 설명 화면 없음 — 경매 규칙을 모르면 바로 혼란</li>
+            <li>보석 한도·입찰 전략 힌트 없음 (숫자만 표시)</li>
+            <li>첫 경매에서 "패스하면 불리하다/유리하다" 전략 힌트 없음</li>
+            <li>AI 입찰 행동이 왜 그런지 설명 없음 (학습 기회 없음)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- InkWarrior -->
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-C">C</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            InkWarrior
+            <span class="tag-badge tag-genre">수묵화 액션 플랫포머</span>
+            <span class="tag-badge tag-stack">Phaser</span>
+            <span class="tag-badge tag-ver">v0.1.0</span>
+          </div>
+          <div class="project-card-sub">TutorialCopy.js — 3단계 텍스트 슬라이드 존재. 조작법은 설명하지만 실습은 없음.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col has">
+          <h5>잘 되어있는 것</h5>
+          <ul>
+            <li>GOAL / CONTROLS / SURVIVE 3단계 구조</li>
+            <li>키 조작법 명확히 나열 (Arrow / Z / X / C / TAB)</li>
+            <li>콤보 시스템 언급</li>
+          </ul>
+        </div>
+        <div class="project-col lack">
+          <h5>미비한 것</h5>
+          <ul>
+            <li>튜토리얼 스테이지 없음 — 설명 후 바로 실전</li>
+            <li>추격자(Pursuer) AI 등장 타이밍/대처법 설명 없음</li>
+            <li>캐릭터 스왑(TAB) 시 능력 차이 설명 없음</li>
+            <li>인게임 중 체력 드롭 위치 시각 안내 없음</li>
+            <li>첫 사망 후 재시작 UX — 직전 팁 표시 없음</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 5. Grade D ── -->
+  <div class="section" id="s5">
+    <div class="section-label">Section 05</div>
+    <div class="section-title">Grade D — 최소 구현</div>
+
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-D">D</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            PokerStrike
+            <span class="tag-badge tag-genre">포커 카드 디펜스</span>
+            <span class="tag-badge tag-stack">Phaser</span>
+            <span class="tag-badge tag-ver">v0.1.24</span>
+          </div>
+          <div class="project-card-sub">GameSceneTutorial.js는 shouldShowUpgradeTutorialOnStageClear() 조건 함수 1개뿐. 실질적 튜토리얼 없음.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col lack">
+          <h5>핵심 미비 사항</h5>
+          <ul>
+            <li>포커 핸드 조합(플러시·풀하우스 등)이 디펜스에 어떻게 연결되는지 설명 없음</li>
+            <li>카드 드래프트 순서 / 배치 전략 힌트 없음</li>
+            <li>스테이지 1 클리어 후 업그레이드 튜토리얼 조건만 코딩되어 있고 내용 없음</li>
+            <li>에너미 타입별 약점/대응 카드 안내 없음</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>빠른 개선 방향</h5>
+          <ul>
+            <li>스테이지 0: "포커 핸드 연습 스테이지" 추가 — 핸드 만들기만 연습</li>
+            <li>첫 배틀 시작 전 "이 핸드 = 이 위력" 도식 카드 3장</li>
+            <li>카드 위 호버 툴팁: 현재 핸드에 추가 시 예상 조합 미리보기</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-D">D</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            GolemRush
+            <span class="tag-badge tag-genre">속성 변신 로그라이크 레이싱</span>
+            <span class="tag-badge tag-stack">Phaser + TypeScript</span>
+            <span class="tag-badge tag-ver">v0.1.0</span>
+          </div>
+          <div class="project-card-sub">RunHUD에 최소 UI 있음. 속성 변신 핵심 메카닉 설명 없음.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col lack">
+          <h5>핵심 미비 사항</h5>
+          <ul>
+            <li>속성(불·물·바람·땅) 변신 타이밍 / 상성 설명 없음</li>
+            <li>장애물 종류별 어떤 속성으로 돌파해야 하는지 인게임 표시 없음</li>
+            <li>로그라이크 업그레이드 선택 시 효과 설명 부족</li>
+            <li>첫 실행: 어떤 키로 변신하는지 화면에 없음</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>빠른 개선 방향</h5>
+          <ul>
+            <li>게임 시작 5초: 오버레이로 변신 키 + 속성 아이콘 표시</li>
+            <li>장애물 위에 "이 속성에 약함" 작은 아이콘 표시 (초반 10초)</li>
+            <li>첫 변신 시 "변신 성공!" 텍스트 피드백</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-D">D</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            DramaMaker
+            <span class="tag-badge tag-genre">AI 드라마 제작 도구</span>
+            <span class="tag-badge tag-stack">React + TypeScript</span>
+            <span class="tag-badge tag-ver">v0.1.0</span>
+          </div>
+          <div class="project-card-sub">게임이 아닌 AI 창작 도구. 일반 게임 온보딩보다 "제품 온보딩" 패턴이 필요.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col lack">
+          <h5>핵심 미비 사항</h5>
+          <ul>
+            <li>첫 화면 진입 시 "무엇을 만들 수 있는가" 설명 없음</li>
+            <li>DraftMode vs InstructionMode 차이 설명 없음</li>
+            <li>Claude API 응답 대기 중 빈 상태 처리 부족</li>
+            <li>에러(API 실패) 시 재시도 안내 없음</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>빠른 개선 방향</h5>
+          <ul>
+            <li>첫 실행: "이렇게 만들 수 있어요" 예시 드라마 1편 미리보기</li>
+            <li>빈 입력 상태: "장르 / 등장인물 / 갈등을 입력하면 드라마가 시작됩니다" CTA</li>
+            <li>API 대기: 스피너 대신 "대본 집필 중..." Skeleton 애니메이션</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-card-header">
+        <span class="grade grade-D">D</span>
+        <div class="project-card-meta">
+          <div class="project-card-title">
+            HeroChronicle / GreatestWizard / RTSLite / KingsCitadel
+            <span class="tag-badge tag-genre">RPG / 로그라이크 / RTS / 보드게임</span>
+          </div>
+          <div class="project-card-sub">각각 StoryPlayer / 타이틀 가이드 패널 / 패널 힌트 / LobbyScreen이 있으나 시스템 설명 없음.</div>
+        </div>
+      </div>
+      <div class="project-body">
+        <div class="project-col lack">
+          <h5>공통 미비 사항</h5>
+          <ul>
+            <li><strong style="color:var(--text)">HeroChronicle</strong>: StoryPlayer는 스토리만. 배틀 시스템(버프·턴 바·데미지 계산) 설명 없음</li>
+            <li><strong style="color:var(--text)">GreatestWizard</strong>: 타이틀 가이드 패널은 텍스트만. 마법 조합 / 종자 시너지 미설명</li>
+            <li><strong style="color:var(--text)">RTSLite</strong>: 3개 진영(패널에 텍스트)만. 자원 채취 → 유닛 생산 → 기지 공격 흐름 인게임 안내 없음</li>
+            <li><strong style="color:var(--text)">KingsCitadel</strong>: LobbyScreen 있지만 역할 카드 / 행동 순서 설명 없음</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>공통 개선 방향</h5>
+          <ul>
+            <li>각 프로젝트: 게임 시작 전 "3줄 요약 룰" 모달 1장</li>
+            <li>첫 턴/첫 배틀에서 핵심 행동에 강조 테두리 + 화살표 툴팁</li>
+            <li>사망/패배 후 "이래서 졌습니다" 결과 분석 한 줄</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 6. Grade F ── -->
+  <div class="section" id="s6">
+    <div class="section-label">Section 06</div>
+    <div class="section-title">Grade F — 온보딩 없음 (15개 프로젝트)</div>
+    <div class="section-desc">첫 실행 안내, 인게임 튜토리얼, 시스템 힌트 모두 없는 프로젝트들입니다. 장르별로 묶어 처방합니다.</div>
+
+    <!-- 액션/플랫포머 그룹 -->
+    <div class="project-grade-header" style="margin-top: 20px;">
+      <h3>액션 / 슈팅 / 플랫포머</h3>
+      <span class="count">TowerOfCrowns · WesternTrainGuardian · IF(Fortress)</span>
+    </div>
+    <div class="project-card">
+      <div class="project-body" style="grid-template-columns: 1fr 1fr;">
+        <div class="project-col lack">
+          <h5>공통 문제</h5>
+          <ul>
+            <li><strong style="color:var(--text)">TowerOfCrowns</strong>: 로프 잡기/던지기 조작법 없음. 생존 목표 미표시</li>
+            <li><strong style="color:var(--text)">WesternTrainGuardian</strong>: 아이 보호 + 사격 동시 목표, 조작법 미표시</li>
+            <li><strong style="color:var(--text)">IF(Fortress)</strong>: 포트리스 물리·무기 선택·각도 조작 미설명</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>처방 (2시간 이내)</h5>
+          <ul>
+            <li>게임 시작 3초: 화면 중앙에 반투명 조작법 오버레이 (아무 키 누르면 닫힘)</li>
+            <li>첫 10초: "↑↓←→ 이동" "Z 공격/액션" 등 기능별 키 힌트 HUD 하단 표시</li>
+            <li>목표를 HUD 상단에 항상 표시: "아이를 보호하세요 ❤️ 3/3"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 전략/RTS 그룹 -->
+    <div class="project-grade-header" style="margin-top: 20px;">
+      <h3>전략 / 배치 / RTS</h3>
+      <span class="count">InisLand · DragonTactics · ElementalCommand · GranRumble · MadDragon</span>
+    </div>
+    <div class="project-card">
+      <div class="project-body" style="grid-template-columns: 1fr 1fr;">
+        <div class="project-col lack">
+          <h5>공통 문제</h5>
+          <ul>
+            <li><strong style="color:var(--text)">InisLand</strong>: ECS 기반 콜로니 + 오토배틀. 자원 수집 → 건물 → 전투 흐름 설명 없음</li>
+            <li><strong style="color:var(--text)">DragonTactics</strong>: 카드 드래프트 + 드래곤 진영 전략 설명 없음</li>
+            <li><strong style="color:var(--text)">ElementalCommand</strong>: 속성 배치 시너지 설명 없음</li>
+            <li><strong style="color:var(--text)">GranRumble</strong>: 오토체스 배치 단계 / 전투 단계 구분 설명 없음</li>
+            <li><strong style="color:var(--text)">MadDragon</strong>: 모바일 RTS 터치 컨트롤 설명 없음 (Unity)</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>처방</h5>
+          <ul>
+            <li>게임 시작 전: "페이즈 1 → 배치 / 페이즈 2 → 전투" 흐름 다이어그램 1장</li>
+            <li>첫 배치 단계: "여기에 유닛을 드래그하세요" 강조 구역 표시</li>
+            <li>속성 상성 게임: 화면 어딘가에 항상 보이는 미니 상성표 버튼</li>
+            <li>첫 승리/패배 후: "당신이 한 최선의 수 vs 추천 수" 결과 카드</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- RPG/컬렉션 그룹 -->
+    <div class="project-grade-header" style="margin-top: 20px;">
+      <h3>턴제 RPG / 컬렉션</h3>
+      <span class="count">TL · SquadVsMonster · LotteryFantasy · SixteenMythology · YugiohLegend</span>
+    </div>
+    <div class="project-card">
+      <div class="project-body" style="grid-template-columns: 1fr 1fr;">
+        <div class="project-col lack">
+          <h5>공통 문제</h5>
+          <ul>
+            <li><strong style="color:var(--text)">TL (우주 TRPG)</strong>: 함선 / 유닛 / 스킬 3중 시스템, 진입 장벽 최상위</li>
+            <li><strong style="color:var(--text)">SquadVsMonster</strong>: Unity — 분대 포메이션 / 스킬 시너지 설명 없음</li>
+            <li><strong style="color:var(--text)">LotteryFantasy</strong>: "복권 뽑기 + RPG 배틀" 연결 로직 설명 없음</li>
+            <li><strong style="color:var(--text)">SixteenMythology</strong>: 16 신화 캐릭터 + 버프 시스템 + 타임라인 배틀, 진입 장벽 높음</li>
+            <li><strong style="color:var(--text)">YugiohLegend</strong>: TCG 페이즈 순서 / 우선권 / 체인 처리 미설명</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>처방</h5>
+          <ul>
+            <li>첫 배틀: "1라운드 체험판" — 3~4개 유닛만으로 1분 안에 끝나는 연습 스테이지</li>
+            <li>스킬/카드 위 항상 보이는 툴팁: 효과 + "언제 쓰면 좋은가" 한 줄</li>
+            <li>YugiohLegend: 턴 시작 시 "지금 가능한 행동" 목록 하이라이트</li>
+            <li>컬렉션 RPG: 첫 파티 구성 시 "이 조합 추천" 가이드 표시</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 리듬/레이싱 그룹 -->
+    <div class="project-grade-header" style="margin-top: 20px;">
+      <h3>리듬 / 레이싱</h3>
+      <span class="count">RhythmBlade · GridironTactics</span>
+    </div>
+    <div class="project-card">
+      <div class="project-body" style="grid-template-columns: 1fr 1fr;">
+        <div class="project-col lack">
+          <h5>공통 문제</h5>
+          <ul>
+            <li><strong style="color:var(--text)">RhythmBlade</strong>: 박자 판정 구간(Perfect/Good/Miss) 시각 기준 없음. 리듬+로그라이크 연동 설명 없음</li>
+            <li><strong style="color:var(--text)">GridironTactics</strong>: 미식축구 룰을 모르면 "1st Down", "4th Down" 등 전혀 이해 불가</li>
+          </ul>
+        </div>
+        <div class="project-col fix">
+          <h5>처방</h5>
+          <ul>
+            <li>RhythmBlade: 첫 곡 시작 전 "연습 구간 4박자" — 판정 원 크기와 타이밍 감각 체험</li>
+            <li>RhythmBlade: 판정선 근처에 Perfect / Good 구간 시각적 영역 표시</li>
+            <li>GridironTactics: 게임 내 용어집 버튼 + 미식축구 기본 룰 요약 1페이지</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 7. 장르별 공통 패턴 ── -->
+  <div class="section" id="s7">
+    <div class="section-label">Section 07</div>
+    <div class="section-title">장르별 공통 개선 패턴</div>
+    <div class="section-desc">여러 프로젝트에서 재사용 가능한 온보딩 컴포넌트/패턴입니다. 한 번 만들어두면 유사 프로젝트에 빠르게 적용 가능합니다.</div>
+
+    <div class="pattern-grid">
+      <div class="pattern-card">
+        <h4>⚔️ 전투/배틀 시스템</h4>
+        <p>첫 전투 시작 전 "행동 흐름 다이어그램" 1장. 전투 중 첫 스킬 사용 시 툴팁 자동 표시. 첫 승리/패배 후 핵심 판단 포인트 요약.</p>
+        <div class="applies">적용 대상: TOS, ChessSummon, DragonTactics, GranRumble, SixteenMythology, YugiohLegend, HeroChronicle</div>
+      </div>
+      <div class="pattern-card">
+        <h4>🎮 액션/조작</h4>
+        <p>게임 시작 3초 반투명 오버레이: 주요 키 → 기능 매핑. 첫 사용 행동에 "△" 강조 아이콘. 아무 키 입력 시 자동 닫힘.</p>
+        <div class="applies">적용 대상: InkWarrior, TowerOfCrowns, WesternTrainGuardian, IF, GolemRush, RhythmBlade</div>
+      </div>
+      <div class="pattern-card">
+        <h4>🏛️ 경영/보드게임</h4>
+        <p>"지금 당신의 차례입니다. 할 수 있는 것: [A] [B] [C]" 행동 가이드 바. 첫 턴에만 추천 행동 강조 테두리.</p>
+        <div class="applies">적용 대상: Pioneer, LOP, WorldBid, KingsCitadel, RTSLite, GuildManager(보강)</div>
+      </div>
+      <div class="pattern-card">
+        <h4>📊 시스템 힌트 (첫 노출)</h4>
+        <p>localStorage 기반 <code>seenSystems Set</code>. 새 기능/탭/패널 첫 오픈 시 인라인 말풍선 툴팁. 재열람: 화면 어딘가 "?" 버튼.</p>
+        <div class="applies">적용 대상: 모든 프로젝트 (GuildManager 패턴 재사용)</div>
+      </div>
+      <div class="pattern-card">
+        <h4>🎯 첫 세션 목표 카드</h4>
+        <p>게임 시작 후 화면 한 구석에 고정: "지금 할 일: [목표]" 카드. 달성 시 체크마크 + 다음 목표 자동 갱신.</p>
+        <div class="applies">적용 대상: Pioneer, LOP, InisLand, TL, HeroChronicle, SixteenMythology</div>
+      </div>
+      <div class="pattern-card">
+        <h4>🏆 즉각 피드백 (토스트)</h4>
+        <p>주요 행동 완료 시 화면 중앙 상단 토스트. +N 플로팅 텍스트. 1.5~3초 후 자동 사라짐. 오류는 오렌지/빨강.</p>
+        <div class="applies">적용 대상: Pioneer(추가), GuildManager(보강), WorldBid, 모든 경영/전략 장르</div>
+      </div>
+      <div class="pattern-card">
+        <h4>📈 진행 가시화</h4>
+        <p>다음 해금/승급까지 진행 바. 현재 스테이지/웨이브/라운드 HUD 고정 표시. 누적 수치 변동 애니메이션.</p>
+        <div class="applies">적용 대상: Pioneer, LOP, PokerStrike, GolemRush, WesternTrainGuardian</div>
+      </div>
+      <div class="pattern-card">
+        <h4>⚠️ 위기/경고 신호</h4>
+        <p>체력/자원/내구도 30% 미만 → HUD 색상 빨강 전환 + 펄스 애니메이션. 중요 행동 실패 → 즉시 토스트 (로그에 묻히지 않게).</p>
+        <div class="applies">적용 대상: Pioneer, InisLand, WesternTrainGuardian, TL, HeroChronicle</div>
+      </div>
+      <div class="pattern-card">
+        <h4>🔦 스포트라이트 오버레이</h4>
+        <p>반투명 배경 + clip-path 구멍으로 대상 요소만 밝게. pulse 링 애니메이션. 대상 클릭 시 자동 해제.</p>
+        <div class="applies">적용 대상: Pioneer(우선), GranRumble, ElementalCommand, YugiohLegend</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ── 8. 우선순위 처방 ── -->
+  <div class="section" id="s8">
+    <div class="section-label">Section 08</div>
+    <div class="section-title">빠른 처방 우선순위</div>
+    <div class="section-desc">임팩트(플레이어 이탈 감소 효과) 대비 구현 시간 기준. 최소 공수로 최대 효과를 낼 수 있는 순서입니다.</div>
+
+    <div class="callout green">
+      <strong>기준:</strong> 각 항목은 1인 개발 기준 예상 구현 시간. 이미 완성도 높은 프로젝트(GuildManager·TOS)는 제외하고 나머지를 대상으로 합니다.
+    </div>
+
+    <table class="rx-table">
+      <thead>
+        <tr>
+          <th>프로젝트</th>
+          <th>처방 항목</th>
+          <th>임팩트</th>
+          <th>예상 시간</th>
+          <th>재사용 가능성</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Pioneer</strong></td>
+          <td>인트로 슬라이드 3장 + 첫 목표 고정 카드</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">1~2h</span></td>
+          <td>LOP 패턴 참고 가능</td>
+        </tr>
+        <tr>
+          <td><strong>Pioneer</strong></td>
+          <td>토스트 알림 + 플로팅 텍스트 시스템</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">2~3h</span></td>
+          <td>WorldBid·GuildManager에도 적용 가능</td>
+        </tr>
+        <tr>
+          <td><strong>PokerStrike</strong></td>
+          <td>스테이지 0 포커 핸드 연습 + 인트로 3슬라이드</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">3~4h</span></td>
+          <td>카드 게임 공통 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>InkWarrior</strong></td>
+          <td>조작법 오버레이 + 캐릭터 스왑 첫 노출 힌트</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">1~2h</span></td>
+          <td>액션 게임 공통 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>TowerOfCrowns</strong></td>
+          <td>시작 조작법 오버레이 + 목표 HUD 표시</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">1h</span></td>
+          <td>WesternTrainGuardian·IF 동일 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>WesternTrainGuardian</strong></td>
+          <td>시작 조작법 오버레이 + 승객 생존 HUD</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">1h</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>GolemRush</strong></td>
+          <td>속성 변신 키 힌트 오버레이 + 장애물 약점 아이콘</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">2h</span></td>
+          <td>ElementalCommand 속성 표시 공통</td>
+        </tr>
+        <tr>
+          <td><strong>LOP</strong></td>
+          <td>첫 턴 행동 가이드 바 + 건물 툴팁</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">2~3h</span></td>
+          <td>KingsCitadel에도 적용 가능</td>
+        </tr>
+        <tr>
+          <td><strong>WorldBid</strong></td>
+          <td>게임 시작 전 룰 설명 모달 (3장)</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">1~2h</span></td>
+          <td>KingsCitadel 동일 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>ChessSummon</strong></td>
+          <td>튜토리얼 복습 메뉴 + 빈 상태 처리</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">1~2h</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>RhythmBlade</strong></td>
+          <td>박자 판정 시각화 + 4박자 연습 구간</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">2~3h</span></td>
+          <td>리듬 게임 공통</td>
+        </tr>
+        <tr>
+          <td><strong>HeroChronicle</strong></td>
+          <td>배틀 시스템 첫 전투 안내 오버레이</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">2h</span></td>
+          <td>SixteenMythology 동일 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>DramaMaker</strong></td>
+          <td>빈 입력 상태 CTA + API 대기 Skeleton</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">2h</span></td>
+          <td>AI 도구 UX 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>GranRumble</strong></td>
+          <td>배치 → 전투 페이즈 다이어그램 + 첫 배치 가이드</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">2~3h</span></td>
+          <td>오토체스 공통 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>TOS (SwordMastersAscent)</strong></td>
+          <td>중반 힌트 시스템 + 보상 선택 설명</td>
+          <td class="impact-mid">중간</td>
+          <td><span class="effort">3~4h</span></td>
+          <td>로그라이트 공통 패턴</td>
+        </tr>
+        <tr>
+          <td><strong>GuildManager</strong></td>
+          <td>힌트 재열람 "?" 버튼 + 위기 경고 강화</td>
+          <td class="impact-low">낮음</td>
+          <td><span class="effort">1h</span></td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><strong>Pioneer</strong></td>
+          <td>스포트라이트 오버레이 + 시스템별 첫 노출 툴팁</td>
+          <td class="impact-high">높음</td>
+          <td><span class="effort">3~5h</span></td>
+          <td>전 프로젝트 범용 컴포넌트</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout" style="margin-top: 24px;">
+      <strong>범용 컴포넌트 우선 개발 제안:</strong> Pioneer에서 <code>TutorialSpotlight</code>, <code>ToastSystem</code>, <code>FirstVisitTooltip</code>을 완성하면 GuildManager·LOP·WorldBid·KingsCitadel 등 React 기반 프로젝트에 복사해서 바로 사용 가능합니다. 1회 투자로 다수 프로젝트에 효과.
+    </div>
+  </div>
+
+</div>
+
+<!-- 푸터 -->
+<div class="doc-footer">
+  <span>전 프로젝트 UX & 온보딩 분석 v1.0</span>
+  <span>2026-05-28 | 30개 프로젝트 대상</span>
+</div>
+
+</body>
+</html>

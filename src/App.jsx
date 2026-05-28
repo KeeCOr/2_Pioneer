@@ -178,12 +178,17 @@ const BOOSTER_FUEL_COST_MULT = 1.5;
 const PRICE_INTERVAL_BASE = 3600;
 const PRICE_INTERVAL_MIN = 1200;
 const LANDMASSES = [
-  { id: 'europe', label: '유럽', color: '#355f45', points: [[0,0],[34,0],[38,18],[31,33],[18,35],[6,28],[0,18]] },
-  { id: 'africa', label: '아프리카', color: '#6f5b38', points: [[30,34],[51,36],[55,64],[47,92],[32,88],[24,62]] },
-  { id: 'arabia', label: '아라비아', color: '#76553a', points: [[53,32],[70,35],[73,52],[61,60],[51,48]] },
-  { id: 'india', label: '인도', color: '#536b3d', points: [[58,58],[72,61],[75,82],[65,91],[55,76]] },
-  { id: 'eastAsia', label: '동아시아', color: '#49664e', points: [[74,18],[100,5],[100,47],[89,59],[76,50]] },
-  { id: 'americas', label: '아메리카', color: '#3d6354', points: [[0,0],[8,0],[12,24],[13,55],[7,82],[0,100]] },
+  { id: 'northAmerica', label: '북아메리카', color: '#3d6354', points: [[0,4],[4,2],[9,8],[12,18],[10,28],[13,39],[10,50],[5,55],[0,48]] },
+  { id: 'southAmerica', label: '남아메리카', color: '#3b5f50', points: [[7,53],[12,59],[14,72],[12,86],[8,98],[4,89],[2,73]] },
+  { id: 'greenland', label: '', color: '#6c8c7f', points: [[4,0],[15,0],[18,8],[13,15],[5,12]] },
+  { id: 'europe', label: '유럽', color: '#355f45', points: [[17,0],[36,0],[39,7],[35,15],[39,23],[32,30],[24,26],[18,17],[13,15],[15,6]] },
+  { id: 'africa', label: '아프리카', color: '#6f5b38', points: [[31,31],[42,33],[50,45],[53,60],[49,78],[41,93],[33,83],[27,65],[26,47]] },
+  { id: 'arabia', label: '아라비아', color: '#76553a', points: [[50,34],[63,38],[67,50],[62,59],[53,55],[48,45]] },
+  { id: 'india', label: '인도', color: '#536b3d', points: [[61,55],[72,59],[73,73],[67,88],[60,76],[56,63]] },
+  { id: 'southeastAsia', label: '동남아', color: '#4d6b44', points: [[72,58],[82,62],[86,73],[80,82],[72,75]] },
+  { id: 'eastAsia', label: '동아시아', color: '#49664e', points: [[67,11],[86,3],[100,7],[100,43],[93,54],[82,49],[73,39],[66,27]] },
+  { id: 'japanKorea', label: '', color: '#506f54', points: [[90,15],[96,19],[98,29],[94,35],[90,28]] },
+  { id: 'australia', label: '', color: '#6b6040', points: [[82,82],[99,82],[100,96],[88,99],[78,92]] },
 ];
 
 const PORT_SHIPS = {
@@ -801,12 +806,7 @@ const OceanTycoon = () => {
 
         // 1순위: 항구 정보 (항로 모드 아닐 때, 배 아이콘 직접 클릭이 아닐 때)
         if (!routeModeRef.current && portEntry && dockedHits.length === 0) {
-          const [pk, pData] = portEntry;
-          if (!(curGs.visitedPorts || getInitialVisitedPorts()).includes(pk)) {
-            const access = getPortAccessState(pk, curGs.totalEarned);
-            addLog(`🔒 ${pData.name}은 아직 미개척 항구입니다. ${access.label} 달성 후 항해해 개척하세요.`);
-            return;
-          }
+          const [pk] = portEntry;
           const selected = curGs.ships.find(s => s.id === selShipRef.current);
           if (selected && !selected.isMoving && portOf(selected) === pk) {
             setShowPortPrice(null);
@@ -815,6 +815,7 @@ const OceanTycoon = () => {
             return;
           }
           setShowMarket(false);
+          setSelectedPortRes(null);
           setShowPortPrice(pk);
           return;
         }
@@ -1877,8 +1878,10 @@ const OceanTycoon = () => {
         const fallers = allRes.filter(r => r.delta < 0).length;
         const selRes  = selectedPortRes ?? allRes[0]?.res;
         const detail  = allRes.find(r => r.res === selRes) ?? allRes[0];
+        const portAccess = getPortAccessState(showPortPrice, gs.totalEarned);
+        const visitedPort = (gs.visitedPorts || getInitialVisitedPorts()).includes(showPortPrice);
         const routeCandidate = routeMode && cur;
-        const routeAccess = getPortAccessState(showPortPrice, gs.totalEarned);
+        const routeAccess = portAccess;
         const routeCrewCount = cur ? gs.crew.filter(c => c.shipId === cur.id).length : 0;
         const routeSamePort = cur ? Math.hypot(cur.x - port.x, cur.y - port.y) < 1 : false;
         const canConfirmRoute = !!routeCandidate && routeAccess.unlocked && routeCrewCount > 0 && !routeSamePort;
@@ -1925,6 +1928,8 @@ const OceanTycoon = () => {
                     <span className="text-lg font-bold text-white">{port.country} {port.name}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{background:rs.color+'22', color:rs.color, border:`1px solid ${rs.color}55`}}>{rs.icon} {rs.label}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">● 거래소 개장</span>
+                    {!portAccess.unlocked && <span className="text-xs px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-600 font-bold">항로 잠김</span>}
+                    {portAccess.unlocked && !visitedPort && <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-700 font-bold">미방문</span>}
                     {routeCandidate && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-950 text-yellow-300 border border-yellow-700 font-bold">목적지 후보</span>}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-slate-500">
@@ -1932,6 +1937,7 @@ const OceanTycoon = () => {
                     <span className="text-emerald-500">▲ {risers}종 상승</span>
                     <span className="text-red-500">▼ {fallers}종 하락</span>
                     <span className="text-slate-600">{allRes.length - risers - fallers}종 보합</span>
+                    {!portAccess.unlocked && <span className="text-yellow-400">해금: {portAccess.label}</span>}
                   </div>
                 </div>
                 <button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); }}
@@ -2820,8 +2826,13 @@ const OceanTycoon = () => {
                               setShowMarket(false);
                               setShowPortPrice(k);
                             }
-                            else if (access.unlocked) { addLog(`🧭 ${p.name}은 항해 가능한 미개척 항구입니다. 배를 선택한 뒤 목적지로 지정하세요.`); }
-                            else { addLog(`🔒 ${p.name}은 아직 항로가 잠겨 있습니다. 해금 조건: ${access.label}`); }
+                            else {
+                              setShowMarket(false);
+                              setSelectedPortRes(null);
+                              setShowPortPrice(k);
+                              if (!access.unlocked) addLog(`🔒 ${p.name} 항로는 잠겨 있지만 시세는 확인할 수 있습니다. 해금 조건: ${access.label}`);
+                              else addLog(`🧭 ${p.name}은 항해 가능한 미개척 항구입니다. 시세를 확인한 뒤 배를 선택해 목적지로 지정하세요.`);
+                            }
                           }}>
                           {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:72,height:72,top:-36,left:-36,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl border-2 select-none cursor-pointer hover:scale-110 transition-transform ${routeMode?'animate-bounce':''} ${rs.border}`}
