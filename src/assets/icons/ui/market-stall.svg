@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="market stall">
+  <defs>
+    <linearGradient id="stallWood" x1="11" y1="25" x2="52" y2="60">
+      <stop offset="0" stop-color="#9f6b35"/>
+      <stop offset="1" stop-color="#3b2415"/>
+    </linearGradient>
+  </defs>
+  <path d="M9 25h46v9c0 4-3 7-7 7-3 0-5-1.5-7-3.5C39 39.5 36 41 32 41s-7-1.5-9-3.5C21 39.5 19 41 16 41c-4 0-7-3-7-7z" fill="#f8c96a" stroke="#623817" stroke-width="2"/>
+  <path d="M9 25 16 9h32l7 16z" fill="#8b1e2d" stroke="#f8c96a" stroke-width="2"/>
+  <path d="M20 9 18 25M32 9v16M44 9l2 16" stroke="#f8c96a" stroke-width="2"/>
+  <path d="M15 39h34v16H15z" fill="url(#stallWood)" stroke="#f8c96a" stroke-width="2"/>
+  <path d="M24 55V42h16v13" fill="#0f172a" opacity=".55"/>
+  <circle cx="22" cy="47" r="3" fill="#22c55e"/>
+  <circle cx="32" cy="47" r="3" fill="#ef4444"/>
+  <circle cx="42" cy="47" r="3" fill="#38bdf8"/>
+</svg>

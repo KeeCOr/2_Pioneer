@@ -117,6 +117,33 @@ body {
   transform-origin: center;
 }
 
+.asset-icon {
+  display: inline-block;
+  object-fit: contain;
+  flex: 0 0 auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.resource-asset-icon {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.65));
+}
+
+.ship-asset-icon {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.72));
+}
+
+.ui-asset-icon {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+.icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
 /* 카드 스타일 */
 .card {
   @apply bg-gradient-to-b from-ocean-blue to-ocean-dark border border-gold rounded-lg p-4 shadow-lg;
@@ -156,33 +183,8 @@ body {
 }
 
 .currency-mark {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  flex: 0 0 auto;
-  color: #13202f;
-  font-size: 0.78rem;
-  font-weight: 900;
-  line-height: 1;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.58), inset 0 -3px 4px rgba(0, 0, 0, 0.22), 0 0 10px rgba(0, 0, 0, 0.26);
-}
-
-.currency-mark-gold {
-  border-radius: 999px;
-  background: radial-gradient(circle at 34% 28%, #fff5ba 0 16%, #f8c96a 17% 48%, #c9852a 49% 100%);
-  border: 1px solid #f6d678;
-}
-
-.currency-mark-gem {
-  width: 1.38rem;
-  height: 1.38rem;
-  color: #dff7ff;
-  background: linear-gradient(135deg, #dff7ff 0 13%, #67e8f9 14% 42%, #2563eb 43% 72%, #1e3a8a 73% 100%);
-  border: 1px solid #93c5fd;
-  clip-path: polygon(50% 0, 94% 28%, 78% 86%, 50% 100%, 22% 86%, 6% 28%);
+  width: 1.45rem;
+  height: 1.45rem;
 }
 
 .currency-value {
