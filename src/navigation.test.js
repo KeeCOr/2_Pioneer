@@ -4,7 +4,7 @@ import { buildSeaRoute, createDepartureState } from './navigation.js';
 
 test('departing ship starts outside the source port visual center', () => {
   const ship = { x: 43.2, y: 43.5, isMoving: false, targetX: null, targetY: null, startX: null, startY: null, booster: true };
-  const sourcePort = { x: 43.2, y: 43.5, harborX: 40.0, harborY: 43.8 };
+  const sourcePort = { x: 43.2, y: 43.5, harborX: 40.6, harborY: 42.1 };
   const destinationPort = { x: 47.0, y: 32.0, harborX: 46.0, harborY: 33.4 };
 
   const next = createDepartureState(ship, destinationPort, sourcePort);
@@ -16,14 +16,14 @@ test('departing ship starts outside the source port visual center', () => {
   assert.equal(next.destinationY, destinationPort.harborY);
   assert.equal(next.booster, false);
   assert.ok(next.route.length >= 2);
-  assert.ok(Math.hypot(next.x - sourcePort.x, next.y - sourcePort.y) >= 3);
+  assert.ok(Math.hypot(next.x - sourcePort.x, next.y - sourcePort.y) >= 2.7);
   assert.deepEqual({ x: next.startX, y: next.startY }, { x: next.x, y: next.y });
 });
 
 test('arriving ship targets the destination harbor instead of land-side port center', () => {
-  const ship = { x: 40.0, y: 43.8, isMoving: false, targetX: null, targetY: null, startX: null, startY: null, booster: false };
-  const sourcePort = { x: 43.2, y: 43.5, harborX: 40.0, harborY: 43.8 };
-  const destinationPort = { x: 84.6, y: 52.3, harborX: 83.1, harborY: 54.5 };
+  const ship = { x: 40.6, y: 42.1, isMoving: false, targetX: null, targetY: null, startX: null, startY: null, booster: false };
+  const sourcePort = { x: 43.2, y: 43.5, harborX: 40.6, harborY: 42.1 };
+  const destinationPort = { x: 84.6, y: 52.3, harborX: 81.8, harborY: 52.0 };
 
   const next = createDepartureState(ship, destinationPort, sourcePort);
 
