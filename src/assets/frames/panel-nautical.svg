@@ -11,8 +11,7 @@
       <stop offset="1" stop-color="#050b15" stop-opacity=".92"/>
     </linearGradient>
   </defs>
-  <rect x="7" y="7" width="306" height="206" rx="10" fill="url(#inner)" stroke="url(#edge)" stroke-width="3"/>
-  <rect x="16" y="16" width="288" height="188" rx="7" fill="none" stroke="#f8d98b" stroke-opacity=".22" stroke-width="1"/>
-  <path d="M22 7h44l-11 9H31zm232 0h44l-9 9h-25zM22 213h44l-11-9H31zm232 0h44l-9-9h-25z" fill="#f8d98b" opacity=".55"/>
-  <path d="M7 38c17-4 27-14 31-31M313 38c-17-4-27-14-31-31M7 182c17 4 27 14 31 31M313 182c-17 4-27 14-31 31" fill="none" stroke="#f8d98b" stroke-opacity=".48" stroke-width="2"/>
+  <rect x="8" y="8" width="304" height="204" rx="10" fill="url(#inner)" stroke="url(#edge)" stroke-width="1.5"/>
+  <rect x="17" y="17" width="286" height="186" rx="7" fill="none" stroke="#f8d98b" stroke-opacity=".08" stroke-width="1"/>
+  <path d="M24 8h38M258 8h38M24 212h38M258 212h38" stroke="#f8d98b" stroke-opacity=".20" stroke-width="2" stroke-linecap="round"/>
 </svg>

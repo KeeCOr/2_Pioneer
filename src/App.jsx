@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createDepartureState, findPortForShip } from './navigation.js';
 import { clampMapView, zoomMapViewAt } from './mapView.js';
 import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
+import worldLandmassesUrl from './assets/map/world-landmasses.png';
 
 const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.svg', { eager: true, query: '?url', import: 'default' });
 const SHIP_ICON_FILES = import.meta.glob('./assets/icons/ships/*.svg', { eager: true, query: '?url', import: 'default' });
@@ -55,38 +56,56 @@ const SHIP_TYPES = {
 };
 
 const PORTS = {
-  london:    { name: '런던',         region: 'europe',        country: '🇬🇧', x: 10, y: 7  },
-  bristol:   { name: '브리스톨',     region: 'europe',        country: '🇬🇧', x: 4,  y: 16 },
-  lisbon:    { name: '리스본',       region: 'europe',        country: '🇵🇹', x: 4,  y: 30 },
-  hamburg:   { name: '함부르크',     region: 'europe',        country: '🇩🇪', x: 24, y: 4  },
-  antwerp:   { name: '앤트워프',     region: 'europe',        country: '🇧🇪', x: 28, y: 9  },
-  marseille: { name: '마르세유',     region: 'mediterranean', country: '🇫🇷', x: 27, y: 36 },
-  genoa:     { name: '제노바',       region: 'mediterranean', country: '🇮🇹', x: 31, y: 28 },
-  venice:    { name: '베니스',       region: 'mediterranean', country: '🇮🇹', x: 40, y: 18 },
-  tripoli:   { name: '트리폴리',     region: 'mediterranean', country: '🇱🇾', x: 42, y: 47 },
-  istanbul:  { name: '이스탄불',     region: 'mediterranean', country: '🇹🇷', x: 52, y: 24 },
-  alexandria:{ name: '알렉산드리아', region: 'arabian',       country: '🇪🇬', x: 48, y: 43 },
-  aden:      { name: '아덴',         region: 'arabian',       country: '🇾🇪', x: 58, y: 57 },
-  dubai:     { name: '두바이',       region: 'arabian',       country: '🇦🇪', x: 66, y: 40 },
-  mumbai:    { name: '뭄바이',       region: 'south_asia',    country: '🇮🇳', x: 56, y: 63 },
-  goa:       { name: '고아',         region: 'south_asia',    country: '🇮🇳', x: 59, y: 70 },
-  calicut:   { name: '칼리컷',       region: 'south_asia',    country: '🇮🇳', x: 64, y: 76 },
-  colombo:   { name: '콜롬보',       region: 'south_asia',    country: '🇱🇰', x: 72, y: 84 },
-  malacca:   { name: '말라카',       region: 'east_asia',     country: '🇲🇾', x: 76, y: 68 },
-  singapore: { name: '싱가포르',     region: 'east_asia',     country: '🇸🇬', x: 83, y: 74 },
-  bangkok:   { name: '방콕',         region: 'east_asia',     country: '🇹🇭', x: 79, y: 55 },
-  guangzhou: { name: '광저우',       region: 'east_asia',     country: '🇨🇳', x: 87, y: 43 },
-  shanghai:  { name: '상하이',       region: 'east_asia',     country: '🇨🇳', x: 90, y: 30 },
-  yokohama:  { name: '요코하마',     region: 'east_asia',     country: '🇯🇵', x: 96, y: 18 },
-  busan:     { name: '부산',         region: 'east_asia',     country: '🇰🇷', x: 93, y: 24 },
-  incheon:   { name: '인천',         region: 'east_asia',     country: '🇰🇷', x: 91, y: 20 },
-  boston:    { name: '보스턴',       region: 'americas',      country: '🇺🇸', x: 2,  y: 12 },
-  newyork:   { name: '뉴욕',         region: 'americas',      country: '🇺🇸', x: 3,  y: 20 },
-  neworleans:{ name: '뉴올리언스',   region: 'americas',      country: '🇺🇸', x: 5,  y: 40 },
-  havana:    { name: '하바나',       region: 'americas',      country: '🇨🇺', x: 6,  y: 50 },
+  london:    { name: '런던',         region: 'europe',        country: '🇬🇧', x: 47.0, y: 32.0 },
+  bristol:   { name: '브리스톨',     region: 'europe',        country: '🇬🇧', x: 46.0, y: 34.0 },
+  lisbon:    { name: '리스본',       region: 'europe',        country: '🇵🇹', x: 43.2, y: 43.5 },
+  hamburg:   { name: '함부르크',     region: 'europe',        country: '🇩🇪', x: 50.7, y: 32.2 },
+  antwerp:   { name: '앤트워프',     region: 'europe',        country: '🇧🇪', x: 48.5, y: 34.2 },
+  marseille: { name: '마르세유',     region: 'mediterranean', country: '🇫🇷', x: 49.0, y: 41.0 },
+  genoa:     { name: '제노바',       region: 'mediterranean', country: '🇮🇹', x: 50.8, y: 40.4 },
+  venice:    { name: '베니스',       region: 'mediterranean', country: '🇮🇹', x: 52.1, y: 39.3 },
+  tripoli:   { name: '트리폴리',     region: 'mediterranean', country: '🇱🇾', x: 51.0, y: 51.5 },
+  istanbul:  { name: '이스탄불',     region: 'mediterranean', country: '🇹🇷', x: 56.8, y: 40.6 },
+  alexandria:{ name: '알렉산드리아', region: 'arabian',       country: '🇪🇬', x: 55.0, y: 49.0 },
+  aden:      { name: '아덴',         region: 'arabian',       country: '🇾🇪', x: 62.7, y: 60.0 },
+  dubai:     { name: '두바이',       region: 'arabian',       country: '🇦🇪', x: 65.5, y: 52.4 },
+  mumbai:    { name: '뭄바이',       region: 'south_asia',    country: '🇮🇳', x: 69.8, y: 58.4 },
+  goa:       { name: '고아',         region: 'south_asia',    country: '🇮🇳', x: 69.8, y: 62.0 },
+  calicut:   { name: '칼리컷',       region: 'south_asia',    country: '🇮🇳', x: 70.6, y: 65.0 },
+  colombo:   { name: '콜롬보',       region: 'south_asia',    country: '🇱🇰', x: 72.3, y: 70.8 },
+  malacca:   { name: '말라카',       region: 'east_asia',     country: '🇲🇾', x: 81.5, y: 68.5 },
+  singapore: { name: '싱가포르',     region: 'east_asia',     country: '🇸🇬', x: 82.4, y: 70.8 },
+  bangkok:   { name: '방콕',         region: 'east_asia',     country: '🇹🇭', x: 80.0, y: 62.0 },
+  guangzhou: { name: '광저우',       region: 'east_asia',     country: '🇨🇳', x: 84.6, y: 52.3 },
+  shanghai:  { name: '상하이',       region: 'east_asia',     country: '🇨🇳', x: 87.0, y: 44.0 },
+  yokohama:  { name: '요코하마',     region: 'east_asia',     country: '🇯🇵', x: 92.0, y: 42.0 },
+  busan:     { name: '부산',         region: 'east_asia',     country: '🇰🇷', x: 89.6, y: 43.5 },
+  incheon:   { name: '인천',         region: 'east_asia',     country: '🇰🇷', x: 88.8, y: 42.4 },
+  boston:    { name: '보스턴',       region: 'americas',      country: '🇺🇸', x: 26.0, y: 39.2 },
+  newyork:   { name: '뉴욕',         region: 'americas',      country: '🇺🇸', x: 24.5, y: 41.8 },
+  neworleans:{ name: '뉴올리언스',   region: 'americas',      country: '🇺🇸', x: 22.0, y: 52.5 },
+  havana:    { name: '하바나',       region: 'americas',      country: '🇨🇺', x: 24.8, y: 56.2 },
 };
 
 const START_UNLOCKED_PORTS = ['lisbon', 'bristol', 'london', 'hamburg', 'antwerp', 'marseille'];
+const PORT_HARBORS = {
+  london: { x: 46.2, y: 33.2 }, bristol: { x: 44.8, y: 35.4 }, lisbon: { x: 40.0, y: 43.8 },
+  hamburg: { x: 50.1, y: 33.5 }, antwerp: { x: 47.5, y: 35.2 }, marseille: { x: 48.5, y: 42.0 },
+  genoa: { x: 50.1, y: 41.2 }, venice: { x: 52.5, y: 40.2 }, tripoli: { x: 51.2, y: 50.4 },
+  istanbul: { x: 56.0, y: 40.8 }, alexandria: { x: 55.0, y: 47.9 }, aden: { x: 62.5, y: 61.0 },
+  dubai: { x: 66.3, y: 53.3 }, mumbai: { x: 69.0, y: 59.3 }, goa: { x: 69.2, y: 62.5 },
+  calicut: { x: 70.0, y: 65.5 }, colombo: { x: 72.0, y: 69.8 }, malacca: { x: 80.8, y: 69.2 },
+  singapore: { x: 82.0, y: 71.3 }, bangkok: { x: 79.3, y: 62.8 }, guangzhou: { x: 84.0, y: 54.0 },
+  shanghai: { x: 87.5, y: 45.2 }, yokohama: { x: 92.6, y: 42.6 }, busan: { x: 90.0, y: 44.0 },
+  incheon: { x: 88.3, y: 43.2 }, boston: { x: 26.7, y: 40.0 }, newyork: { x: 25.0, y: 42.6 },
+  neworleans: { x: 21.2, y: 53.5 }, havana: { x: 24.5, y: 57.0 },
+};
+const portHarbor = (portKey) => PORT_HARBORS[portKey] || PORTS[portKey];
+const portWithHarbor = (portKey) => {
+  const port = PORTS[portKey];
+  const harbor = portHarbor(portKey);
+  return { ...port, harborX: harbor.x, harborY: harbor.y };
+};
 const REGION_PORT_UNLOCK_GOLD_REQ = {
   europe: 0,
   mediterranean: 1500,
@@ -177,20 +196,7 @@ const BOOSTER_SPEED_MULT = 1.2;
 const BOOSTER_FUEL_COST_MULT = 1.5;
 const PRICE_INTERVAL_BASE = 3600;
 const PRICE_INTERVAL_MIN = 1200;
-const LANDMASSES = [
-  { id: 'northAmerica', label: '북아메리카', color: '#3d6354', points: [[0,5],[4,3],[8,5],[11,9],[14,13],[16,20],[14,27],[15,34],[13,41],[14,48],[10,54],[6,58],[2,55],[0,50]] },
-  { id: 'southAmerica', label: '남아메리카', color: '#3b5f50', points: [[6,52],[10,56],[13,63],[14,71],[13,80],[10,91],[8,99],[5,92],[3,82],[2,72],[3,61]] },
-  { id: 'greenland', label: '', color: '#6c8c7f', points: [[3,0],[12,0],[17,4],[18,10],[14,15],[7,14],[4,10]] },
-  { id: 'europe', label: '유럽', color: '#355f45', points: [[17,0],[29,0],[36,2],[39,8],[36,13],[39,19],[36,24],[31,30],[25,28],[21,23],[17,18],[13,15],[15,9]] },
-  { id: 'africa', label: '아프리카', color: '#6f5b38', points: [[30,29],[37,31],[44,34],[50,44],[53,55],[52,66],[49,78],[43,91],[38,95],[33,86],[29,74],[27,62],[26,49],[28,38]] },
-  { id: 'arabia', label: '아라비아', color: '#76553a', points: [[49,34],[56,35],[63,39],[67,47],[65,55],[60,61],[54,57],[50,49],[47,42]] },
-  { id: 'india', label: '인도', color: '#536b3d', points: [[60,54],[66,57],[71,62],[72,72],[69,82],[65,90],[61,80],[57,68],[56,60]] },
-  { id: 'southeastAsia', label: '동남아', color: '#4d6b44', points: [[72,58],[79,61],[85,67],[87,75],[82,83],[76,79],[71,72]] },
-  { id: 'eastAsia', label: '동아시아', color: '#49664e', points: [[67,12],[75,7],[84,4],[94,5],[100,8],[100,39],[97,48],[92,55],[84,51],[77,44],[70,36],[66,26]] },
-  { id: 'japanKorea', label: '', color: '#506f54', points: [[90,15],[94,18],[97,24],[97,31],[94,36],[90,31],[88,24]] },
-  { id: 'australia', label: '', color: '#6b6040', points: [[80,83],[88,81],[97,83],[100,90],[98,97],[89,99],[81,95],[77,89]] },
-];
-
+const DEFAULT_MAP_VIEW = { x: -260, y: -70, zoom: 1.35 };
 const PORT_SHIPS = {
   london:['sloop','brigantine','merchant','galleon'], bristol:['rowboat','sloop'],
   lisbon:['sloop','caravel','merchant','galleon'], hamburg:['rowboat','sloop','brigantine'],
@@ -270,7 +276,10 @@ const INTRO_SLIDES = [
 
 // ── 모듈 레벨 헬퍼 ──
 const portOf = (s) => {
-  const e = Object.entries(PORTS).find(([, p]) => Math.hypot(s.x - p.x, s.y - p.y) < 3.5);
+  const e = Object.entries(PORTS).find(([key, p]) => {
+    const h = portHarbor(key);
+    return Math.hypot(s.x - p.x, s.y - p.y) < 3.5 || Math.hypot(s.x - h.x, s.y - h.y) < 3.5;
+  });
   return e ? e[0] : null;
 };
 const routeRegionOf = (s) => {
@@ -513,7 +522,7 @@ const OceanTycoon = () => {
     const v = {
       gold: 0, gems: 3,
       ships: [{ id: 1, type: 'rowboat', name: '황금 수호자호',
-        x: 4, y: 30, targetX: null, targetY: null, destinationX: null, destinationY: null, route: null, routeIndex: 0, startX: null, startY: null,
+        x: portHarbor('lisbon').x, y: portHarbor('lisbon').y, targetX: null, targetY: null, destinationX: null, destinationY: null, route: null, routeIndex: 0, startX: null, startY: null,
         isMoving: false, booster: false, stormUntil: null,
         cargo: { '양털': 8 }, fuel: 100, hull: 100,
         upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 }],
@@ -581,8 +590,8 @@ const OceanTycoon = () => {
   const setRouteMode = useCallback((v) => { routeModeRef.current = v; setRouteModeRaw(v); }, []);
   const setSelShip   = useCallback((id) => { selShipRef.current = id; setSelShipRaw(id); }, []);
 
-  const mapViewRef = useRef({ x: 0, y: 0, zoom: 1 });
-  const [mapView, setMapViewRaw] = useState({ x: 0, y: 0, zoom: 1 });
+  const mapViewRef = useRef(DEFAULT_MAP_VIEW);
+  const [mapView, setMapViewRaw] = useState(DEFAULT_MAP_VIEW);
   const setMapView = useCallback((v) => {
     const next = typeof v === 'function' ? v(mapViewRef.current) : v;
     mapViewRef.current = next;
@@ -746,11 +755,13 @@ const OceanTycoon = () => {
       if (prev.crew.filter(c => c.shipId === sid).length < 1) { addLog('🚫 출항하려면 승무원이 최소 1명 필요!'); return prev; }
       const access = getPortAccessState(pk, prev.totalEarned);
       if (!access.unlocked) { addLog(`🔒 ${p.name} 항로는 잠겨 있습니다. 해금 조건: ${access.label}`); return prev; }
-      if (Math.hypot(s.x - p.x, s.y - p.y) < 1) return prev;
+      if (portOf(s) === pk) return prev;
       addLog(`${s.name}이(가) ${p.name}으로 ${s.isMoving ? '항로 변경' : '항해 중'}...`);
-      const sourcePort = findPortForShip(s, PORTS);
+      const sourcePortKey = portOf(s);
+      const sourcePort = sourcePortKey ? portWithHarbor(sourcePortKey) : findPortForShip(s, PORTS);
+      const destinationWithHarbor = portWithHarbor(pk);
       return { ...prev, ships: prev.ships.map(s2 => s2.id === sid
-        ? createDepartureState(s2, p, sourcePort) : s2) };
+        ? createDepartureState(s2, destinationWithHarbor, sourcePort) : s2) };
     });
     setRouteMode(false);
     if (tutorialPhase === 'depart') setTutorialPhase('sailing');
@@ -799,7 +810,9 @@ const OceanTycoon = () => {
         const dockedHits  = curGs.ships.filter(s => {
           if (s.isMoving) return false;
           const o = dockOffsetWorld(s.id);
-          return Math.hypot((s.x + o.x) - mx, (s.y + o.y) - my) < 2.5;
+          const pk = portOf(s);
+          const anchor = pk ? portHarbor(pk) : s;
+          return Math.hypot((anchor.x + o.x) - mx, (anchor.y + o.y) - my) < 2.5;
         });
         const movingHits  = curGs.ships.filter(s =>  s.isMoving && Math.hypot(s.x - mx, s.y - my) < 2.5 && !portEntry);
         const hits = [...dockedHits, ...movingHits];
@@ -984,7 +997,10 @@ const OceanTycoon = () => {
             addLog(`✅ ${s.name}이(가) 도착했습니다!`);
             const finalX = s.destinationX ?? s.targetX;
             const finalY = s.destinationY ?? s.targetY;
-            const arrivedPk = Object.entries(PORTS).find(([, p]) => Math.hypot(p.x - finalX, p.y - finalY) < 3.5)?.[0];
+            const arrivedPk = Object.entries(PORTS).find(([key, p]) => {
+              const h = portHarbor(key);
+              return Math.hypot(p.x - finalX, p.y - finalY) < 3.5 || Math.hypot(h.x - finalX, h.y - finalY) < 3.5;
+            })?.[0];
             if (arrivedPk) ap.push({ shipId: s.id, portKey: arrivedPk });
             return { ...s, x: finalX, y: finalY, isMoving: false, targetX: null, targetY: null,
               destinationX: null, destinationY: null, route: null, routeIndex: 0,
@@ -1478,7 +1494,7 @@ const OceanTycoon = () => {
     if (gs.gold < t.cost) { addLog('❌ 금 부족!'); return; }
     const nid = Math.max(...gs.ships.map(s => s.id), 0) + 1;
     const ns = { id: nid, type: tk, name: `${t.name} ${nid}호`,
-      x: PORTS[portKey].x, y: PORTS[portKey].y,
+      x: portHarbor(portKey).x, y: portHarbor(portKey).y,
       targetX: null, targetY: null, destinationX: null, destinationY: null, route: null, routeIndex: 0, startX: null, startY: null,
       isMoving: false, booster: false, stormUntil: null,
       cargo: {}, fuel: 100, hull: 100, upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 };
@@ -2120,7 +2136,7 @@ const OceanTycoon = () => {
         return (
           <div key="market-modal" className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 backdrop-blur-[1px] p-4" onClick={() => setShowMarket(false)}>
             <div className="w-[860px] max-w-[96vw] max-h-[92vh] game-modal-frame bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gold/50 flex-shrink-0">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gold/25 flex-shrink-0">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-lg font-bold text-gold truncate inline-flex items-center gap-2"><UiIcon name="market-stall" className="w-6 h-6" /> {port.country} {port.name} 거래소</span>
@@ -2135,7 +2151,7 @@ const OceanTycoon = () => {
 
               {bestSell && (
                 <button onClick={() => setSelectedPortRes(bestSell.res)}
-                  className="mx-4 mt-3 px-3 py-2 rounded-lg border border-green-700 bg-green-950/50 text-left text-xs flex items-center gap-2">
+                  className="mx-4 mt-3 px-3 py-2 rounded-lg border border-green-700/55 bg-green-950/40 text-left text-xs flex items-center gap-2">
                   <span className="text-gray-400">추천 판매</span>
                   <ResourceIcon res={bestSell.res} className="w-7 h-7" />
                   <span className="font-bold text-white">{bestSell.res}</span>
@@ -2144,8 +2160,8 @@ const OceanTycoon = () => {
               )}
 
               <div className="flex flex-row-reverse flex-1 min-h-0 p-4 gap-4 overflow-hidden">
-                <div className="w-72 max-w-[34vw] min-w-[240px] flex-shrink-0 rounded-lg overflow-hidden border border-gold/40 bg-slate-950/70 shadow-inner">
-                  <div className="px-3 py-2 text-xs font-bold text-gold border-b border-gold/30 bg-ocean-blue/60 flex items-center justify-between">
+                <div className="w-72 max-w-[34vw] min-w-[240px] flex-shrink-0 rounded-lg overflow-hidden border border-gold/20 bg-slate-950/60 shadow-inner">
+                  <div className="px-3 py-2 text-xs font-bold text-gold border-b border-gold/20 bg-ocean-blue/45 flex items-center justify-between">
                     <span>물품 목록</span>
                     <span className="text-[10px] text-emerald-200">거래 가능 우선</span>
                   </div>
@@ -2189,10 +2205,10 @@ const OceanTycoon = () => {
                 <div className="flex-1 min-w-0 flex flex-col gap-2 overflow-y-auto">
                   {detail && (
                     <>
-                      <div className="rounded-lg border border-gold/25 bg-black/25 p-3">
+                      <div className="rounded-lg border border-gold/15 bg-black/20 p-3">
                         <div className="flex items-start justify-between gap-3 mb-2">
                           <div className="flex items-center gap-3">
-                            <span className="icon-chip w-14 h-14 rounded-xl bg-slate-950/70 border border-gold/25"><ResourceIcon res={detail.res} className="w-11 h-11" /></span>
+                            <span className="icon-chip w-14 h-14 rounded-xl bg-slate-950/70 border border-gold/15"><ResourceIcon res={detail.res} className="w-11 h-11" /></span>
                             <div>
                               <div className="text-xl font-bold text-white">{detail.res}</div>
                               <div className="text-xs text-gray-400">{port.name} 현재 시세</div>
@@ -2215,7 +2231,7 @@ const OceanTycoon = () => {
                         </div>
                       </div>
 
-                      <div className="rounded-lg border border-gold/25 bg-black/25 p-3">
+                      <div className="rounded-lg border border-gold/15 bg-black/20 p-3">
                         <div className="hidden">
                           <div>
                             <div className="flex justify-between items-center mb-2">
@@ -2247,7 +2263,7 @@ const OceanTycoon = () => {
                           </div>
                         </div>
                         <div className="grid grid-cols-[minmax(0,1fr)_minmax(208px,240px)] gap-3 items-stretch">
-                          <div className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
+                          <div className="rounded-lg border border-slate-700/70 bg-slate-950/50 p-3">
                             <div className="flex items-center justify-between mb-3">
                               <span className="text-sm font-bold text-white">거래 수량</span>
                               <span className="text-xs text-gray-400">적재 {spaceLeft} · 보유 {detail.owned}</span>
@@ -2255,7 +2271,7 @@ const OceanTycoon = () => {
                             <div className="grid grid-cols-[44px_1fr_44px] gap-2 mb-3">
                               <button onClick={() => setTradeQty(q => clampTradeQuantity(q - 1, Math.max(maxBuyQty, maxSellQty)))}
                                 className="h-11 rounded-lg border border-slate-600 bg-slate-800 text-xl text-white hover:bg-slate-700">-</button>
-                              <div className="h-11 rounded-lg border border-gold/40 bg-ocean-blue flex items-center justify-center text-xl font-bold text-gold">
+                              <div className="h-11 rounded-lg border border-gold/25 bg-ocean-blue flex items-center justify-center text-xl font-bold text-gold">
                                 {clampTradeQuantity(tradeQty, Math.max(maxBuyQty, maxSellQty))}
                               </div>
                               <button onClick={() => setTradeQty(q => clampTradeQuantity(q + 1, Math.max(maxBuyQty, maxSellQty)))}
@@ -2293,7 +2309,7 @@ const OceanTycoon = () => {
                 </div>
               </div>
 
-              <div className="px-4 py-3 border-t border-gold/30 flex-shrink-0 flex flex-wrap gap-2 bg-black/20">
+              <div className="px-4 py-3 border-t border-gold/20 flex-shrink-0 flex flex-wrap gap-2 bg-black/10">
                 {cargoN(cur) > 0 && (
                   <button onClick={() => Object.entries(cur.cargo).forEach(([r,n]) => doSell(r,n))}
                     className="h-10 px-4 rounded font-bold bg-green-800 hover:bg-green-600 text-green-100 border border-green-600">
@@ -2593,7 +2609,7 @@ const OceanTycoon = () => {
             <div className="flex gap-1 items-center flex-shrink-0">
               <button onClick={() => zoomAt(1.5)} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">＋</button>
               <button onClick={() => zoomAt(1 / 1.5)} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">－</button>
-              <button onClick={() => setMapView({x:0,y:0,zoom:1})} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">⊡</button>
+              <button onClick={() => setMapView(DEFAULT_MAP_VIEW)} className="px-2 py-0.5 bg-ocean-dark border border-gold text-gold text-xs rounded">⊡</button>
               <button
                 onClick={() => {
                   const turning = !followShip;
@@ -2620,6 +2636,41 @@ const OceanTycoon = () => {
             </div>
           </div>
 
+          {cur && (
+            <div className="mb-1 game-panel-frame rounded-lg border border-gold/40 px-3 py-2 flex items-center gap-3 flex-shrink-0 overflow-hidden">
+              <div className="min-w-[132px] flex items-center gap-2">
+                <ShipIcon type={cur.type} className="w-7 h-7" />
+                <div className="min-w-0">
+                  <div className="text-xs font-black text-gold truncate">{cur.name}</div>
+                  <div className="text-[11px] text-gray-400">{cur.isMoving ? `항해 ${Math.round(journeyProgress(cur))}%` : atPort ? `${PORTS[portKey]?.name || '정박'} 정박` : '대기 중'}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
+                {Object.entries(cur.cargo).length === 0 ? (
+                  <span className="text-xs text-gray-500">화물 없음</span>
+                ) : (
+                  Object.entries(cur.cargo).slice(0, 6).map(([res, qty]) => (
+                    <span key={res} className="inventory-slot-frame h-9 min-w-12 rounded-lg border border-gold/30 px-1.5 inline-flex items-center justify-center gap-1 text-xs font-bold text-gold">
+                      <ResourceIcon res={res} className="w-6 h-6" />
+                      <span>×{qty}</span>
+                    </span>
+                  ))
+                )}
+                {Object.entries(cur.cargo).length > 6 && <span className="text-xs text-gray-500">+{Object.entries(cur.cargo).length - 6}</span>}
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-xs text-gray-300 font-bold whitespace-nowrap">화물 {cargoN(cur)}<span className="text-gray-600">/{st?.capacity}</span></span>
+                <div className="w-20 bg-gray-800 rounded-full h-1.5 hidden sm:block"><div className="bg-gold rounded-full h-1.5" style={{width:`${Math.min(100,cargoN(cur)/(st?.capacity||1)*100)}%`}}/></div>
+                {atPort && !cur.isMoving && (
+                  <button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); setShowMarket(true); }}
+                    className="h-9 px-3 rounded-lg text-xs font-black bg-green-700 hover:bg-green-500 text-white border border-green-500 inline-flex items-center gap-1.5">
+                    <UiIcon name="market-stall" className="w-4 h-4" /> 시장
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="flex-1 relative min-h-0">
             {/* 지도 버튼 — overflow-hidden 바깥에 배치해 모달 위에 표시 */}
             <div className="absolute top-2 right-2 z-[60] flex flex-col gap-1 pointer-events-auto max-w-[112px]">
@@ -2630,37 +2681,7 @@ const OceanTycoon = () => {
               style={{ cursor: grabbing?'grabbing':routeMode?'crosshair':'grab', touchAction:'none' }}
               onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp}
               onPointerLeave={(e) => { if (e.buttons === 0 && e.pointerType === 'mouse') onPtrUp(e); }}>
-              {routeMode && <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 bg-gold text-ocean-dark px-4 py-1 rounded-full text-xs font-bold animate-pulse pointer-events-none whitespace-nowrap shadow-lg">🎯 항구 시세 확인 후 목적지 확정</div>}
-
-              {/* 화물 인벤토리 — 지도 우측 하단 */}
-              {cur && (
-                <div className="absolute bottom-3 left-3 z-20 w-64 max-w-[42vw] max-h-[36vh] overflow-hidden bg-slate-950/88 border border-gold/55 rounded-xl shadow-2xl backdrop-blur-sm pointer-events-auto" onPointerDown={e => e.stopPropagation()}>
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-gold/30">
-                    <span className="text-xs font-bold text-gold inline-flex items-center gap-1.5"><ShipIcon type={cur.type} className="w-5 h-5" /> {cur.name}</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-gray-300 font-bold">{cargoN(cur)}<span className="text-gray-600">/{st?.capacity}</span></span>
-                      <div className="w-16 bg-gray-800 rounded-full h-1.5"><div className="bg-gold rounded-full h-1.5" style={{width:`${Math.min(100,cargoN(cur)/(st?.capacity||1)*100)}%`}}/></div>
-                    </div>
-                  </div>
-                  {Object.keys(cur.cargo).length === 0 ? (
-                    <div className="p-2">{renderCargoInventory(cur, st?.capacity || 0, { compact: true })}</div>
-                  ) : (
-                    <div className="p-2">{renderCargoInventory(cur, st?.capacity || 0, { compact: true })}</div>
-                  )}
-                  {atPort && !cur.isMoving && (
-                    <div className="px-2 pb-2 pt-1 border-t border-gold/20">
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-xs text-gray-400">합계</span>
-                        <span className="text-xs font-bold text-green-400">{cargoN(cur) > 0 ? `${cargoSellTotal(cur,portKey).toLocaleString()}금` : '비어 있음'}</span>
-                      </div>
-                      <button onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); setShowMarket(true); }}
-                        className="w-full py-1.5 rounded-lg text-sm font-bold bg-green-700 hover:bg-green-500 text-white border border-green-500 transition-colors inline-flex items-center justify-center gap-2">
-                        <UiIcon name="market-stall" className="w-5 h-5" /> 시장 (판매/매입)
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+              {routeMode && <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 bg-gold text-ocean-dark px-4 py-1 rounded-full text-xs font-bold animate-pulse pointer-events-none whitespace-nowrap shadow-lg">🎯 항구 시세 확인 후 목적지 확정</div>}
 
               {/* ── 맵 레이어 시스템 (모든 오브젝트를 스크린 좌표로 직접 배치) ──
                   카메라: mapView = { x, y, zoom }
@@ -2708,60 +2729,65 @@ const OceanTycoon = () => {
                   [[8, 70], [24, 62], [42, 66], [59, 58], [78, 64], [96, 55]],
                   [[24, 42], [38, 48], [54, 44], [68, 50], [83, 45]],
                   [[12, 86], [32, 82], [48, 88], [68, 80], [91, 84]],
+                  [[16, 36], [27, 31], [42, 36], [58, 33], [72, 39], [89, 35]],
+                  [[36, 58], [48, 54], [61, 60], [74, 57], [90, 62]],
+                ];
+                const seaLanes = [
+                  [[42, 43], [48, 35], [56, 40], [66, 53], [72, 58]],
+                  [[56, 49], [62, 60], [70, 66], [82, 70]],
+                  [[82, 70], [84, 58], [87, 44], [92, 42]],
+                  [[43, 43], [32, 42], [25, 56], [22, 53]],
                 ];
                 const currentPath = (pts) => pts.map(([wx, wy], idx) => {
                   const { sx, sy } = ws(wx, wy);
                   return `${idx === 0 ? 'M' : 'L'}${sx},${sy}`;
                 }).join(' ');
-                const smoothClosedPath = (pts) => {
-                  const screen = pts.map(([wx, wy]) => ws(wx, wy));
-                  if (screen.length < 3) return '';
-                  const mid = (a, b) => ({ sx: (a.sx + b.sx) / 2, sy: (a.sy + b.sy) / 2 });
-                  const start = mid(screen[screen.length - 1], screen[0]);
-                  const curves = screen.map((p, idx) => {
-                    const next = screen[(idx + 1) % screen.length];
-                    const m = mid(p, next);
-                    return `Q${p.sx},${p.sy} ${m.sx},${m.sy}`;
-                  }).join(' ');
-                  return `M${start.sx},${start.sy} ${curves} Z`;
-                };
 
                 return (
                   <>
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:0}}>
                       <defs>
                         <radialGradient id="sea-depth-west" cx="20%" cy="22%" r="55%">
-                          <stop offset="0%" stopColor="#1d5f86" stopOpacity="0.42"/>
-                          <stop offset="65%" stopColor="#0b3158" stopOpacity="0.22"/>
+                          <stop offset="0%" stopColor="#79e6ff" stopOpacity="0.36"/>
+                          <stop offset="55%" stopColor="#1ba3d6" stopOpacity="0.24"/>
                           <stop offset="100%" stopColor="#020712" stopOpacity="0"/>
                         </radialGradient>
                         <radialGradient id="sea-depth-east" cx="78%" cy="52%" r="64%">
-                          <stop offset="0%" stopColor="#0c6f7b" stopOpacity="0.22"/>
-                          <stop offset="70%" stopColor="#05213f" stopOpacity="0.2"/>
+                          <stop offset="0%" stopColor="#37d5ee" stopOpacity="0.30"/>
+                          <stop offset="70%" stopColor="#0b77b7" stopOpacity="0.22"/>
                           <stop offset="100%" stopColor="#020712" stopOpacity="0"/>
                         </radialGradient>
-                        <filter id="coast-soften">
-                          <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="coastNoise"/>
-                          <feDisplacementMap in="SourceGraphic" in2="coastNoise" scale="1.8"/>
-                        </filter>
+                        <pattern id="sea-ripples" width="58" height="28" patternUnits="userSpaceOnUse">
+                          <path d="M-12 15C1 6 12 6 25 15S49 24 62 15 88 6 101 15" fill="none" stroke="#e0faff" strokeOpacity="0.17" strokeWidth="1.25"/>
+                          <path d="M-18 25C-4 18 8 18 20 25S44 32 58 25 82 18 96 25" fill="none" stroke="#7dd3fc" strokeOpacity="0.12" strokeWidth="1"/>
+                        </pattern>
+                        <pattern id="sea-sparkle" width="140" height="90" patternUnits="userSpaceOnUse">
+                          <circle cx="34" cy="22" r="1.2" fill="#e0faff" opacity="0.12"/>
+                          <circle cx="96" cy="54" r="1.4" fill="#bae6fd" opacity="0.10"/>
+                          <path d="M14 68h22M92 18h30" stroke="#f8fdff" strokeOpacity="0.08" strokeWidth="1.5" strokeLinecap="round"/>
+                        </pattern>
                       </defs>
                       <rect width={W} height={H} fill="url(#sea-depth-west)"/>
                       <rect width={W} height={H} fill="url(#sea-depth-east)"/>
-                      {LANDMASSES.map(land => (
-                        <g key={land.id} opacity="0.86">
-                          <path d={smoothClosedPath(land.points)} fill={land.color} stroke="#d4a574" strokeOpacity="0.22" strokeWidth="1.5" filter="url(#coast-soften)"/>
-                          {(() => {
-                            const cx = land.points.reduce((a, [lx]) => a + lx, 0) / land.points.length;
-                            const cy = land.points.reduce((a, [, ly]) => a + ly, 0) / land.points.length;
-                            const { sx, sy } = ws(cx, cy);
-                            return <text x={sx} y={sy} fill="#f8e1a5" opacity="0.34" fontSize="18" fontWeight="800" textAnchor="middle">{land.label}</text>;
-                          })()}
-                        </g>
+                      <rect width={W} height={H} fill="url(#sea-ripples)" opacity="0.95"/>
+                      <rect width={W} height={H} fill="url(#sea-sparkle)" opacity="0.7"/>
+                      <path d={`M${W * 0.05},${H * 0.78} C${W * 0.28},${H * 0.62} ${W * 0.43},${H * 0.9} ${W * 0.67},${H * 0.72} S${W * 0.92},${H * 0.62} ${W * 1.08},${H * 0.48}`} fill="none" stroke="#8be9ff" strokeOpacity="0.16" strokeWidth="42"/>
+                      <path d={`M${W * -0.08},${H * 0.36} C${W * 0.2},${H * 0.18} ${W * 0.38},${H * 0.46} ${W * 0.62},${H * 0.28} S${W * 0.9},${H * 0.32} ${W * 1.06},${H * 0.18}`} fill="none" stroke="#dff9ff" strokeOpacity="0.12" strokeWidth="28"/>
+                      <path d={`M${W * -0.04},${H * 0.18} C${W * 0.18},${H * 0.28} ${W * 0.34},${H * 0.08} ${W * 0.56},${H * 0.2} S${W * 0.86},${H * 0.28} ${W * 1.05},${H * 0.14}`} fill="none" stroke="#38bdf8" strokeOpacity="0.10" strokeWidth="24"/>
+                      <image
+                        href={worldLandmassesUrl}
+                        x={vx}
+                        y={vy}
+                        width={W * zoom}
+                        height={H * zoom}
+                        preserveAspectRatio="none"
+                        opacity="0.62"
+                      />
+                      {seaLanes.map((pts, idx) => (
+                        <path key={`sea-lane-${idx}`} d={currentPath(pts)} fill="none" stroke="#fff7d6" strokeOpacity="0.16" strokeWidth="1.6" strokeLinecap="round" strokeDasharray="3 8"/>
                       ))}
-                      <path d={`M${W * 0.05},${H * 0.78} C${W * 0.28},${H * 0.62} ${W * 0.43},${H * 0.9} ${W * 0.67},${H * 0.72} S${W * 0.92},${H * 0.62} ${W * 1.08},${H * 0.48}`} fill="none" stroke="#7dd3fc" strokeOpacity="0.1" strokeWidth="34"/>
-                      <path d={`M${W * -0.08},${H * 0.36} C${W * 0.2},${H * 0.18} ${W * 0.38},${H * 0.46} ${W * 0.62},${H * 0.28} S${W * 0.9},${H * 0.32} ${W * 1.06},${H * 0.18}`} fill="none" stroke="#f8c96a" strokeOpacity="0.08" strokeWidth="22"/>
                       {currents.map((pts, idx) => (
-                        <path key={`current-${idx}`} d={currentPath(pts)} fill="none" stroke={idx % 2 ? '#67e8f9' : '#f8c96a'} strokeOpacity={idx % 2 ? '0.22' : '0.18'} strokeWidth="2" strokeLinecap="round" className="ocean-current-line"/>
+                        <path key={`current-${idx}`} d={currentPath(pts)} fill="none" stroke={idx % 2 ? '#9beafe' : '#f8d989'} strokeOpacity={idx % 2 ? '0.28' : '0.22'} strokeWidth={idx < 2 ? '3' : '2'} strokeLinecap="round" className="ocean-current-line"/>
                       ))}
                     </svg>
 
@@ -2789,9 +2815,9 @@ const OceanTycoon = () => {
                         const traveled = [...route.slice(0, currentIndex), { x: cur.x, y: cur.y }];
                         return (
                           <g>
-                            <path d={routeD(traveled)} fill="none" stroke="#e0f2fe" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" opacity="0.18" className="ship-wake-line"/>
-                            <path d={routeD(traveled)} fill="none" stroke="#bae6fd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.46" className="ship-wake-line"/>
-                            <path d={routeD(traveled)} fill="none" stroke="#facc15" strokeWidth="1.5" strokeLinejoin="round" opacity="0.42"/>
+                            <path d={routeD(traveled)} fill="none" stroke="#f8fdff" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" opacity="0.24" className="ship-wake-line"/>
+                            <path d={routeD(traveled)} fill="none" stroke="#e0faff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" className="ship-wake-line"/>
+                            <path d={routeD(traveled)} fill="none" stroke="#f8d989" strokeWidth="1.8" strokeLinejoin="round" opacity="0.54"/>
                           </g>
                         );
                       })()}
@@ -2799,14 +2825,23 @@ const OceanTycoon = () => {
                         const route = cur.route?.length ? cur.route : [{ x: cur.x, y: cur.y }, { x: cur.targetX, y: cur.targetY }];
                         const currentIndex = Math.max(1, cur.routeIndex || 1);
                         const future = [{ x: cur.x, y: cur.y }, ...route.slice(currentIndex)];
-                        return <path d={routeD(future)} fill="none" stroke="#d4a574" strokeWidth="2.5" strokeDasharray="10,6" opacity="0.78" markerEnd="url(#arr)"/>;
+                        return <path d={routeD(future)} fill="none" stroke="#ffe08a" strokeWidth="3" strokeDasharray="10,6" opacity="0.88" markerEnd="url(#arr)"/>;
                       })()}
-                      {routeMode && cur && Object.entries(PORTS).map(([k, p]) => {
-                        if (Math.hypot(p.x-cur.x, p.y-cur.y) < 0.5) return null;
-                        const a = ws(cur.x, cur.y), b = ws(p.x, p.y);
-                        const access = getPortAccessState(k, gs.totalEarned);
-                        return <line key={k} x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke={access.unlocked ? '#d4a574' : '#64748b'} strokeWidth="1" opacity={access.unlocked ? '0.25' : '0.1'}/>;
-                      })}
+                      {routeMode && cur && (() => {
+                        const candidates = Object.entries(PORTS)
+                          .map(([k, p]) => ({ k, p, access: getPortAccessState(k, gs.totalEarned), dist: Math.hypot(p.x - cur.x, p.y - cur.y) }))
+                          .filter(item => item.dist >= 0.5 && item.access.unlocked)
+                          .sort((a, b) => a.dist - b.dist)
+                          .slice(0, 10);
+                        const curAnchorKey = !cur.isMoving ? portOf(cur) : null;
+                        const curAnchor = curAnchorKey ? portHarbor(curAnchorKey) : cur;
+                        const a = ws(curAnchor.x, curAnchor.y);
+                        return candidates.map(({ k, p }, idx) => {
+                          const h = portHarbor(k);
+                          const b = ws(h.x, h.y);
+                          return <line key={k} x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#ffe08a" strokeWidth={idx < 4 ? '1.8' : '1.2'} opacity={idx < 4 ? '0.38' : '0.2'}/>;
+                        });
+                      })()}
                     </svg>
 
                     {/* ③ 항구 — 스크린 좌표, 고정 크기 */}
@@ -2817,6 +2852,8 @@ const OceanTycoon = () => {
                       const isTutTarget = tutorialPhase==='depart'&&(k==='london'||k==='antwerp');
                       const access = getPortAccessState(k, gs.totalEarned);
                       const visited = (gs.visitedPorts||getInitialVisitedPorts()).includes(k);
+                      const compactPort = zoom < 1.22 && !routeMode && !isTutTarget && portKey !== k;
+                      const showLabel = routeMode || zoom >= 1.25 || portKey === k || isTutTarget || visited;
                       return (
                         <div key={k} className="absolute" style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:10}}
                           onPointerDown={e => e.stopPropagation()}
@@ -2848,7 +2885,7 @@ const OceanTycoon = () => {
                             }
                           }}>
                           {isTutTarget && <div className="absolute rounded-full animate-ping pointer-events-none" style={{width:72,height:72,top:-36,left:-36,backgroundColor:rs.color+'33',border:`2px solid ${rs.color}`}}/>}
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl border-2 select-none cursor-pointer hover:scale-110 transition-transform ${routeMode?'animate-bounce':''} ${rs.border}`}
+                          <div className={`${compactPort ? 'w-9 h-9 text-lg' : 'w-12 h-12 text-2xl'} rounded-full flex items-center justify-center border-2 select-none cursor-pointer hover:scale-110 transition-transform ${routeMode?'animate-bounce':''} ${rs.border}`}
                             style={{
                               backgroundColor: visited ? rs.color+'22' : access.unlocked ? rs.color+'14' : '#1a1a2e',
                               boxShadow:(routeMode||isTutTarget)?`0 0 16px ${rs.color}`:'none',
@@ -2856,10 +2893,10 @@ const OceanTycoon = () => {
                             }}>
                             {visited || access.unlocked ? rs.icon : '🔒'}
                           </div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 pointer-events-none whitespace-nowrap font-bold rounded bg-black/65 px-1.5 py-0.5 border border-black/40"
+                          {showLabel && <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 pointer-events-none whitespace-nowrap font-bold rounded bg-black/65 px-1.5 py-0.5 border border-black/40"
                             style={{color: visited || access.unlocked ? rs.color : '#9ca3af', textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.62rem'}}>
                             {visited || access.unlocked ? `${p.country} ${p.name}` : access.shortLabel}
-                          </div>
+                          </div>}
                         </div>
                       );
                     })}
@@ -2874,10 +2911,10 @@ const OceanTycoon = () => {
                           style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:12}}
                           onClick={evt.clickable?(e)=>{e.stopPropagation();claimEvent(evt.id);}:undefined}>
                           <div className="text-xl animate-bounce drop-shadow-lg">{evt.icon}</div>
-                          <div className="text-white font-bold whitespace-nowrap bg-black/70 px-1 py-0.5 rounded mt-0.5"
+                          {zoom >= 1.45 && <div className="text-white font-bold whitespace-nowrap bg-black/70 px-1 py-0.5 rounded mt-0.5"
                             style={{fontSize:'0.45rem',textShadow:'0 0 4px #000'}}>
                             {evt.label}{evt.clickable&&!evt.claimed&&evt.reward>0?' (클릭!)':''}
-                          </div>
+                          </div>}
                         </div>
                       );
                     })}
@@ -2909,13 +2946,15 @@ const OceanTycoon = () => {
                         return { ox: 0, oy: 0 };
                       };
                       return gs.ships.map(s => {
-                        const { sx, sy } = ws(s.x, s.y);
+                        const dockedPortKey = !s.isMoving ? portOf(s) : null;
+                        const anchor = dockedPortKey ? portHarbor(dockedPortKey) : s;
+                        const { sx, sy } = ws(anchor.x, anchor.y);
                         const { ox, oy } = getDockOffset(s.id);
                         const isSel     = s.id === selShip;
                         const isStormed = s.stormUntil && Date.now() < s.stormUntil;
                         const crewCnt   = gs.crew.filter(c => c.shipId === s.id).length;
                         return (
-                          <button key={s.id} type="button" className="absolute select-none pointer-events-auto cursor-pointer"
+                          <button key={s.id} type="button" className={`absolute select-none pointer-events-auto cursor-pointer ship-map-button ${s.isMoving ? 'is-moving' : 'is-docked'}`}
                             style={{left: sx + ox, top: sy + oy, transform:'translate(-50%,-50%)', zIndex:20}}
                             title={`${s.name} 목적지 선택`}
                             onPointerDown={e => e.stopPropagation()}
@@ -2930,16 +2969,24 @@ const OceanTycoon = () => {
                             {crewCnt===0 && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-red-400 text-xs font-bold pointer-events-none whitespace-nowrap">⚠️</div>}
                             {s.booster && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-yellow-300 text-xs font-bold pointer-events-none animate-pulse">⚡</div>}
                             {isStormed && <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-purple-400 text-xs font-bold pointer-events-none">⛈️</div>}
-                            <div className={`${s.isMoving ? 'ship-at-sea' : ''} ${isSel ? 'drop-shadow-[0_0_6px_#facc15]' : 'opacity-90'}`}>
-                              <ShipIcon type={s.type} className="w-9 h-9" />
+                            {s.isMoving && (
+                              <div className="fleet-sails">
+                                <span className="fleet-sail" />
+                                <span className="fleet-sail" />
+                                <span className="fleet-sail" />
+                              </div>
+                            )}
+                            <div className={`${s.isMoving ? 'ship-at-sea scale-110' : ''} ${isSel ? 'drop-shadow-[0_0_8px_#facc15]' : 'opacity-95'}`}>
+                              <ShipIcon type={s.type} className={s.isMoving ? 'w-11 h-11' : 'w-9 h-9'} />
                             </div>
+                            {(s.isMoving || isSel || zoom >= 1.55) && <div className="ship-map-label">{s.isMoving ? `${Math.round(journeyProgress(s))}%` : s.name}</div>}
                           </button>
                         );
                       });
                     })()}
 
                     {/* ⑥ 순항 보조 버튼 — 스크린 좌표 */}
-                    {gs.ships.filter(s => s.isMoving).map(s => {
+                    {gs.ships.filter(s => s.isMoving && (s.id === selShip || zoom >= 1.55)).map(s => {
                       const { sx, sy } = ws(s.x, s.y);
                       const isSel = s.id === selShip;
                       const bx = Math.min(W-90, Math.max(0, sx-40));
@@ -2949,7 +2996,7 @@ const OceanTycoon = () => {
                           className={`absolute text-xs font-bold rounded-lg px-2 py-1 shadow-lg border transition-colors pointer-events-auto
                             ${s.booster?'bg-yellow-500 text-gray-900 border-yellow-300 animate-pulse':isSel?'bg-blue-700 hover:bg-blue-500 text-blue-100 border-blue-400':'bg-blue-900 text-blue-300 border-blue-700 opacity-75 hover:opacity-100'}`}
                           style={{left:bx, top:by, zIndex:25}}>
-                          ⚡ {s.booster?'순항 보조 ON':'순항 보조'}
+                          ⚡ {s.booster?'순항 ON':'순항'}
                         </button>
                       );
                     })}

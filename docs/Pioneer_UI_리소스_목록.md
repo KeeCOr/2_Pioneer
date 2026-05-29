@@ -5,6 +5,7 @@
 - 통화 아이콘: 금화, 보석을 별도 SVG로 제작해 HUD 통화 배지에 적용.
 - 거래 UI 아이콘: 거래소, 화물 상자, 나침반, 닻, 연료통, 수리 망치를 제작해 주요 버튼과 상태 표시에 적용.
 - 버튼/프레임 리소스: 패널, 모달, 금색 버튼, 해양 버튼, 인벤토리 슬롯 SVG를 제작해 공통 카드와 주요 거래 UI 표면에 적용.
+- 지도 리소스: 실제 대륙 실루엣에 가까운 투명 PNG 텍스처를 제작해 해도 배경 레이어에 적용.
 - 자원 아이콘: 기존 `src/assets/icons/resources` SVG 10종을 거래소 목록, 상세 시세, 화물 인벤토리에 연결.
 - 선박 아이콘: 기존 `src/assets/icons/ships` SVG 11종을 지도 위 선박, 함대 목록, 선박 상세, 구매 목록에 연결.
 
@@ -25,6 +26,7 @@
 | `src/assets/frames/button-gold.svg` | 금색 주요 버튼 표면 |
 | `src/assets/frames/button-ocean.svg` | 해양색 보조/판매 버튼 표면 |
 | `src/assets/frames/inventory-slot.svg` | 화물 인벤토리 슬롯 |
+| `src/assets/map/world-landmasses.png` | 실제 지형 느낌의 세계 대륙 지도 텍스처 |
 
 ## 추가 제작 후보
 

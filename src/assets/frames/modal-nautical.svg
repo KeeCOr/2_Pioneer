@@ -7,9 +7,7 @@
       <stop offset="1" stop-color="#2b1b0f"/>
     </linearGradient>
   </defs>
-  <rect x="6" y="6" width="408" height="288" rx="18" fill="#07111e" stroke="url(#rim)" stroke-width="4"/>
-  <rect x="17" y="17" width="386" height="266" rx="12" fill="none" stroke="#f8d98b" stroke-opacity=".24" stroke-width="2"/>
-  <path d="M28 6h72l-18 13H44zm292 0h72l-16 13h-40zM28 294h72l-18-13H44zm292 0h72l-16-13h-40z" fill="#f8d98b" opacity=".62"/>
-  <path d="M7 58c26-5 43-23 50-51M413 58c-26-5-43-23-50-51M7 242c26 5 43 23 50 51M413 242c-26 5-43 23-50 51" fill="none" stroke="#f8d98b" stroke-opacity=".55" stroke-width="3"/>
-  <path d="M34 38h352M34 262h352" stroke="#5a3a18" stroke-opacity=".55" stroke-width="2"/>
+  <rect x="7" y="7" width="406" height="286" rx="18" fill="#07111e" stroke="url(#rim)" stroke-width="2"/>
+  <rect x="18" y="18" width="384" height="264" rx="12" fill="none" stroke="#f8d98b" stroke-opacity=".10" stroke-width="1"/>
+  <path d="M30 7h58M332 7h58M30 293h58M332 293h58" stroke="#f8d98b" stroke-opacity=".24" stroke-width="2" stroke-linecap="round"/>
 </svg>

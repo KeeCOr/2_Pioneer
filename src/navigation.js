@@ -13,6 +13,10 @@ const SEA_CORRIDOR = [
 ];
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const harborOf = (port) => ({
+  x: port.harborX ?? port.x,
+  y: port.harborY ?? port.y,
+});
 
 const dedupeRoute = (points) => {
   const out = [];
@@ -41,7 +45,8 @@ export const buildSeaRoute = (start, destination) => {
 
 export const findPortForShip = (ship, ports) => {
   const entry = Object.entries(ports).find(([, port]) =>
-    Math.hypot(ship.x - port.x, ship.y - port.y) < PORT_DOCK_RADIUS
+    Math.hypot(ship.x - port.x, ship.y - port.y) < PORT_DOCK_RADIUS ||
+    Math.hypot(ship.x - (port.harborX ?? port.x), ship.y - (port.harborY ?? port.y)) < PORT_DOCK_RADIUS
   );
   return entry ? entry[1] : null;
 };
@@ -49,12 +54,20 @@ export const findPortForShip = (ship, ports) => {
 export const createDepartureState = (ship, destinationPort, sourcePort = null) => {
   let x = ship.x;
   let y = ship.y;
+  const destinationHarbor = harborOf(destinationPort);
 
   if (sourcePort && Math.hypot(ship.x - sourcePort.x, ship.y - sourcePort.y) < PORT_DOCK_RADIUS) {
-    const dx = destinationPort.x - sourcePort.x;
-    const dy = destinationPort.y - sourcePort.y;
+    const sourceHarbor = harborOf(sourcePort);
+    x = sourceHarbor.x;
+    y = sourceHarbor.y;
+  } else if (sourcePort && Math.hypot(ship.x - (sourcePort.harborX ?? sourcePort.x), ship.y - (sourcePort.harborY ?? sourcePort.y)) < PORT_DOCK_RADIUS) {
+    const sourceHarbor = harborOf(sourcePort);
+    x = sourceHarbor.x;
+    y = sourceHarbor.y;
+  } else if (sourcePort) {
+    const dx = destinationHarbor.x - sourcePort.x;
+    const dy = destinationHarbor.y - sourcePort.y;
     const portDistance = Math.hypot(dx, dy);
-
     if (portDistance > ARRIVAL_BUFFER) {
       const clearance = Math.min(DEPARTURE_CLEARANCE, portDistance - ARRIVAL_BUFFER);
       x = sourcePort.x + (dx / portDistance) * clearance;
@@ -62,7 +75,7 @@ export const createDepartureState = (ship, destinationPort, sourcePort = null) =
     }
   }
 
-  const route = buildSeaRoute({ x, y }, destinationPort);
+  const route = buildSeaRoute({ x, y }, destinationHarbor);
   const firstTarget = route[1] || destinationPort;
 
   return {
@@ -72,8 +85,8 @@ export const createDepartureState = (ship, destinationPort, sourcePort = null) =
     isMoving: true,
     targetX: firstTarget.x,
     targetY: firstTarget.y,
-    destinationX: destinationPort.x,
-    destinationY: destinationPort.y,
+    destinationX: destinationHarbor.x,
+    destinationY: destinationHarbor.y,
     route,
     routeIndex: route.length > 1 ? 1 : 0,
     startX: x,

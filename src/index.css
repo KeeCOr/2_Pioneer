@@ -75,9 +75,10 @@ body {
 
 .ocean-map {
   background:
-    radial-gradient(circle at 18% 18%, rgba(57, 118, 168, 0.34), transparent 30%),
-    radial-gradient(circle at 78% 22%, rgba(16, 91, 124, 0.32), transparent 34%),
-    linear-gradient(180deg, #102c55 0%, #08203d 48%, #030814 100%);
+    radial-gradient(ellipse at 18% 18%, rgba(96, 205, 244, 0.48), transparent 32%),
+    radial-gradient(ellipse at 80% 40%, rgba(42, 171, 214, 0.38), transparent 40%),
+    radial-gradient(ellipse at 48% 76%, rgba(2, 105, 174, 0.42), transparent 48%),
+    linear-gradient(180deg, #197db3 0%, #0b5f99 36%, #06406f 68%, #032543 100%);
 }
 
 .ocean-map::before {
@@ -86,11 +87,13 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    repeating-linear-gradient(115deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 34px),
-    repeating-linear-gradient(24deg, rgba(125,211,252,0.045) 0 1px, transparent 1px 42px),
-    radial-gradient(circle at 50% 40%, rgba(248,201,106,0.08), transparent 42%);
-  background-size: 180px 90px, 140px 120px, 100% 100%;
-  opacity: 0.55;
+    radial-gradient(ellipse at center, rgba(224, 250, 255, 0.14) 0 1px, transparent 1px 100%),
+    repeating-linear-gradient(166deg, rgba(224, 250, 255, 0.105) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(24deg, rgba(56, 189, 248, 0.10) 0 1px, transparent 1px 32px),
+    radial-gradient(circle at 52% 42%, rgba(248, 201, 106, 0.07), transparent 45%);
+  background-size: 46px 18px, 180px 78px, 136px 104px, 100% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.82;
 }
 
 .ocean-map::after {
@@ -99,9 +102,10 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(3,8,20,0.28), transparent 18%, transparent 82%, rgba(3,8,20,0.34)),
-    linear-gradient(180deg, rgba(255,255,255,0.08), transparent 12%, transparent 82%, rgba(0,0,0,0.36));
-  box-shadow: inset 0 0 90px rgba(0,0,0,0.45);
+    radial-gradient(ellipse at 30% 16%, rgba(255, 255, 255, 0.14), transparent 24%),
+    linear-gradient(90deg, rgba(3,8,20,0.10), transparent 20%, transparent 80%, rgba(3,8,20,0.18)),
+    linear-gradient(180deg, rgba(255,255,255,0.08), transparent 18%, transparent 78%, rgba(0,0,0,0.22));
+  box-shadow: inset 0 0 64px rgba(0,0,0,0.30);
 }
 
 .ocean-current-line {
@@ -115,6 +119,75 @@ body {
 .ship-at-sea {
   animation: ship-bob 2.4s ease-in-out infinite;
   transform-origin: center;
+}
+
+.ship-map-button {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.ship-map-button.is-moving {
+  filter: drop-shadow(0 5px 6px rgba(2, 6, 23, 0.68));
+}
+
+.fleet-sails {
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ship-map-button.is-moving .fleet-sails {
+  opacity: 1;
+}
+
+.fleet-sail {
+  position: absolute;
+  width: 17px;
+  height: 11px;
+  background:
+    linear-gradient(135deg, transparent 0 18%, #fffaf0 20% 56%, #bfefff 58% 100%);
+  border-radius: 70% 12% 70% 12%;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.68), 0 3px 4px rgba(0, 0, 0, 0.45);
+}
+
+.fleet-sail:nth-child(1) {
+  left: -1px;
+  top: 8px;
+  transform: rotate(-17deg) scale(0.9);
+}
+
+.fleet-sail:nth-child(2) {
+  right: -2px;
+  top: 11px;
+  transform: rotate(14deg) scale(0.78);
+}
+
+.fleet-sail:nth-child(3) {
+  left: 16px;
+  bottom: -2px;
+  transform: rotate(4deg) scale(0.72);
+}
+
+.ship-map-label {
+  position: absolute;
+  left: 50%;
+  top: 44px;
+  transform: translateX(-50%);
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(2, 6, 23, 0.78);
+  color: #fef3c7;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #000;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
 }
 
 .asset-icon {
@@ -147,30 +220,20 @@ body {
 /* 카드 스타일 */
 .card {
   @apply bg-gradient-to-b from-ocean-blue to-ocean-dark border border-gold rounded-lg p-4 shadow-lg;
-  background-image:
-    url('./assets/frames/panel-nautical.svg'),
-    linear-gradient(180deg, rgba(26, 59, 92, 0.96), rgba(10, 26, 47, 0.98));
-  background-size: 100% 100%, auto;
-  background-repeat: no-repeat;
-  border-color: rgba(248, 201, 106, 0.38);
+  background-image: linear-gradient(180deg, rgba(26, 59, 92, 0.96), rgba(10, 26, 47, 0.98));
+  border-color: rgba(248, 201, 106, 0.28);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 18px rgba(248, 201, 106, 0.08),
-    0 14px 30px rgba(0, 0, 0, 0.28);
+    0 10px 22px rgba(0, 0, 0, 0.24);
 }
 
 .button-gold {
   @apply bg-gradient-to-r from-gold to-gold-light text-ocean-dark font-bold py-2 px-4 rounded hover:shadow-lg transition-all;
-  background-image:
-    url('./assets/frames/button-gold.svg'),
-    linear-gradient(180deg, #f8d989 0%, #d4a574 55%, #9b6a35 100%);
-  background-size: 100% 100%, auto;
-  background-repeat: no-repeat;
-  border: 1px solid rgba(255, 237, 160, 0.72);
+  background-image: linear-gradient(180deg, #f8d989 0%, #d4a574 58%, #b77a3d 100%);
+  border: 1px solid rgba(255, 237, 160, 0.52);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -2px 0 rgba(90, 52, 20, 0.32),
-    0 8px 16px rgba(0, 0, 0, 0.25);
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .button-gold:hover {
@@ -180,16 +243,11 @@ body {
 
 .button-ocean {
   @apply bg-gradient-to-r from-ocean-light to-ocean-blue text-gold font-bold py-2 px-4 rounded hover:shadow-lg transition-all;
-  background-image:
-    url('./assets/frames/button-ocean.svg'),
-    linear-gradient(180deg, #2f80b7 0%, #1a3b5c 58%, #0a1a2f 100%);
-  background-size: 100% 100%, auto;
-  background-repeat: no-repeat;
-  border: 1px solid rgba(125, 211, 252, 0.46);
+  background-image: linear-gradient(180deg, #2f80b7 0%, #1a3b5c 58%, #0a1a2f 100%);
+  border: 1px solid rgba(125, 211, 252, 0.32);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.28),
-    0 8px 16px rgba(0, 0, 0, 0.24);
+    0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .button-ocean:hover {
@@ -198,16 +256,11 @@ body {
 }
 
 .game-panel-frame {
-  background-image:
-    url('./assets/frames/panel-nautical.svg'),
-    linear-gradient(180deg, rgba(17, 39, 62, 0.98), rgba(5, 14, 26, 0.98));
-  background-size: 100% 100%, auto;
-  background-repeat: no-repeat;
-  border-color: rgba(248, 201, 106, 0.34) !important;
+  background-image: linear-gradient(180deg, rgba(17, 39, 62, 0.98), rgba(5, 14, 26, 0.98));
+  border-color: rgba(248, 201, 106, 0.26) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 24px rgba(248, 201, 106, 0.07),
-    0 18px 46px rgba(0, 0, 0, 0.42);
+    0 12px 28px rgba(0, 0, 0, 0.32);
 }
 
 .game-modal-frame {
@@ -216,39 +269,28 @@ body {
     linear-gradient(180deg, rgba(12, 28, 45, 0.99), rgba(4, 12, 23, 0.99));
   background-size: 100% 100%, auto;
   background-repeat: no-repeat;
-  border-color: rgba(248, 201, 106, 0.48) !important;
+  border-color: rgba(248, 201, 106, 0.32) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 28px rgba(14, 165, 233, 0.08),
-    0 24px 64px rgba(0, 0, 0, 0.58);
+    0 22px 58px rgba(0, 0, 0, 0.56);
 }
 
 .game-button-gold-frame {
-  background-image:
-    url('./assets/frames/button-gold.svg'),
-    linear-gradient(180deg, #f8d989, #d4a574 58%, #8f5b2f);
-  background-size: 100% 100%, auto;
-  background-repeat: no-repeat;
+  background-image: linear-gradient(180deg, #f8d989, #d4a574 58%, #9b6a35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 16px rgba(0,0,0,0.22);
 }
 
 .game-button-ocean-frame {
-  background-image:
-    url('./assets/frames/button-ocean.svg'),
-    linear-gradient(180deg, #2879ad, #16395b 58%, #071827);
-  background-size: 100% 100%, auto;
-  background-repeat: no-repeat;
+  background-image: linear-gradient(180deg, #2879ad, #16395b 58%, #071827);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 8px 16px rgba(0,0,0,0.22);
 }
 
 .inventory-slot-frame {
-  background-image:
-    url('./assets/frames/inventory-slot.svg'),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(3, 7, 18, 0.96));
-  background-size: 100% 100%, auto;
-  background-repeat: no-repeat;
-  border-color: rgba(248, 201, 106, 0.3) !important;
+  background-image: linear-gradient(180deg, rgba(20, 32, 54, 0.88), rgba(3, 7, 18, 0.96));
+  border-color: rgba(248, 201, 106, 0.22) !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -8px 20px rgba(0, 0, 0, 0.22);
+    inset 0 -6px 14px rgba(0, 0, 0, 0.18);
 }
 
 .currency-pill {
