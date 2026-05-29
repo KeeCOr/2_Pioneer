@@ -178,17 +178,17 @@ const BOOSTER_FUEL_COST_MULT = 1.5;
 const PRICE_INTERVAL_BASE = 3600;
 const PRICE_INTERVAL_MIN = 1200;
 const LANDMASSES = [
-  { id: 'northAmerica', label: '북아메리카', color: '#3d6354', points: [[0,4],[4,2],[9,8],[12,18],[10,28],[13,39],[10,50],[5,55],[0,48]] },
-  { id: 'southAmerica', label: '남아메리카', color: '#3b5f50', points: [[7,53],[12,59],[14,72],[12,86],[8,98],[4,89],[2,73]] },
-  { id: 'greenland', label: '', color: '#6c8c7f', points: [[4,0],[15,0],[18,8],[13,15],[5,12]] },
-  { id: 'europe', label: '유럽', color: '#355f45', points: [[17,0],[36,0],[39,7],[35,15],[39,23],[32,30],[24,26],[18,17],[13,15],[15,6]] },
-  { id: 'africa', label: '아프리카', color: '#6f5b38', points: [[31,31],[42,33],[50,45],[53,60],[49,78],[41,93],[33,83],[27,65],[26,47]] },
-  { id: 'arabia', label: '아라비아', color: '#76553a', points: [[50,34],[63,38],[67,50],[62,59],[53,55],[48,45]] },
-  { id: 'india', label: '인도', color: '#536b3d', points: [[61,55],[72,59],[73,73],[67,88],[60,76],[56,63]] },
-  { id: 'southeastAsia', label: '동남아', color: '#4d6b44', points: [[72,58],[82,62],[86,73],[80,82],[72,75]] },
-  { id: 'eastAsia', label: '동아시아', color: '#49664e', points: [[67,11],[86,3],[100,7],[100,43],[93,54],[82,49],[73,39],[66,27]] },
-  { id: 'japanKorea', label: '', color: '#506f54', points: [[90,15],[96,19],[98,29],[94,35],[90,28]] },
-  { id: 'australia', label: '', color: '#6b6040', points: [[82,82],[99,82],[100,96],[88,99],[78,92]] },
+  { id: 'northAmerica', label: '북아메리카', color: '#3d6354', points: [[0,5],[4,3],[8,5],[11,9],[14,13],[16,20],[14,27],[15,34],[13,41],[14,48],[10,54],[6,58],[2,55],[0,50]] },
+  { id: 'southAmerica', label: '남아메리카', color: '#3b5f50', points: [[6,52],[10,56],[13,63],[14,71],[13,80],[10,91],[8,99],[5,92],[3,82],[2,72],[3,61]] },
+  { id: 'greenland', label: '', color: '#6c8c7f', points: [[3,0],[12,0],[17,4],[18,10],[14,15],[7,14],[4,10]] },
+  { id: 'europe', label: '유럽', color: '#355f45', points: [[17,0],[29,0],[36,2],[39,8],[36,13],[39,19],[36,24],[31,30],[25,28],[21,23],[17,18],[13,15],[15,9]] },
+  { id: 'africa', label: '아프리카', color: '#6f5b38', points: [[30,29],[37,31],[44,34],[50,44],[53,55],[52,66],[49,78],[43,91],[38,95],[33,86],[29,74],[27,62],[26,49],[28,38]] },
+  { id: 'arabia', label: '아라비아', color: '#76553a', points: [[49,34],[56,35],[63,39],[67,47],[65,55],[60,61],[54,57],[50,49],[47,42]] },
+  { id: 'india', label: '인도', color: '#536b3d', points: [[60,54],[66,57],[71,62],[72,72],[69,82],[65,90],[61,80],[57,68],[56,60]] },
+  { id: 'southeastAsia', label: '동남아', color: '#4d6b44', points: [[72,58],[79,61],[85,67],[87,75],[82,83],[76,79],[71,72]] },
+  { id: 'eastAsia', label: '동아시아', color: '#49664e', points: [[67,12],[75,7],[84,4],[94,5],[100,8],[100,39],[97,48],[92,55],[84,51],[77,44],[70,36],[66,26]] },
+  { id: 'japanKorea', label: '', color: '#506f54', points: [[90,15],[94,18],[97,24],[97,31],[94,36],[90,31],[88,24]] },
+  { id: 'australia', label: '', color: '#6b6040', points: [[80,83],[88,81],[97,83],[100,90],[98,97],[89,99],[81,95],[77,89]] },
 ];
 
 const PORT_SHIPS = {
@@ -1331,12 +1331,12 @@ const OceanTycoon = () => {
       <div className={`grid ${compact ? 'grid-cols-4 gap-1.5' : 'grid-cols-5 gap-1.5'}`}>
         {cells.map((cell, idx) => {
           if (cell.type === 'empty') {
-            return <div key={`empty-${idx}`} className={`${compact ? 'h-12' : 'h-14'} rounded-lg border border-dashed border-slate-700 bg-slate-950/45`} />;
+            return <div key={`empty-${idx}`} className={`${compact ? 'h-12' : 'h-14'} inventory-slot-frame rounded-lg border border-dashed border-slate-700 bg-slate-950/45 opacity-70`} />;
           }
           const sellP = atPort ? getSellTotal(getSell(cell.res), 1, getFeeRate(st?.tradePct)) : null;
           return (
             <div key={cell.res} title={`${cell.res} ×${cell.qty}${sellP ? ` - ${(sellP * cell.qty).toLocaleString()}금` : ''}`}
-              className={`${compact ? 'h-12' : 'h-14'} relative rounded-lg border border-gold/35 bg-gradient-to-b from-slate-800 to-slate-950 p-1.5 flex flex-col items-center justify-center shadow-inner group`}>
+              className={`${compact ? 'h-12' : 'h-14'} inventory-slot-frame relative rounded-lg border border-gold/35 bg-gradient-to-b from-slate-800 to-slate-950 p-1.5 flex flex-col items-center justify-center shadow-inner group`}>
               <ResourceIcon res={cell.res} className={compact ? 'w-7 h-7' : 'w-8 h-8'} />
               <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1 text-[10px] font-black text-gold">×{cell.qty}</span>
               {sellP && <span className="absolute -top-1 -right-1 rounded bg-emerald-900 px-1 text-[9px] font-bold text-emerald-100">{(sellP * cell.qty / 1000).toFixed(1)}k</span>}
@@ -1918,8 +1918,8 @@ const OceanTycoon = () => {
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => { setShowPortPrice(null); setSelectedPortRes(null); }} onPointerDown={e => e.stopPropagation()}>
-            <div className="w-[700px] max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-slate-700"
-              style={{background:'#0b1623'}} onClick={e => e.stopPropagation()}>
+            <div className="w-[700px] max-h-[90vh] game-modal-frame flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-slate-700"
+              style={{backgroundColor:'#0b1623'}} onClick={e => e.stopPropagation()}>
 
               {/* ── 헤더 ── */}
               <div className="flex items-center justify-between px-5 py-3.5 flex-shrink-0" style={{background:'#0f1e30', borderBottom:'1px solid #1e3a5f'}}>
@@ -2039,7 +2039,7 @@ const OceanTycoon = () => {
                             <button
                               onClick={() => chooseDestinationPort(showPortPrice)}
                               disabled={!canConfirmRoute}
-                              className="h-11 px-5 rounded-lg font-black text-sm bg-gold text-ocean-dark hover:bg-yellow-300 disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 border border-yellow-300 inline-flex items-center gap-2">
+                              className="h-11 px-5 game-button-gold-frame rounded-lg font-black text-sm bg-gold text-ocean-dark hover:bg-yellow-300 disabled:bg-slate-800 disabled:text-slate-500 disabled:border-slate-700 border border-yellow-300 inline-flex items-center gap-2">
                               <UiIcon name="compass" className="w-5 h-5" /> 목적지 확정
                             </button>
                           </div>
@@ -2119,7 +2119,7 @@ const OceanTycoon = () => {
         };
         return (
           <div key="market-modal" className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 backdrop-blur-[1px] p-4" onClick={() => setShowMarket(false)}>
-            <div className="w-[860px] max-w-[96vw] max-h-[92vh] bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="w-[860px] max-w-[96vw] max-h-[92vh] game-modal-frame bg-ocean-dark border border-gold rounded-xl shadow-2xl flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gold/50 flex-shrink-0">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
@@ -2272,14 +2272,14 @@ const OceanTycoon = () => {
                           </div>
                           <div className="min-w-0 grid grid-rows-2 gap-3">
                             <button onClick={() => doBuy(detail.res, buyQty)} disabled={buyQty < 1}
-                              className="rounded-lg border border-yellow-500 bg-yellow-600 text-ocean-dark hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              className="game-button-gold-frame rounded-lg border border-yellow-500 bg-yellow-600 text-ocean-dark hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
                               {buyPreview && <div className="mb-1 text-[11px] font-bold opacity-80">거래 후 {buyPreview.nextGold.toLocaleString()}금 · 화물 {buyPreview.nextCargo}/{st?.capacity}</div>}
                               <div className="text-xs font-bold opacity-80">매입 {buyQty}개</div>
                               <div className="text-lg font-black">{(detail.buyP * buyQty).toLocaleString()}금</div>
                               <div className="text-[11px] opacity-80">단가 {detail.buyP.toLocaleString()}금</div>
                             </button>
                             <button onClick={() => doSell(detail.res, sellQty)} disabled={sellQty < 1}
-                              className="rounded-lg border border-green-500 bg-green-700 text-white hover:bg-green-500 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              className="game-button-ocean-frame rounded-lg border border-green-500 bg-green-700 text-white hover:bg-green-500 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
                               {sellPreview && <div className="mb-1 text-[11px] font-bold opacity-80">거래 후 {sellPreview.nextGold.toLocaleString()}금 · 화물 {sellPreview.nextCargo}/{st?.capacity}</div>}
                               <div className="text-xs font-bold opacity-80">판매 {sellQty}개</div>
                               <div className="text-lg font-black">{(detail.sellP * sellQty).toLocaleString()}금</div>
@@ -2713,6 +2713,18 @@ const OceanTycoon = () => {
                   const { sx, sy } = ws(wx, wy);
                   return `${idx === 0 ? 'M' : 'L'}${sx},${sy}`;
                 }).join(' ');
+                const smoothClosedPath = (pts) => {
+                  const screen = pts.map(([wx, wy]) => ws(wx, wy));
+                  if (screen.length < 3) return '';
+                  const mid = (a, b) => ({ sx: (a.sx + b.sx) / 2, sy: (a.sy + b.sy) / 2 });
+                  const start = mid(screen[screen.length - 1], screen[0]);
+                  const curves = screen.map((p, idx) => {
+                    const next = screen[(idx + 1) % screen.length];
+                    const m = mid(p, next);
+                    return `Q${p.sx},${p.sy} ${m.sx},${m.sy}`;
+                  }).join(' ');
+                  return `M${start.sx},${start.sy} ${curves} Z`;
+                };
 
                 return (
                   <>
@@ -2728,15 +2740,16 @@ const OceanTycoon = () => {
                           <stop offset="70%" stopColor="#05213f" stopOpacity="0.2"/>
                           <stop offset="100%" stopColor="#020712" stopOpacity="0"/>
                         </radialGradient>
+                        <filter id="coast-soften">
+                          <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="coastNoise"/>
+                          <feDisplacementMap in="SourceGraphic" in2="coastNoise" scale="1.8"/>
+                        </filter>
                       </defs>
                       <rect width={W} height={H} fill="url(#sea-depth-west)"/>
                       <rect width={W} height={H} fill="url(#sea-depth-east)"/>
                       {LANDMASSES.map(land => (
                         <g key={land.id} opacity="0.86">
-                          <polygon points={land.points.map(([lx, ly]) => {
-                            const { sx, sy } = ws(lx, ly);
-                            return `${sx},${sy}`;
-                          }).join(' ')} fill={land.color} stroke="#d4a574" strokeOpacity="0.22" strokeWidth="1.5"/>
+                          <path d={smoothClosedPath(land.points)} fill={land.color} stroke="#d4a574" strokeOpacity="0.22" strokeWidth="1.5" filter="url(#coast-soften)"/>
                           {(() => {
                             const cx = land.points.reduce((a, [lx]) => a + lx, 0) / land.points.length;
                             const cy = land.points.reduce((a, [, ly]) => a + ly, 0) / land.points.length;
