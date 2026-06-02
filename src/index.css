@@ -52,6 +52,17 @@ body {
   75% { transform: translateX(2px); }
 }
 
+@keyframes gold-float-up {
+  0%   { opacity: 1;   transform: translateY(0);    }
+  70%  { opacity: 1;   transform: translateY(-16px); }
+  100% { opacity: 0;   transform: translateY(-28px); }
+}
+
+.animate-gold-float {
+  animation: gold-float-up 1.5s ease-out forwards;
+  pointer-events: none;
+}
+
 .animate-fadeInUp {
   animation: fadeInUp 0.5s ease-out;
 }

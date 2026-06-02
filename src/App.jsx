@@ -585,6 +585,8 @@ const OceanTycoon = () => {
   const [saveExists,    setSaveExists]    = useState(() => !!localStorage.getItem('pioneer_save'));
   const [saveDecided,   setSaveDecided]   = useState(false);
   const [lastSaved,     setLastSaved]     = useState(null);
+  const [tradeDone,     setTradeDone]     = useState(null); // { type: 'buy'|'sell', ts: number } — 0.8s 완료 피드백
+  const [bigTradePopup, setBigTradePopup] = useState(null); // { amount: number, id: number } — 큰 거래 보상 연출
 
   const routeModeRef = useRef(false);
   const [routeMode, setRouteModeRaw] = useState(false);
@@ -1373,6 +1375,8 @@ const OceanTycoon = () => {
     setGs(prev => ({ ...prev, gold: prev.gold - total,
       ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo: { ...s.cargo, [res]: (s.cargo[res] || 0) + n } } : s) }));
     addLog(`✅ ${RESOURCES[res].icon} ${res} ×${n} 구매 -${total.toLocaleString()}금 (구매 수수료 없음)`);
+    setTradeDone({ type: 'buy', ts: Date.now() });
+    setTimeout(() => setTradeDone(null), 800);
   }, [cur, portKey, prices, setGs, gs.crew, addLog]);
 
   const doSell = useCallback((res, n) => {
@@ -1424,6 +1428,13 @@ const OceanTycoon = () => {
     });
     addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
     if (milestoneCrossed > 0) addLog(`📊 무역 규모 성장! 세금 레벨 상승 (${EARN_MILESTONES.find(m => m > prevEarned && m <= newEarned)?.toLocaleString()}금 돌파)`);
+    setTradeDone({ type: 'sell', ts: Date.now() });
+    setTimeout(() => setTradeDone(null), 800);
+    if (total >= 1000) {
+      const popupId = Date.now();
+      setBigTradePopup({ amount: total, id: popupId });
+      setTimeout(() => setBigTradePopup(prev => prev?.id === popupId ? null : prev), 1600);
+    }
     // 일일 목표 진행 추적
     setDailyGoals(goals => {
       let bonusGold = 0, bonusGems = 0;
@@ -1818,8 +1829,13 @@ const OceanTycoon = () => {
               <div className="text-xs font-bold text-gold mb-2 flex items-center gap-2">
                 <span>수주 가능 <span className="text-gray-400 font-normal">(매 시세 갱신마다 순환)</span></span>
               </div>
-              {gs.availableQuests.length === 0
-                ? <div className="text-xs text-gray-500 text-center py-4">퀘스트 로딩 중...</div>
+              {!pricesReady
+                ? <div className="text-xs text-gray-400 text-center py-4 flex items-center justify-center gap-2"><span className="animate-spin inline-block">⏳</span> 정보를 가져오는 중...</div>
+                : gs.availableQuests.length === 0
+                ? <div className="text-center py-6 px-3">
+                    <div className="text-2xl mb-2">📋</div>
+                    <div className="text-xs text-gray-400 leading-relaxed">현재 사용 가능한 퀘스트가 없습니다.<br/>항구에 정박하면 새 퀘스트를 얻을 수 있습니다.</div>
+                  </div>
                 : gs.availableQuests.map(q => (
                   <div key={q.id} className="bg-ocean-blue rounded-lg p-3 mb-2 border border-gray-700">
                     <div className="flex justify-between items-start mb-1">
@@ -2291,14 +2307,20 @@ const OceanTycoon = () => {
                           </div>
                           <div className="min-w-0 grid grid-rows-2 gap-3">
                             <button onClick={() => doBuy(detail.res, buyQty)} disabled={buyQty < 1}
-                              className="game-button-gold-frame rounded-lg border border-yellow-500 bg-yellow-600 text-ocean-dark hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              className="game-button-gold-frame rounded-lg border border-yellow-500 bg-yellow-600 text-ocean-dark hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left relative overflow-hidden">
+                              {tradeDone?.type === 'buy' && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-yellow-400 text-ocean-dark font-black text-base rounded-lg z-10">✓ 완료!</div>
+                              )}
                               {buyPreview && <div className="mb-1 text-[11px] font-bold opacity-80">거래 후 {buyPreview.nextGold.toLocaleString()}금 · 화물 {buyPreview.nextCargo}/{st?.capacity}</div>}
                               <div className="text-xs font-bold opacity-80">매입 {buyQty}개</div>
                               <div className="text-lg font-black">{(detail.buyP * buyQty).toLocaleString()}금</div>
                               <div className="text-[11px] opacity-80">단가 {detail.buyP.toLocaleString()}금</div>
                             </button>
                             <button onClick={() => doSell(detail.res, sellQty)} disabled={sellQty < 1}
-                              className="game-button-ocean-frame rounded-lg border border-green-500 bg-green-700 text-white hover:bg-green-500 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left">
+                              className="game-button-ocean-frame rounded-lg border border-green-500 bg-green-700 text-white hover:bg-green-500 disabled:bg-gray-800 disabled:text-gray-600 disabled:border-gray-700 p-3 text-left relative overflow-hidden">
+                              {tradeDone?.type === 'sell' && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-green-400 text-ocean-dark font-black text-base rounded-lg z-10">✓ 완료!</div>
+                              )}
                               {sellPreview && <div className="mb-1 text-[11px] font-bold opacity-80">거래 후 {sellPreview.nextGold.toLocaleString()}금 · 화물 {sellPreview.nextCargo}/{st?.capacity}</div>}
                               <div className="text-xs font-bold opacity-80">판매 {sellQty}개</div>
                               <div className="text-lg font-black">{(detail.sellP * sellQty).toLocaleString()}금</div>
@@ -2441,6 +2463,17 @@ const OceanTycoon = () => {
         </div>
         );
       })()}
+
+      {/* 큰 거래 보상 연출 (Peak-End Rule) */}
+      {bigTradePopup && (
+        <div
+          key={bigTradePopup.id}
+          className="animate-gold-float fixed top-20 left-1/2 z-[200] -translate-x-1/2 px-6 py-3 rounded-xl border border-yellow-400 bg-yellow-950/80 text-yellow-300 text-2xl font-black shadow-xl shadow-yellow-900/40 select-none"
+          style={{ textShadow: '0 0 16px #fbbf24' }}
+        >
+          +{bigTradePopup.amount.toLocaleString()}금
+        </div>
+      )}
 
       {/* 정보 팝업 (루트 레벨) */}
       {showInfo && (
@@ -3353,9 +3386,14 @@ const OceanTycoon = () => {
                           </div>
                         )}
                         <div className="text-xs font-bold text-gold mb-1">수주 가능</div>
-                        {gs.availableQuests.length===0
-                          ?<div className="text-xs text-gray-500 text-center py-2">퀘스트 로딩 중...</div>
-                          :gs.availableQuests.map(q=>(
+                        {!pricesReady
+                          ? <div className="text-xs text-gray-400 text-center py-2 flex items-center justify-center gap-1"><span className="animate-spin inline-block">⏳</span> 로딩 중...</div>
+                          : gs.availableQuests.length===0
+                          ? <div className="text-center py-4 px-2">
+                              <div className="text-xl mb-1">📋</div>
+                              <div className="text-xs text-gray-400 leading-relaxed">현재 퀘스트 없음.<br/>항구 정박 시 갱신됩니다.</div>
+                            </div>
+                          : gs.availableQuests.map(q=>(
                             <div key={q.id} className="rounded-lg p-2.5 border border-gray-700 bg-ocean-dark mb-1.5">
                               <div className="flex justify-between items-start mb-1">
                                 <span className="font-bold text-xs text-gold">{q.title}</span>
