@@ -4,9 +4,9 @@ import { clampMapView, getDockedShipScreenOffset, relaxVisibleMapPoints, zoomMap
 import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
 import worldLandmassesUrl from './assets/map/world-landmasses.png';
 
-const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.svg', { eager: true, query: '?url', import: 'default' });
-const SHIP_ICON_FILES = import.meta.glob('./assets/icons/ships/*.svg', { eager: true, query: '?url', import: 'default' });
-const UI_ICON_FILES = import.meta.glob('./assets/icons/ui/*.svg', { eager: true, query: '?url', import: 'default' });
+const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.png', { eager: true, query: '?url', import: 'default' });
+const SHIP_ICON_FILES = import.meta.glob('./assets/icons/ships/*.png', { eager: true, query: '?url', import: 'default' });
+const UI_ICON_FILES = import.meta.glob('./assets/icons/ui/*.png', { eager: true, query: '?url', import: 'default' });
 
 const RESOURCE_ICON_KEY = {
   '향신료': 'spice',
@@ -20,7 +20,7 @@ const RESOURCE_ICON_KEY = {
   '계피': 'cinnamon',
   '쌀': 'rice',
 };
-const assetUrl = (files, folder, key) => files[`./assets/icons/${folder}/${key}.svg`];
+const assetUrl = (files, folder, key) => files[`./assets/icons/${folder}/${key}.png`];
 const resourceIconUrl = (res) => assetUrl(RESOURCE_ICON_FILES, 'resources', RESOURCE_ICON_KEY[res]);
 const shipIconUrl = (type) => assetUrl(SHIP_ICON_FILES, 'ships', type);
 const uiIconUrl = (name) => assetUrl(UI_ICON_FILES, 'ui', name);
@@ -39,6 +39,250 @@ const ShipIcon = ({ type, className = 'w-7 h-7', fallbackClassName = '' }) => (
 const UiIcon = ({ name, className = 'w-5 h-5', alt = '' }) => (
   <AssetIcon src={uiIconUrl(name)} fallback="" alt={alt || name} className={className} imgClassName="ui-asset-icon" />
 );
+
+const scaleCanvas = (canvas, width, height) => {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.floor(width * dpr));
+  canvas.height = Math.max(1, Math.floor(height * dpr));
+  canvas.style.width = '100%';
+  canvas.style.height = `${height}px`;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return ctx;
+};
+
+const drawCanvasPath = (ctx, points) => {
+  if (!points.length) return;
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (const point of points.slice(1)) ctx.lineTo(point.x, point.y);
+};
+
+const PriceChartCanvas = ({ values, min, max, lineColor, fillColor, glowColor, width, height, showDot = true }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = scaleCanvas(canvas, width, height);
+    ctx.clearRect(0, 0, width, height);
+    const range = (max - min) || 1;
+    const pts = values.length > 1 ? values : [values[0] ?? min, values[0] ?? min];
+    const toPoint = (v, i) => ({
+      x: (i / (pts.length - 1 || 1)) * width,
+      y: height - ((v - min) / range) * (height - 8) - 4,
+    });
+    const points = pts.map(toPoint);
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, fillColor);
+    gradient.addColorStop(1, 'rgba(0,0,0,0.02)');
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    for (const point of points) ctx.lineTo(point.x, point.y);
+    ctx.lineTo(width, height);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    drawCanvasPath(ctx, points);
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    if (showDot) {
+      const last = points[points.length - 1];
+      ctx.fillStyle = glowColor;
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = lineColor;
+      ctx.strokeStyle = '#0b1623';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }, [values, min, max, lineColor, fillColor, glowColor, width, height, showDot]);
+  return <canvas ref={ref} className="block" aria-hidden="true" />;
+};
+
+const MapSeaCanvas = ({ width, height, zoom, vx, vy, ws, imageUrl, currents, seaLanes }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    let alive = true;
+    const render = (img) => {
+      if (!alive) return;
+      const ctx = scaleCanvas(canvas, width, height);
+      const bg = ctx.createLinearGradient(0, 0, 0, height);
+      bg.addColorStop(0, '#197db3');
+      bg.addColorStop(0.42, '#0b5f99');
+      bg.addColorStop(1, '#032543');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+      for (const [x, y, r, color] of [
+        [width * 0.18, height * 0.18, width * 0.28, 'rgba(121,230,255,0.24)'],
+        [width * 0.78, height * 0.52, width * 0.32, 'rgba(55,213,238,0.20)'],
+        [width * 0.48, height * 0.76, width * 0.36, 'rgba(2,105,174,0.20)'],
+      ]) {
+        const grd = ctx.createRadialGradient(x, y, 0, x, y, r);
+        grd.addColorStop(0, color);
+        grd.addColorStop(1, 'rgba(2,7,18,0)');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, width, height);
+      }
+      ctx.globalAlpha = 0.38;
+      ctx.strokeStyle = '#e0faff';
+      ctx.lineWidth = 1.2;
+      for (let y = 15; y < height; y += 28) {
+        ctx.beginPath();
+        for (let x = -20; x < width + 30; x += 12) {
+          const yy = y + Math.sin((x + y) / 22) * 4;
+          if (x === -20) ctx.moveTo(x, yy);
+          else ctx.lineTo(x, yy);
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 0.62;
+      if (img) ctx.drawImage(img, vx, vy, width * zoom, height * zoom);
+      ctx.globalAlpha = 1;
+      for (const pts of seaLanes) {
+        const screen = pts.map(([x, y]) => {
+          const p = ws(x, y);
+          return { x: p.sx, y: p.sy };
+        });
+        drawCanvasPath(ctx, screen);
+        ctx.setLineDash([3, 8]);
+        ctx.strokeStyle = 'rgba(255,247,214,0.16)';
+        ctx.lineWidth = 1.6;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      currents.forEach((pts, idx) => {
+        const screen = pts.map(([x, y]) => {
+          const p = ws(x, y);
+          return { x: p.sx, y: p.sy };
+        });
+        drawCanvasPath(ctx, screen);
+        ctx.setLineDash([18, 14]);
+        ctx.strokeStyle = idx % 2 ? 'rgba(155,234,254,0.28)' : 'rgba(248,217,137,0.22)';
+        ctx.lineWidth = idx < 2 ? 3 : 2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+    };
+    const img = new Image();
+    img.onload = () => render(img);
+    img.onerror = () => render(null);
+    img.src = imageUrl;
+    render(null);
+    return () => { alive = false; };
+  }, [width, height, zoom, vx, vy, ws, imageUrl, currents, seaLanes]);
+  return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }} aria-hidden="true" />;
+};
+
+const MapGridCanvas = ({ width, height, ws }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = scaleCanvas(canvas, width, height);
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = 'rgba(212,165,116,0.06)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 20; i += 1) {
+      const pct = i * 5;
+      const { sx: lx } = ws(pct, 0);
+      const { sy: ly } = ws(0, pct);
+      ctx.beginPath();
+      ctx.moveTo(lx, 0);
+      ctx.lineTo(lx, height);
+      ctx.moveTo(0, ly);
+      ctx.lineTo(width, ly);
+      ctx.stroke();
+    }
+  }, [width, height, ws]);
+  return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1 }} aria-hidden="true" />;
+};
+
+const MapRouteCanvas = ({ width, height, ws, cur, routeMode, gs, ports, getPortAccessState, portOf, portHarbor }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = scaleCanvas(canvas, width, height);
+    ctx.clearRect(0, 0, width, height);
+    const routeToPoints = (route) => route.map((p) => {
+      const s = ws(p.x, p.y);
+      return { x: s.sx, y: s.sy };
+    });
+    const strokeRoute = (points, color, lineWidth, alpha = 1, dash = []) => {
+      if (points.length < 2) return;
+      ctx.globalAlpha = alpha;
+      drawCanvasPath(ctx, points);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.setLineDash(dash);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    };
+    if (cur?.isMoving && cur.startX != null) {
+      const route = cur.route?.length ? cur.route : [{ x: cur.startX, y: cur.startY }, { x: cur.targetX, y: cur.targetY }];
+      const currentIndex = Math.max(1, cur.routeIndex || 1);
+      const traveled = [...route.slice(0, currentIndex), { x: cur.x, y: cur.y }];
+      const traveledPoints = routeToPoints(traveled);
+      strokeRoute(traveledPoints, '#f8fdff', 11, 0.24, [10, 12]);
+      strokeRoute(traveledPoints, '#e0faff', 5, 0.55, [10, 12]);
+      strokeRoute(traveledPoints, '#f8d989', 1.8, 0.54);
+    }
+    if (cur?.isMoving) {
+      const route = cur.route?.length ? cur.route : [{ x: cur.x, y: cur.y }, { x: cur.targetX, y: cur.targetY }];
+      const currentIndex = Math.max(1, cur.routeIndex || 1);
+      const future = [{ x: cur.x, y: cur.y }, ...route.slice(currentIndex)];
+      const futurePoints = routeToPoints(future);
+      strokeRoute(futurePoints, '#ffe08a', 3, 0.88, [10, 6]);
+      if (futurePoints.length > 1) {
+        const a = futurePoints[futurePoints.length - 2];
+        const b = futurePoints[futurePoints.length - 1];
+        const angle = Math.atan2(b.y - a.y, b.x - a.x);
+        ctx.fillStyle = '#d4a574';
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - Math.cos(angle - 0.45) * 12, b.y - Math.sin(angle - 0.45) * 12);
+        ctx.lineTo(b.x - Math.cos(angle + 0.45) * 12, b.y - Math.sin(angle + 0.45) * 12);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    if (routeMode && cur) {
+      const candidates = Object.entries(ports)
+        .map(([k, p]) => ({ k, p, access: getPortAccessState(k, gs.totalEarned), dist: Math.hypot(p.x - cur.x, p.y - cur.y) }))
+        .filter((item) => item.dist >= 0.5 && item.access.unlocked)
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 10);
+      const curAnchorKey = !cur.isMoving ? portOf(cur) : null;
+      const curAnchor = curAnchorKey ? portHarbor(curAnchorKey) : cur;
+      const a = ws(curAnchor.x, curAnchor.y);
+      candidates.forEach(({ k }, idx) => {
+        const h = portHarbor(k);
+        const b = ws(h.x, h.y);
+        ctx.beginPath();
+        ctx.moveTo(a.sx, a.sy);
+        ctx.lineTo(b.sx, b.sy);
+        ctx.strokeStyle = idx < 4 ? 'rgba(255,224,138,0.38)' : 'rgba(255,224,138,0.2)';
+        ctx.lineWidth = idx < 4 ? 1.8 : 1.2;
+        ctx.stroke();
+      });
+    }
+  }, [width, height, ws, cur, routeMode, gs, ports, getPortAccessState, portOf, portHarbor]);
+  return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }} aria-hidden="true" />;
+};
 
 // ==================== 모듈 레벨 상수 ====================
 const SHIP_TYPES = {
@@ -1923,24 +2167,17 @@ const OceanTycoon = () => {
           const range = (maxH - minH) || 1;
           const pts = hist.length > 1 ? hist : [cur2, cur2];
           const toY = v => H - ((v - minH) / range) * (H - 6) - 3;
-          const linePts = pts.map((v, i) => `${(i/(pts.length-1||1))*W},${toY(v)}`).join(' ');
-          const areaD = pts.length > 1
-            ? `M0,${H} ` + pts.map((v,i) => `L${(i/(pts.length-1))*W},${toY(v)}`).join(' ') + ` L${W},${H} Z`
-            : `M0,${H/2} L${W},${H/2}`;
-          const lastX = (pts.length-1)/(pts.length-1||1)*W, lastY = toY(pts[pts.length-1]);
           return (
-            <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-              <defs>
-                <linearGradient id={`grad-detail-${d.res}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={lineColor} stopOpacity="0.4"/>
-                  <stop offset="100%" stopColor={lineColor} stopOpacity="0.02"/>
-                </linearGradient>
-              </defs>
-              <path d={areaD} fill={`url(#grad-detail-${d.res})`}/>
-              <polyline points={linePts} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
-              <circle cx={lastX} cy={lastY} r="4" fill={lineColor} stroke="#0b1623" strokeWidth="2"/>
-              <circle cx={lastX} cy={lastY} r="9" fill={glowColor}/>
-            </svg>
+            <PriceChartCanvas
+              values={pts}
+              min={minH}
+              max={maxH}
+              lineColor={lineColor}
+              fillColor={lineColor}
+              glowColor={glowColor}
+              width={W}
+              height={H}
+            />
           );
         };
 
@@ -2136,13 +2373,18 @@ const OceanTycoon = () => {
           const range = (d.maxH - d.minH) || 1;
           const pts = d.hist.length > 1 ? d.hist : [d.curPrice, d.curPrice];
           const toY = v => H - ((v - d.minH) / range) * (H - 8) - 4;
-          const linePts = pts.map((v, i) => `${(i / (pts.length - 1 || 1)) * W},${toY(v)}`).join(' ');
-          const areaD = `M0,${H} ` + pts.map((v, i) => `L${(i / (pts.length - 1 || 1)) * W},${toY(v)}`).join(' ') + ` L${W},${H} Z`;
           return (
-            <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-              <path d={areaD} fill={isUp ? '#22c55e22' : isDown ? '#ef444422' : '#64748b18'}/>
-              <polyline points={linePts} fill="none" stroke={lineColor} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>
-            </svg>
+            <PriceChartCanvas
+              values={pts}
+              min={d.minH}
+              max={d.maxH}
+              lineColor={lineColor}
+              fillColor={isUp ? 'rgba(34,197,94,0.18)' : isDown ? 'rgba(239,68,68,0.16)' : 'rgba(100,116,139,0.10)'}
+              glowColor="rgba(100,116,139,0)"
+              width={W}
+              height={H}
+              showDot={false}
+            />
           );
         };
         return (
@@ -2775,106 +3017,33 @@ const OceanTycoon = () => {
 
                 return (
                   <>
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:0}}>
-                      <defs>
-                        <radialGradient id="sea-depth-west" cx="20%" cy="22%" r="55%">
-                          <stop offset="0%" stopColor="#79e6ff" stopOpacity="0.36"/>
-                          <stop offset="55%" stopColor="#1ba3d6" stopOpacity="0.24"/>
-                          <stop offset="100%" stopColor="#020712" stopOpacity="0"/>
-                        </radialGradient>
-                        <radialGradient id="sea-depth-east" cx="78%" cy="52%" r="64%">
-                          <stop offset="0%" stopColor="#37d5ee" stopOpacity="0.30"/>
-                          <stop offset="70%" stopColor="#0b77b7" stopOpacity="0.22"/>
-                          <stop offset="100%" stopColor="#020712" stopOpacity="0"/>
-                        </radialGradient>
-                        <pattern id="sea-ripples" width="58" height="28" patternUnits="userSpaceOnUse">
-                          <path d="M-12 15C1 6 12 6 25 15S49 24 62 15 88 6 101 15" fill="none" stroke="#e0faff" strokeOpacity="0.17" strokeWidth="1.25"/>
-                          <path d="M-18 25C-4 18 8 18 20 25S44 32 58 25 82 18 96 25" fill="none" stroke="#7dd3fc" strokeOpacity="0.12" strokeWidth="1"/>
-                        </pattern>
-                        <pattern id="sea-sparkle" width="140" height="90" patternUnits="userSpaceOnUse">
-                          <circle cx="34" cy="22" r="1.2" fill="#e0faff" opacity="0.12"/>
-                          <circle cx="96" cy="54" r="1.4" fill="#bae6fd" opacity="0.10"/>
-                          <path d="M14 68h22M92 18h30" stroke="#f8fdff" strokeOpacity="0.08" strokeWidth="1.5" strokeLinecap="round"/>
-                        </pattern>
-                      </defs>
-                      <rect width={W} height={H} fill="url(#sea-depth-west)"/>
-                      <rect width={W} height={H} fill="url(#sea-depth-east)"/>
-                      <rect width={W} height={H} fill="url(#sea-ripples)" opacity="0.95"/>
-                      <rect width={W} height={H} fill="url(#sea-sparkle)" opacity="0.7"/>
-                      <path d={`M${W * 0.05},${H * 0.78} C${W * 0.28},${H * 0.62} ${W * 0.43},${H * 0.9} ${W * 0.67},${H * 0.72} S${W * 0.92},${H * 0.62} ${W * 1.08},${H * 0.48}`} fill="none" stroke="#8be9ff" strokeOpacity="0.16" strokeWidth="42"/>
-                      <path d={`M${W * -0.08},${H * 0.36} C${W * 0.2},${H * 0.18} ${W * 0.38},${H * 0.46} ${W * 0.62},${H * 0.28} S${W * 0.9},${H * 0.32} ${W * 1.06},${H * 0.18}`} fill="none" stroke="#dff9ff" strokeOpacity="0.12" strokeWidth="28"/>
-                      <path d={`M${W * -0.04},${H * 0.18} C${W * 0.18},${H * 0.28} ${W * 0.34},${H * 0.08} ${W * 0.56},${H * 0.2} S${W * 0.86},${H * 0.28} ${W * 1.05},${H * 0.14}`} fill="none" stroke="#38bdf8" strokeOpacity="0.10" strokeWidth="24"/>
-                      <image
-                        href={worldLandmassesUrl}
-                        x={vx}
-                        y={vy}
-                        width={W * zoom}
-                        height={H * zoom}
-                        preserveAspectRatio="none"
-                        opacity="0.62"
-                      />
-                      {seaLanes.map((pts, idx) => (
-                        <path key={`sea-lane-${idx}`} d={currentPath(pts)} fill="none" stroke="#fff7d6" strokeOpacity="0.16" strokeWidth="1.6" strokeLinecap="round" strokeDasharray="3 8"/>
-                      ))}
-                      {currents.map((pts, idx) => (
-                        <path key={`current-${idx}`} d={currentPath(pts)} fill="none" stroke={idx % 2 ? '#9beafe' : '#f8d989'} strokeOpacity={idx % 2 ? '0.28' : '0.22'} strokeWidth={idx < 2 ? '3' : '2'} strokeLinecap="round" className="ocean-current-line"/>
-                      ))}
-                    </svg>
+                    <MapSeaCanvas
+                      width={W}
+                      height={H}
+                      zoom={zoom}
+                      vx={vx}
+                      vy={vy}
+                      ws={ws}
+                      imageUrl={worldLandmassesUrl}
+                      currents={currents}
+                      seaLanes={seaLanes}
+                    />
 
-                    {/* ① 격자 — SVG, 고정 strokeWidth */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:1}} shapeRendering="crispEdges">
-                      {Array.from({length:21}).map((_,i) => {
-                        const pct = i * 5;
-                        const { sx: lx } = ws(pct, 0);
-                        const { sy: ly } = ws(0, pct);
-                        return (
-                          <g key={i} opacity="0.06" stroke="#d4a574" strokeWidth="1">
-                            <line x1={lx} y1={0} x2={lx} y2={H}/>
-                            <line x1={0} y1={ly} x2={W} y2={ly}/>
-                          </g>
-                        );
-                      })}
-                    </svg>
+                    <MapGridCanvas width={W} height={H} ws={ws} />
 
-                    {/* ② 항로선 + 항로 설정 선 — SVG, 고정 strokeWidth */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex:5}}>
-                      <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="2.5" orient="auto"><polygon points="0 0,8 2.5,0 5" fill="#d4a574"/></marker></defs>
-                      {cur?.isMoving && cur.startX != null && (() => {
-                        const route = cur.route?.length ? cur.route : [{ x: cur.startX, y: cur.startY }, { x: cur.targetX, y: cur.targetY }];
-                        const currentIndex = Math.max(1, cur.routeIndex || 1);
-                        const traveled = [...route.slice(0, currentIndex), { x: cur.x, y: cur.y }];
-                        return (
-                          <g>
-                            <path d={routeD(traveled)} fill="none" stroke="#f8fdff" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round" opacity="0.24" className="ship-wake-line"/>
-                            <path d={routeD(traveled)} fill="none" stroke="#e0faff" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" className="ship-wake-line"/>
-                            <path d={routeD(traveled)} fill="none" stroke="#f8d989" strokeWidth="1.8" strokeLinejoin="round" opacity="0.54"/>
-                          </g>
-                        );
-                      })()}
-                      {cur?.isMoving && (() => {
-                        const route = cur.route?.length ? cur.route : [{ x: cur.x, y: cur.y }, { x: cur.targetX, y: cur.targetY }];
-                        const currentIndex = Math.max(1, cur.routeIndex || 1);
-                        const future = [{ x: cur.x, y: cur.y }, ...route.slice(currentIndex)];
-                        return <path d={routeD(future)} fill="none" stroke="#ffe08a" strokeWidth="3" strokeDasharray="10,6" opacity="0.88" markerEnd="url(#arr)"/>;
-                      })()}
-                      {routeMode && cur && (() => {
-                        const candidates = Object.entries(PORTS)
-                          .map(([k, p]) => ({ k, p, access: getPortAccessState(k, gs.totalEarned), dist: Math.hypot(p.x - cur.x, p.y - cur.y) }))
-                          .filter(item => item.dist >= 0.5 && item.access.unlocked)
-                          .sort((a, b) => a.dist - b.dist)
-                          .slice(0, 10);
-                        const curAnchorKey = !cur.isMoving ? portOf(cur) : null;
-                        const curAnchor = curAnchorKey ? portHarbor(curAnchorKey) : cur;
-                        const a = ws(curAnchor.x, curAnchor.y);
-                        return candidates.map(({ k, p }, idx) => {
-                          const h = portHarbor(k);
-                          const b = ws(h.x, h.y);
-                          return <line key={k} x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy} stroke="#ffe08a" strokeWidth={idx < 4 ? '1.8' : '1.2'} opacity={idx < 4 ? '0.38' : '0.2'}/>;
-                        });
-                      })()}
-                    </svg>
+                    <MapRouteCanvas
+                      width={W}
+                      height={H}
+                      ws={ws}
+                      cur={cur}
+                      routeMode={routeMode}
+                      gs={gs}
+                      ports={PORTS}
+                      getPortAccessState={getPortAccessState}
+                      portOf={portOf}
+                      portHarbor={portHarbor}
+                    />
 
-                    {/* ③ 항구 — 스크린 좌표, 고정 크기 */}
                     {Object.entries(PORTS).map(([k, p]) => {
                       const { sx, sy } = layoutPorts[k] || ws(p.x, p.y);
                       if (sx < -80 || sx > W+80 || sy < -80 || sy > H+80) return null;

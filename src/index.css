@@ -276,7 +276,7 @@ body {
 
 .game-modal-frame {
   background-image:
-    url('./assets/frames/modal-nautical.svg'),
+    url('./assets/frames/modal-nautical.png'),
     linear-gradient(180deg, rgba(12, 28, 45, 0.99), rgba(4, 12, 23, 0.99));
   background-size: 100% 100%, auto;
   background-repeat: no-repeat;

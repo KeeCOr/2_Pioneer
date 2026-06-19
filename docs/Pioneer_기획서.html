@@ -56,8 +56,8 @@
         <li>항구 화면 고정감 제거: 맵 드래그 중 화면 밖 항구가 가장자리에 붙어 따라오는 것처럼 보이던 문제를 수정했다. 항구 겹침 보정은 현재 화면 근처의 항구에만 적용하고, 화면 밖 항구는 실제 맵 좌표 그대로 밖으로 나가게 했다.</li>
         <li>핵심 UI 폴리싱: 거래소 팝업에 금화·화물·시세 방향·판매 수수료 요약 스트립을 추가하고, 우측 선택 배 패널에는 선박 엠블럼과 연료·내구·화물 상태판을 먼저 보여주도록 구성했다. 상단 HUD와 항구 라벨도 해양 테마 프레임으로 정리해 정보 위계와 게임 UI 느낌을 강화했다.</li>
         <li>정박/표시 좌표 재검수: 실제 대륙 텍스처의 투명 바다 픽셀을 기준으로 모든 항구 정박 좌표를 다시 계산했다. 정박 배를 항상 오른쪽으로 54px 밀어내던 고정 오프셋을 제거하고, 단일 정박 배는 바다 정박점에 그대로 표시하며 여러 배가 있을 때만 작은 원형 배치로 분산하도록 수정했다.</li>
-        <li>UI/리소스 적용: 필요한 UI 및 리소스 목록을 별도 문서로 정리하고, 금화·보석·거래소·화물·나침반·닻·연료·수리 SVG 아이콘을 새로 제작해 HUD와 거래/항해 버튼에 적용했다. 기존 자원/선박 SVG도 거래소, 화물 인벤토리, 지도 선박, 함대 목록에 연결해 이모지 중심 표현을 줄였다.</li>
-        <li>버튼/프레임 리소스 적용: 패널 프레임, 모달 프레임, 금색 버튼, 해양 버튼, 인벤토리 슬롯 SVG를 제작해 공통 카드, 거래소/시세 팝업, 목적지 확정 버튼, 매입/판매 CTA, 화물 슬롯에 적용했다.</li>
+        <li>UI/리소스 적용: 필요한 UI 및 리소스 목록을 별도 문서로 정리하고, 금화·보석·거래소·화물·나침반·닻·연료·수리 PNG 아이콘을 새로 제작해 HUD와 거래/항해 버튼에 적용했다. 기존 자원/선박 PNG도 거래소, 화물 인벤토리, 지도 선박, 함대 목록에 연결해 이모지 중심 표현을 줄였다.</li>
+        <li>버튼/프레임 리소스 적용: 패널 프레임, 모달 프레임, 금색 버튼, 해양 버튼, 인벤토리 슬롯 PNG를 제작해 공통 카드, 거래소/시세 팝업, 목적지 확정 버튼, 매입/판매 CTA, 화물 슬롯에 적용했다.</li>
         <li>날씨 안정화: 선박 날씨가 3분마다 흔들리던 구조를 15분 단위로 완화하고, 항해 중에는 현재 위치가 아니라 항로 중간 위도를 기준으로 계산해 이동 중 날씨가 과하게 자주 바뀌지 않게 했다.</li>
         <li>항해 사건 빈도 완화: 이동 중 사건 판정을 45초 저확률로 늦추고, 선박별 3분 쿨다운과 최대 동시 사건 2개 제한을 추가했다. 폭풍·해적 같은 강제 사건 가중치도 낮춰 항해 중 방해가 과하게 몰리지 않게 했다.</li>
         <li>느린 관찰형 루프 전환: 전체 항해 속도를 약 55%로 낮춰 항로를 지켜볼 시간을 늘리고, 부스터를 “순항 보조”로 약화했으며 즉시 도착 버튼을 제거했다. 사건은 45초 저확률·선박별 3분 쿨다운·동시 2개 제한으로 더 드물게 만들고, 시세 갱신은 후반에도 최소 20분 간격을 유지하게 했다.</li>
@@ -96,7 +96,7 @@
   <h2>적용 리소스</h2>
   <p>자동 갱신: 2026-06-04. 코드, 씬, 프리팹, 설정 파일에서 참조가 확인된 리소스 기준입니다.</p>
   <ul>
-    <li><strong>이미지/스프라이트</strong>: <code>src/assets/frames/modal-nautical.svg</code>, <code>src/assets/map/world-landmasses.png</code></li>
+    <li><strong>이미지/스프라이트</strong>: <code>src/assets/frames/modal-nautical.png</code>, <code>src/assets/map/world-landmasses.png</code></li>
   </ul>
   <p><strong>메모:</strong></p><ul><li>리소스 후보 57개 중 자동 참조 확인 2개.</li></ul>
 </section>
@@ -112,11 +112,28 @@
   <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>src/assets/map/world-landmasses.png</code></figcaption>
 </figure>
 <figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../src/assets/frames/modal-nautical.svg" alt="2_Pioneer modal-nautical" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>src/assets/frames/modal-nautical.svg</code></figcaption>
+  <img src="../src/assets/frames/modal-nautical.png" alt="2_Pioneer modal-nautical" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
+  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>src/assets/frames/modal-nautical.png</code></figcaption>
 </figure>
   </div>
 </section>
 <!-- RESOURCE_PREVIEWS_END -->
+
+<section>
+  <h2>2026-06-19 업데이트 - SVG 런타임 이미지 교체</h2>
+  <ul>
+    <li>런타임 UI/아이콘/프레임 SVG 파일을 PNG 자산으로 교체했다.</li>
+    <li>앱 로딩 경로를 PNG glob으로 갱신하고, 모달 프레임 CSS 참조를 PNG로 변경했다.</li>
+    <li>차트와 항로 지도에 쓰이는 인라인 SVG는 데이터 시각화 레이어로 남겨두고 별도 개선 대상으로 분리했다.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>2026-06-19 업데이트 - 인라인 SVG 제거</h2>
+  <ul>
+    <li>가격 그래프와 항로/해류/격자 지도 레이어를 Canvas 렌더링으로 전환했다.</li>
+    <li>런타임 앱 코드의 SVG 이미지 사용을 제거하고 PNG 자산 및 Canvas 기반 시각화로 정리했다.</li>
+  </ul>
+</section>
 </body>
 </html>

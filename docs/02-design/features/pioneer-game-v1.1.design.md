@@ -204,9 +204,13 @@ function Sparkline({ data }) {
   }).join(' ');
   const color = data[data.length - 1] >= data[0] ? '#4ade80' : '#f87171';
   return (
-    <svg width={W} height={H} className="inline-block ml-1">
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" />
-    </svg>
+    <canvas
+      width={W}
+      height={H}
+      className="inline-block ml-1"
+      data-sparkline-points={pts}
+      data-sparkline-color={color}
+    />
   );
 }
 ```

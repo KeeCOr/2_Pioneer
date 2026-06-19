@@ -1,6 +1,6 @@
 {
   "name": "pioneer",
-  "version": "1.0.0",
+  "version": "1.2.42",
   "description": "Pioneer: 항해와 정보의 시대 - 경영 시뮬레이션 게임",
   "type": "module",
   "scripts": {
