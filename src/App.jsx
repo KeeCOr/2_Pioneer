@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createDepartureState, findPortForShip } from './navigation.js';
 import { clampMapView, getDockedShipScreenOffset, relaxVisibleMapPoints, zoomMapViewAt } from './mapView.js';
 import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
+import { getNextUnlockProgress } from './unlockProgress.js';
 import worldLandmassesUrl from './assets/map/world-landmasses.png';
 
 const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.png', { eager: true, query: '?url', import: 'default' });
@@ -1490,6 +1491,11 @@ const OceanTycoon = () => {
   const atPort  = !!portKey;
   const st      = cur ? calcStats(cur, gs.crew) : null;
   const nextTaxAmount = calcTax(gs.ships.length, gs.taxLevel);
+  const nextUnlockProgress = getNextUnlockProgress({
+    ports: PORTS,
+    totalEarned: gs.totalEarned,
+    getPortAccessState,
+  });
   const cargoN  = (s) => Object.values(s?.cargo || {}).reduce((a, v) => a + v, 0);
   const journeyProgress = (s) => {
     if (!s?.isMoving || s.startX == null) return 0;
@@ -2801,6 +2807,23 @@ const OceanTycoon = () => {
             <CurrencyPill type="gold" value={gs.gold} label="금" />
             <div className="text-xs text-gray-400 mt-1">시세: <span className="text-yellow-300">{fmt(nextUpd)}</span></div>
           </div>
+          {nextUnlockProgress && (
+            <div className="border-l border-gold pl-3 min-w-[180px] max-w-[240px]">
+              <div className="flex items-center justify-between gap-2 text-[11px] font-black text-cyan-100">
+                <span className="truncate">다음 항로: {nextUnlockProgress.port.name}</span>
+                <span className="text-cyan-300">{nextUnlockProgress.pct}%</span>
+              </div>
+              <div className="mt-1 h-1.5 rounded-full bg-black/45 overflow-hidden border border-cyan-900/60">
+                <div
+                  className="h-full rounded-full bg-cyan-300 transition-all"
+                  style={{ width: `${nextUnlockProgress.pct}%` }}
+                />
+              </div>
+              <div className="mt-0.5 text-[10px] text-gray-500 truncate">
+                누적 판매 {nextUnlockProgress.remaining.toLocaleString()}금 더 필요
+              </div>
+            </div>
+          )}
           <div className="border-l border-gold pl-3">
             <div className={`text-sm font-bold ${gs.taxLevel >= 15 ? 'text-red-400' : 'text-orange-300'}`}>
               {gs.taxExemptNext ? '🛡️ 면제 예약' : `🏛️ ${nextTaxAmount.toLocaleString()}금`}
