@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createDepartureState, findPortForShip } from './navigation.js';
 import { clampMapView, getDockedShipScreenOffset, relaxVisibleMapPoints, zoomMapViewAt } from './mapView.js';
+import { getCargoSaleHints } from './mapHints.js';
 import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
 import { getNextUnlockProgress } from './unlockProgress.js';
 import worldLandmassesUrl from './assets/map/world-landmasses.png';
@@ -1497,6 +1498,15 @@ const OceanTycoon = () => {
     getPortAccessState,
   });
   const cargoN  = (s) => Object.values(s?.cargo || {}).reduce((a, v) => a + v, 0);
+  const cargoSaleHints = getCargoSaleHints({
+    ports: PORTS,
+    prices,
+    cargo: cur?.cargo,
+    currentPortKey: portKey,
+    totalEarned: gs.totalEarned,
+    getPortAccessState,
+    limit: 3,
+  });
   const journeyProgress = (s) => {
     if (!s?.isMoving || s.startX == null) return 0;
     const route = s.route?.length ? s.route : [{ x: s.startX, y: s.startY }, { x: s.targetX, y: s.targetY }];
@@ -3076,6 +3086,8 @@ const OceanTycoon = () => {
                       const visited = (gs.visitedPorts||getInitialVisitedPorts()).includes(k);
                       const compactPort = zoom < 1.22 && !routeMode && !isTutTarget && portKey !== k;
                       const showLabel = routeMode || zoom >= 1.25 || portKey === k || isTutTarget || visited;
+                      const saleHintIndex = routeMode ? cargoSaleHints.findIndex(h => h.portKey === k) : -1;
+                      const saleHint = saleHintIndex >= 0 ? cargoSaleHints[saleHintIndex] : null;
                       return (
                         <div key={k} className="absolute" style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:10}}
                           onPointerDown={e => e.stopPropagation()}
@@ -3115,6 +3127,11 @@ const OceanTycoon = () => {
                             }}>
                             {visited || access.unlocked ? rs.icon : '🔒'}
                           </div>
+                          {saleHint && (
+                            <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap rounded-full border border-yellow-300 bg-yellow-950/90 px-2 py-0.5 text-[10px] font-black text-yellow-100 shadow-lg shadow-black/40" style={{ bottom: `${54 + saleHintIndex * 54}px` }}>
+                              {saleHint.resource} 비쌈 +{saleHint.percentAboveCurrent}%
+                            </div>
+                          )}
                           {showLabel && <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 pointer-events-none whitespace-nowrap font-bold rounded port-nameplate px-1.5 py-0.5 border border-black/40"
                             style={{color: visited || access.unlocked ? rs.color : '#9ca3af', textShadow:'0 0 4px #000, 0 0 8px #000', fontSize:'0.62rem'}}>
                             {visited || access.unlocked ? `${p.country} ${p.name}` : access.shortLabel}
@@ -3676,3 +3693,7 @@ const OceanTycoon = () => {
 };
 
 export default OceanTycoon;
+
+
+
+
