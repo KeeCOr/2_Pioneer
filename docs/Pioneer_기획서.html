@@ -1,141 +1,285 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pioneer 기획서</title>
   <style>
-    body { margin: 0; font-family: "Segoe UI", sans-serif; background: #0f172a; color: #e5e7eb; line-height: 1.7; }
-    main { max-width: 920px; margin: 0 auto; padding: 40px 24px; }
-    h1, h2 { color: #f8c96a; }
-    section { margin-top: 28px; padding-top: 20px; border-top: 1px solid #334155; }
-    li { margin: 8px 0; }
-    code { color: #93c5fd; }
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65;max-width:980px;margin:0 auto;padding:40px 24px;color:#20242a;background:#fafafa}
+    h1{font-size:34px;margin:0 0 8px} h2{font-size:24px;margin-top:34px;border-bottom:1px solid #ddd;padding-bottom:6px} h3{font-size:18px;margin-top:24px}
+    p,li,pre{font-size:15px} li{margin:5px 0} pre{white-space:pre-wrap;background:#fff;border:1px solid #ddd;border-radius:8px;padding:8px 10px}
+    table{border-collapse:collapse;width:100%;margin:12px 0} th,td{border:1px solid #ddd;padding:8px 12px;text-align:left} th{background:#f5f5f5;font-weight:600}
+    .meta{color:#666;font-size:14px;margin-bottom:32px}
+    .loop-box{background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px 20px;font-size:15px;white-space:pre-wrap;line-height:1.8}
+    .checklist{list-style:none;padding-left:0}
+    .checklist li::before{content:"☐ ";font-size:16px}
+    hr{border:none;border-top:1px solid #ddd;margin:28px 0}
+    blockquote{border-left:4px solid #ddd;margin:0;padding:8px 16px;color:#555;background:#f9f9f9;border-radius:0 8px 8px 0}
+    code{background:#f0f0f0;border-radius:4px;padding:2px 5px;font-size:13px}
   </style>
 </head>
 <body>
-  <main>
-    <h1>Pioneer 기획서</h1>
-    <section>
-      <h2>플레이 미리보기</h2>
-
-<h3>플레이 미리보기</h3>
-<img src="./Pioneer_gameplay_preview.png" alt="플레이 미리보기" style="max-width:100%;border-radius:8px;margin:12px 0;">
-
-<h2>개요</h2>
-      <p>Pioneer는 대항해시대를 배경으로 항구를 오가며 자원을 사고팔고, 선박과 승무원을 성장시키는 항해 경영 게임이다. 플레이어는 지도에서 배와 목적지를 선택하고, 시장 가격·화물·승무원·일일 목표를 관리하며 무역 루프를 확장한다.</p>
-    </section>
-    <section>
-      <h2>이번 변경 사항</h2>
-      <ul>
-        <li>항로 해금 진행 HUD: 상단 HUD에 다음 잠긴 항로 이름, 해금 진행률, 남은 누적 판매 금액을 표시해 초반 장기 목표를 항상 확인할 수 있게 했다.</li>
-        <li>거래소 통합: 항구의 시장 창에서 시세 변동 차트와 물품 매입·판매를 한 번에 처리하도록 통합했다.</li>
-        <li>분할형 거래 UI: 왼쪽 상단에는 선택 물품의 시세 차트·최고/최저가·수수료를, 왼쪽 하단에는 거래 조작부를, 오른쪽에는 물품 목록·보유량·변동률을 배치했다.</li>
-        <li>구매/판매 UX 폴리싱: 수량 스텝퍼, 빠른 수량 버튼, 예상 거래액이 보이는 대형 매입/판매 CTA를 추가했다.</li>
-        <li>거래 판단 보조: 선택 물품의 현재 흐름에 따라 매입/판매 후보 안내를 표시하고, 거래 후 금화와 화물량 변화를 미리 보여준다.</li>
-        <li>물품 목록 강조: 구매 가능하거나 판매 가능한 물품을 목록 상단에 우선 정렬하고, 보유량·매입가·판매가·거래 가능 배지를 더 선명하게 표시한다.</li>
-        <li>거래소 딤드 완화: 거래소 팝업 뒤 배경 어둡기를 낮춰 지도 맥락이 과하게 사라지지 않도록 조정했다.</li>
-        <li>재화 표현 통일: 금화와 보석을 동일한 크기·테두리·숫자 체계의 통화 배지로 정리해 HUD와 주요 소모 버튼의 시각 언어를 맞췄다.</li>
-        <li>항구 해금 UX: 시작 시 리스본 주변의 일부 유럽 항구를 항해 가능 상태로 열어두고, 잠긴 항구는 지도 라벨과 로그에서 필요한 누적 판매금 조건을 표시한다.</li>
-        <li>상시 조언 바: 초반 튜토리얼 단계가 끝나거나 숨겨진 뒤에도 상단 조언 바가 배 선택, 목적지 선택, 판매, 구매, 항로 해금, 항해 추적 같은 다음 행동을 계속 안내한다.</li>
-        <li>초반 화물 밸런스: 시작 선박을 대형 상인선에서 소형 통통배로 낮추고, 시작 양털을 8개로 줄여 초반 화물 관리가 더 명확하게 느껴지도록 조정했다.</li>
-        <li>화물 인벤토리 UI: 지도 하단 화물창과 우측 화물 탭을 슬롯형 인벤토리로 통일해 보유 스택, 빈 슬롯, 예상 판매액을 일반적인 게임 보관함처럼 확인할 수 있게 했다.</li>
-        <li>거래 수수료 고정: 매입에는 수수료를 붙이지 않고, 판매 시에만 승무원 스탯과 무관하게 10% 수수료를 적용한다.</li>
-        <li>항로 선택 조작 정리: 항구 클릭은 항구 정보/시장 확인으로만 처리하고, 항로 지정은 화면에 보이는 배 아이콘 또는 함대 목록에서 배를 먼저 선택한 뒤 목적지 항구를 누르는 방식으로 제한한다.</li>
-        <li>배 중심 목적지 선택: 지도 위 배 아이콘을 직접 클릭하면 해당 배가 선택되고 곧바로 목적지 선택 모드로 들어가며, 항구 클릭만으로는 항로 모드가 시작되지 않는다.</li>
-        <li>목적지 확정형 항로 선택: 배를 선택해 목적지 지정 모드에 들어간 상태에서 항구를 누르면 먼저 해당 항구의 시세창을 보여주고, 시세창의 [목적지 확정] 버튼을 눌렀을 때 출항하도록 바꿨다.</li>
-        <li>정박 항구 클릭 분리: 현재 정박 중인 항구를 누르면 거래소만 열고 시세 팝업을 닫으며, 정박 중이지 않은 방문 항구를 누르면 거래소를 닫고 시세만 보여준다.</li>
-        <li>레이아웃 겹침 완화: 상단 HUD는 줄바꿈 가능한 폭으로 제한하고, 조언 바·목적지 안내·지도 버튼·화물 미니창·항구 해금 라벨이 서로 겹치지 않도록 높이와 위치를 분리했다.</li>
-        <li>지도 레이어 정리: 화물 미니창을 지도 위 오버레이에서 지도 상단의 선택 배 트레이로 이동하고, 줌아웃 상태에서는 항구 라벨·이벤트 라벨·순항 버튼을 줄여 항로와 지형이 먼저 보이게 했다. 목적지 선택 후보선도 가까운 항해 가능 항구 위주로 제한해 선 겹침을 줄였다.</li>
-        <li>패널/버튼 시각선 정리: 공통 카드와 작은 버튼에서는 장식 프레임 배경을 제거하고, 모달 프레임과 내부 구획선의 대비를 낮춰 버튼·창·정보선이 서로 겹쳐 보이는 문제를 완화했다.</li>
-        <li>거래소 레이아웃 안정화: 물품 목록과 거래 조작부의 최소/최대 폭을 조정하고 하단 액션 버튼을 줄바꿈 가능하게 만들어 좁은 화면에서도 구매/판매 UI가 서로 침범하지 않게 했다.</li>
-        <li>지도 조작 개선: 기본 1배 줌에서도 드래그 이동이 고정되지 않도록 맵 좌표 제한식을 수정하고, 휠/버튼/핀치 줌이 사용자가 바라보는 지점을 중심으로 확대되게 통일했다.</li>
-        <li>바다 항해감 강화: 지도 배경을 수심 그라데이션과 은은한 물결 질감이 있는 해도형 바다로 바꾸고, 해류선·항로 잉크선·이동 중 배 물결 자국·배 흔들림을 추가했다.</li>
-        <li>바다 질감 재작업: 지도 바다 배경을 더 밝은 심해 블루 그라데이션, 반복 잔물결, 수면 반짝임, 넓은 해류 광택으로 재구성해 실제 바다처럼 읽히도록 조정했다.</li>
-        <li>항해 화면 밀도 강화: 참고 이미지처럼 항해 중인 배가 흰 돛 선단과 진행도 라벨로 더 잘 보이게 하고, 해류선·점선 무역로·밝은 항적을 추가해 실제로 바다 위를 항해하는 느낌을 강화했다. 대륙 텍스처는 약간 뒤로 물려 바다가 화면의 주인공으로 읽히게 조정했다.</li>
-        <li>정박 수면 좌표 분리: 항구의 도시/라벨 좌표와 배가 정박·출발·도착하는 바다 좌표를 분리했다. 새 게임, 선박 구매, 기존 저장 데이터 표시, 목적지 선택선, 도착 판정 모두 정박 수면 좌표를 사용해 배가 육지 위에 놓여 보이지 않게 했다.</li>
-        <li>항구 화면 고정감 제거: 맵 드래그 중 화면 밖 항구가 가장자리에 붙어 따라오는 것처럼 보이던 문제를 수정했다. 항구 겹침 보정은 현재 화면 근처의 항구에만 적용하고, 화면 밖 항구는 실제 맵 좌표 그대로 밖으로 나가게 했다.</li>
-        <li>핵심 UI 폴리싱: 거래소 팝업에 금화·화물·시세 방향·판매 수수료 요약 스트립을 추가하고, 우측 선택 배 패널에는 선박 엠블럼과 연료·내구·화물 상태판을 먼저 보여주도록 구성했다. 상단 HUD와 항구 라벨도 해양 테마 프레임으로 정리해 정보 위계와 게임 UI 느낌을 강화했다.</li>
-        <li>정박/표시 좌표 재검수: 실제 대륙 텍스처의 투명 바다 픽셀을 기준으로 모든 항구 정박 좌표를 다시 계산했다. 정박 배를 항상 오른쪽으로 54px 밀어내던 고정 오프셋을 제거하고, 단일 정박 배는 바다 정박점에 그대로 표시하며 여러 배가 있을 때만 작은 원형 배치로 분산하도록 수정했다.</li>
-        <li>UI/리소스 적용: 필요한 UI 및 리소스 목록을 별도 문서로 정리하고, 금화·보석·거래소·화물·나침반·닻·연료·수리 PNG 아이콘을 새로 제작해 HUD와 거래/항해 버튼에 적용했다. 기존 자원/선박 PNG도 거래소, 화물 인벤토리, 지도 선박, 함대 목록에 연결해 이모지 중심 표현을 줄였다.</li>
-        <li>버튼/프레임 리소스 적용: 패널 프레임, 모달 프레임, 금색 버튼, 해양 버튼, 인벤토리 슬롯 PNG를 제작해 공통 카드, 거래소/시세 팝업, 목적지 확정 버튼, 매입/판매 CTA, 화물 슬롯에 적용했다.</li>
-        <li>날씨 안정화: 선박 날씨가 3분마다 흔들리던 구조를 15분 단위로 완화하고, 항해 중에는 현재 위치가 아니라 항로 중간 위도를 기준으로 계산해 이동 중 날씨가 과하게 자주 바뀌지 않게 했다.</li>
-        <li>항해 사건 빈도 완화: 이동 중 사건 판정을 45초 저확률로 늦추고, 선박별 3분 쿨다운과 최대 동시 사건 2개 제한을 추가했다. 폭풍·해적 같은 강제 사건 가중치도 낮춰 항해 중 방해가 과하게 몰리지 않게 했다.</li>
-        <li>느린 관찰형 루프 전환: 전체 항해 속도를 약 55%로 낮춰 항로를 지켜볼 시간을 늘리고, 부스터를 “순항 보조”로 약화했으며 즉시 도착 버튼을 제거했다. 사건은 45초 저확률·선박별 3분 쿨다운·동시 2개 제한으로 더 드물게 만들고, 시세 갱신은 후반에도 최소 20분 간격을 유지하게 했다.</li>
-        <li>대륙과 우회 항로: 지도에 유럽·아프리카·아라비아·인도·동아시아·아메리카 대륙 실루엣을 추가하고, 장거리 항해는 해상 우회점으로 구성된 항로를 따라 이동하게 했다. 항구 아이콘은 렌더링 시 최소 간격을 유지하도록 배치 보정을 적용해 밀집 지역의 겹침을 줄였다.</li>
-        <li>실제 지형 유사도 개선: Natural Earth 같은 공개 도메인 세계지도 자료를 기준으로 대륙 실루엣을 다시 정리해 북미·남미·그린란드·유럽·아프리카·아라비아·인도·동남아·동아시아·일본/한국·호주가 더 실제 지도와 비슷하게 보이도록 조정했다.</li>
-        <li>대륙 실루엣 폴리싱: 각진 폴리곤으로 보이던 대륙 렌더링을 곡선형 해안선 path와 미세한 해안선 흔들림으로 바꿔 도형 느낌을 줄였다.</li>
-        <li>실제 대륙 이미지 적용: 코드 폴리곤 대륙 레이어를 제거하고, 실제 세계지도 실루엣에 가까운 투명 PNG 대륙 텍스처를 생성해 지도 배경에 적용했다. 대륙 이미지는 지도 pan/zoom과 같은 좌표계로 움직인다.</li>
-        <li>항구 좌표 재정렬: 실제 대륙 이미지 기준으로 유럽·지중해·아라비아·인도·동남아·동아시아·아메리카 항구 위치를 다시 배치하고, 시작 카메라를 1.35배 줌인 상태로 조정했다.</li>
-        <li>잠긴 항구 시세 열람: 아직 항로가 잠긴 항구도 클릭하면 시세창을 볼 수 있게 했다. 단, 목적지 확정과 실제 항해는 기존 해금 조건을 만족해야 가능하며 시세창에 항로 잠김과 해금 조건을 함께 표시한다.</li>
-        <li>터치 조작성 개선: 매입/판매 수량 버튼, CTA, 닫기 버튼을 더 큰 터치 영역으로 구성했다.</li>
-        <li>출항 UX 개선: 정박 중인 배가 목적지 항구로 출발할 때 출발 항구 중심과 겹쳐 보이지 않도록, 항구에서 목적지 방향으로 일정 거리 떨어진 지점에서 항해를 시작한다.</li>
-        <li>항해 진행도 보정: 출항 시작 좌표(<code>startX</code>, <code>startY</code>)를 실제 이격된 위치로 저장해 진행도와 도착 예정 표시가 출발 연출과 일치하게 유지된다.</li>
-        <li>회귀 테스트 추가: 출항 시작 좌표가 출발 항구의 시각 중심에서 3 이상 떨어지는지 검증하는 Node 내장 테스트를 추가했다.</li>
-        <li>플레이 예시 이미지 최신화: 정리된 지도 레이어와 선택 배 트레이 구조에 맞춰 <code>Pioneer_gameplay_preview.png</code>를 고품질 1920×1080 렌더 이미지로 교체했다.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>기획적 개선 제안</h2>
-      <ul>
-        <li>초반 온보딩은 “배 선택 → 목적지 선택 → 도착 후 시장 판매”의 다음 행동을 더 크게 강조하고, 일일 목표와 퀘스트는 접힌 요약으로 낮추는 편이 좋다.</li>
-        <li>항구/선박/시장 정보가 동시에 강하게 노출되므로, 지도 위 행동 버튼은 현재 맥락의 1차 행동만 남기고 상세 정보는 우측 패널 탭으로 정리하는 것을 권장한다.</li>
-        <li>출항·도착·판매 같은 주요 순간에는 짧은 시각 피드백을 추가하면 플레이어가 시스템 상태 변화를 더 쉽게 이해할 수 있다.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>2026-05-29 추가 변경</h2>
-      <ul>
-        <li>자연 학습형 튜토리얼: 상단 항해사 조언에 학습 목표와 단계 진행도를 추가하고, 배 선택 → 항구 시세 확인 → 목적지 확정 → 항해 관찰 → 판매 → 매입 → 재출항 흐름을 실제 플레이 행동과 연결했다.</li>
-        <li>목적지 확정 학습: 항로 선택 중 항구를 누르면 바로 출항하지 않고 시세창을 먼저 보여주며, 튜토리얼 단계에서는 [목적지 확정] 버튼과 추천 항구가 강조된다.</li>
-        <li>튜토리얼 UI 안정화: 조언 바 높이를 늘려 목표 문구와 진행 바가 겹치지 않게 하고, 튜토리얼을 숨기더라도 기존 상시 조언은 계속 동작하도록 유지했다.</li>
-      </ul>
-    </section>
-  </main>
-<!-- APPLIED_RESOURCES_START -->
-<section class="applied-resources">
-  <h2>적용 리소스</h2>
-  <p>자동 갱신: 2026-06-04. 코드, 씬, 프리팹, 설정 파일에서 참조가 확인된 리소스 기준입니다.</p>
-  <ul>
-    <li><strong>이미지/스프라이트</strong>: <code>src/assets/frames/modal-nautical.png</code>, <code>src/assets/map/world-landmasses.png</code></li>
-  </ul>
-  <p><strong>메모:</strong></p><ul><li>리소스 후보 57개 중 자동 참조 확인 2개.</li></ul>
-</section>
-<!-- APPLIED_RESOURCES_END -->
-
-<!-- RESOURCE_PREVIEWS_START -->
-<section class="resource-previews">
-  <h2>공유용 이미지 미리보기</h2>
-  <p>자동 갱신: 2026-06-04. 공유 시 문서와 함께 아래 이미지 경로가 포함되어야 합니다.</p>
-  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;">
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../src/assets/map/world-landmasses.png" alt="2_Pioneer world-landmasses" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>src/assets/map/world-landmasses.png</code></figcaption>
-</figure>
-<figure style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
-  <img src="../src/assets/frames/modal-nautical.png" alt="2_Pioneer modal-nautical" style="max-width:220px;max-height:160px;width:auto;height:auto;object-fit:contain;display:block;" />
-  <figcaption style="margin-top:8px;font-size:13px;color:#4b5563;"><code>src/assets/frames/modal-nautical.png</code></figcaption>
-</figure>
-  </div>
-</section>
-<!-- RESOURCE_PREVIEWS_END -->
+<h1>Pioneer 기획서</h1>
+<p class="meta">버전 v1.7.0 · 2026-06-29</p>
+<blockquote>
+<p>버전 v1.7.0 · 2026-06-29</p>
+</blockquote>
+<hr>
+<h2>문제 정의</h2>
+<p><strong>어떤 유저가:</strong> 30분 이하의 짧은 자투리 시간에 게임을 즐기고 싶은 성인 전략 게임 팬</p>
+<p><strong>어떤 상황에서:</strong> 매번 비슷한 패턴이 반복되는 경영/전략 게임에 지루함을 느낄 때</p>
+<p><strong>어떤 게임적 욕구를:</strong> 한 번의 선택이 연쇄적으로 의미 있는 결과를 만들어내는, "내가 선장"이라는 통제감과 성취감을 원한다.</p>
+<hr>
+<h2>한눈에 보는 게임</h2>
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>한 줄 소개</td><td>항해, 교역, 선단 확장을 한 루프로 묶은 해상 경영 게임</td></tr>
+    <tr><td>핵심 재미</td><td>항구별 시세와 날씨를 읽고 항로를 선택하면 결과가 즉시 바뀌며, 성장한 선단으로 더 큰 교역이 가능해진다</td></tr>
+    <tr><td>30초 목표</td><td>현재 날씨와 항구 시세를 보고 최적 항로를 골라 출항한다</td></tr>
+    <tr><td>플레이 감각</td><td>상황 파악 → 의미 있는 선택 → 즉각적 피드백 → 다음 목표 제시가 끊기지 않는 흐름</td></tr>
+    <tr><td>현재 개발 상태</td><td>v1.7.0 · React(Vite) + Electron portable 구조. 핵심 교역 루프, 항로 요약, 선단/교역 흐름 표시 구현 완료</td></tr>
+    <tr><td>구현 파일</td><td><code>src/App.jsx</code> (단일 파일, ~1,700줄)</td></tr>
+  </tbody>
+</table>
+<hr>
+<h2>주 페르소나</h2>
+<p><strong>이름:</strong> 박준혁 (가상, 34세, IT 스타트업 기획자)</p>
+<p><strong>직업:</strong> IT 스타트업 기획자</p>
+<p><strong>현재 게임 습관:</strong> 모바일 퍼즐·방치형 게임을 통근 시간(편도 30분)에 플레이. 주말에는 PC 전략 게임(문명류)을 즐기지만 2~3시간 세션이 부담스러워짐. "한 판이 너무 길거나 너무 단순한 게임은 금방 삭제한다."</p>
+<p><strong>이 게임을 플레이하는 맥락:</strong> 점심시간 15~20분, 잠자리 들기 전 10분 같은 짧은 세션에 활용. 선택 결과가 즉시 보이고, 다음에 뭘 해야 할지가 명확한 게임을 원함.</p>
+<p><strong>기대하는 경험:</strong> "내 배와 선원이 성장하는 게 보이면 또 켜게 된다"는 반복 플레이 동기. 내가 고른 항로가 맞았는지 틀렸는지 결과로 즉시 확인하는 구조.</p>
+<hr>
+<h2>핵심 루프</h2>
+<pre class="loop-box">유저가 항구 시세와 날씨를 확인한다
+  → 교역할 자원과 목적지 항구를 선택한다
+  → 항해 중 날씨 이벤트와 조우 위험에 대응한다
+  → 도착 후 매매 결과(이익/손실)를 확인하고 자원·선단을 성장시킨다
+  → 새 퀘스트·일일 목표가 갱신되어 다시 항구 시세 확인으로 돌아간다</pre>
+<hr>
+<h2>MVP 가설</h2>
+<ol>
+  <li><strong>[핵심 교역 루프]가 있으면</strong> 한 항해를 완료한 플레이어는 결과를 보고 자발적으로 다음 항해를 시작하며 재시작률 60% 이상을 달성할 것이다.</li>
+  <li><strong>[위험/보상 동시 표시]가 있으면</strong> 날씨와 가격이 동시에 보일 때 항구 선택 시간이 줄고 선택 납득도가 높아져 결과 불만 피드백이 20% 이하로 줄어들 것이다.</li>
+  <li><strong>[성장 보상 시스템]이 있으면</strong> 세션 보상(선원·배 강화)이 다음 전략 선택을 바꿔 반복 플레이 피로가 낮아지고 3판 내 서로 다른 교역 루트 선택률이 50% 이상이 될 것이다.</li>
+  <li><strong>[퀘스트·일일 목표]가 있으면</strong> 단기 목표가 제시되어 플레이어의 세션 중 이탈이 줄어 핵심 선택 화면 무응답·이탈률이 15% 이하가 될 것이다.</li>
+</ol>
+<hr>
+<h2>레퍼런스 분석</h2>
+<table>
+  <thead><tr><th>게임</th><th>핵심 행동까지 UX 단계 수</th><th>적용 교훈</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Port Royale 4</strong> (해상 경영)</td><td>튜토리얼 8단계 → 첫 자유 교역 약 15분 소요: <strong>8단계</strong></td><td>규칙 설명보다 먼저 선택 가능한 상황을 보여줘야 이탈이 줄어든다 — Pioneer는 한 판 시작까지 3단계 이내를 목표로 한다</td></tr>
+    <tr><td><strong>Patrician IV</strong> (해상 교역 전략)</td><td>초기 세팅 5단계 → 첫 수익 확인 약 10분: <strong>5단계</strong></td><td>이익/손실 결과를 즉시 숫자로 표시해야 판단 근거가 명확해진다 — 결과 화면에 금전 환산값 병기로 적용</td></tr>
+    <tr><td><strong>Cultist Simulator</strong> (카드 기반 경영)</td><td>첫 카드 배치 1단계 → 결과 확인 30초 이내: <strong>1단계</strong></td><td>첫 선택을 단순하게 만들고 결과 화면에서 다음 개선 포인트를 바로 제안한다 — 항해 결과 화면에 다음 전략 힌트 자동 제시로 적용</td></tr>
+  </tbody>
+</table>
+<p><strong>이 프로젝트 적용 교훈 핵심:</strong></p>
+<p>한 판 시작까지 3단계 이내, 첫 의미 있는 선택(항구 선택)까지 30초 이내를 목표로 한다. 결과 화면에서 다음 전략 힌트를 자동으로 제시해 다음 판의 진입 장벽을 낮춘다.</p>
+<hr>
+<h2>성공 KPI</h2>
+<table>
+  <thead><tr><th>지표</th><th>목표 수치</th><th>측정 방법</th></tr></thead>
+  <tbody>
+    <tr><td>첫 세션 평균 플레이 시간</td><td>8분 이상</td><td>Firebase Analytics — <code>session_duration</code> 이벤트 평균</td></tr>
+    <tr><td>D1 리텐션 (익일 재방문율)</td><td>30% 이상</td><td>코호트 분석 — 첫 설치일 기준 익일 앱 실행 비율</td></tr>
+    <tr><td>첫 세션 내 2회차 항해 진입률</td><td>55% 이상</td><td>Firebase Analytics — <code>voyage_start</code> 이벤트, 동일 세션 2회 이상 발생 비율</td></tr>
+    <tr><td>핵심 선택 화면 이탈률</td><td>15% 이하</td><td>Firebase Analytics — <code>port_select_screen_enter</code> 대비 <code>app_background</code> 전환 비율</td></tr>
+    <tr><td>3판 이내 다른 교역 루트 시도율</td><td>50% 이상</td><td>Firebase Analytics — 3회 항해 내 출발·도착 항구 조합 다양성 집계</td></tr>
+    <tr><td>레벨(선단 규모) 3 도달률</td><td>40% 이상</td><td>Firebase Analytics — <code>fleet_level_up</code> 이벤트 level=3 도달 유저 비율</td></tr>
+  </tbody>
+</table>
+<hr>
+<h2>소개용 핵심 메시지</h2>
+<p>Pioneer는 "가장 비싼 곳에 팔면 이기는 게임"이라기보다 "항해하면서 선장으로 성장하는 게임"이다. 플레이어는 매 항해마다 시세와 날씨를 보고 어떤 항구로, 어떤 자원을, 지금 출발할지 기다릴지 결정한다.</p>
+<ul>
+  <li>좋은 항로 선택은 즉각적인 이익과 퀘스트 달성으로 돌아온다.</li>
+  <li>폭풍 같은 위기도 화물 선택·타이밍으로 피해를 줄일 수 있다.</li>
+  <li>한 판의 재미는 "이번 항해로 선단을 얼마나 키울 수 있나"를 빠르게 판단하는 데 있다.</li>
+</ul>
+<hr>
+<h2>30초 플레이 흐름</h2>
+<table>
+  <thead><tr><th>순서</th><th>플레이어 행동</th><th>화면에서 보여야 하는 것</th><th>재미 포인트</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>현재 목표, 보유 자원, 날씨 상태를 확인한다</td><td>상단 HUD, 선단 현황, 퀘스트 진행 상태</td><td>지금 뭘 해야 하는지가 즉시 보인다</td></tr>
+    <tr><td>2</td><td>항구별 시세 차이와 날씨 속도 배율을 비교한다</td><td>항구 목록, 시세, 날씨 아이콘, 스파크라인</td><td>좋은 항로를 발견하는 순간 "이거다" 하는 느낌</td></tr>
+    <tr><td>3</td><td>목적지 항구와 교역 자원을 선택해 출항한다</td><td>선택된 항로 강조, 예상 소요 시간, 예상 이익</td><td>내 판단이 맞는지 긴장감이 생긴다</td></tr>
+    <tr><td>4</td><td>항해 결과(이익·손실·날씨 이벤트)가 갱신된다</td><td>결과 수치, 자원 변화, 퀘스트 진행 업데이트</td><td>선택 결과가 바로 보상 또는 손실로 돌아온다</td></tr>
+    <tr><td>5</td><td>금화·보석으로 선원·배를 강화하고 다음 퀘스트를 확인한다</td><td>강화 선택지, 다음 퀘스트, 일일 목표 현황</td><td>선단이 커지는 성장감과 다음 판에 대한 기대가 생긴다</td></tr>
+  </tbody>
+</table>
+<hr>
+<h2>게임 구성과 규칙 (GDD 요약)</h2>
+<h3>항구 및 교역</h3>
+<table>
+  <thead><tr><th>항목</th><th>내용</th><th>구현/검토 메모</th></tr></thead>
+  <tbody>
+    <tr><td>PORT_SPECIALTY</td><td>항구별 특산 자원 (구매 20% 할인 / 판매 20% 프리미엄)</td><td>london: 양모, lisbon: 포도주, antwerp: 다이아몬드, venice: 비단, genoa: 해산물, istanbul: 자수, alexandria: 향신료, dubai: 방향제, mumbai: 면화</td></tr>
+    <tr><td>가격 히스토리</td><td>최근 5회 시세를 스파크라인으로 표시</td><td>시세 예측 보조 — 불러오기 시 prices 재생성으로 히스토리 불일치 위험 있음</td></tr>
+    <tr><td>항구 선택</td><td>9개 항구 중 목적지 선택</td><td>현재 날씨 기준 상위 추천 항구 강조 표시 필요</td></tr>
+  </tbody>
+</table>
+<h3>날씨 시스템</h3>
+<table>
+  <thead><tr><th>날씨</th><th>속도 배율</th><th>확률</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td>잔잔</td><td>1.0×</td><td>50%</td><td>—</td></tr>
+    <tr><td>순풍</td><td>1.3×</td><td>20%</td><td>—</td></tr>
+    <tr><td>역풍</td><td>0.7×</td><td>20%</td><td>—</td></tr>
+    <tr><td>폭풍</td><td>0.5×</td><td>10%</td><td>화물 최대 20% 손실 (스태미나로 완화)</td></tr>
+  </tbody>
+</table>
+<h3>퀘스트 및 일일 목표</h3>
+<table>
+  <thead><tr><th>유형</th><th>내용</th><th>보상</th></tr></thead>
+  <tbody>
+    <tr><td>운송</td><td>특정 상품 N개를 특정 항구에서 판매</td><td>금화</td></tr>
+    <tr><td>탐험</td><td>새 항구 N곳 방문</td><td>금화 + 보석 1</td></tr>
+    <tr><td>무역</td><td>누적 판매액 N금 달성</td><td>금화</td></tr>
+    <tr><td>일일 운송</td><td>특정 상품 N개를 오늘 안에 판매</td><td>금화 + 보석 1</td></tr>
+    <tr><td>일일 항구 순례</td><td>새 항구 N곳 발견</td><td>금화 + 보석 1</td></tr>
+    <tr><td>일일 매출 목표</td><td>오늘 누적 판매액 N금</td><td>금화</td></tr>
+    <tr><td>일일 거래 횟수</td><td>오늘 판매 N회 완료</td><td>금화</td></tr>
+  </tbody>
+</table>
+<h3>저장/불러오기</h3>
+<table>
+  <thead><tr><th>항목</th><th>내용</th></tr></thead>
+  <tbody>
+    <tr><td>localStorage 키</td><td><code>pioneer_save</code> (saveVersion: <code>1.1</code>)</td></tr>
+    <tr><td>저장 항목</td><td>금화, 보석, 선단, 선원, 퀘스트, priceHistory</td></tr>
+    <tr><td>주의</td><td>prices는 저장하지 않음 — 불러오기 시 초기 난수로 재생성</td></tr>
+  </tbody>
+</table>
+<hr>
+<h2>개발 점검 요약</h2>
+<h3>구현 상태 매트릭스</h3>
+<table>
+  <thead><tr><th>영역</th><th>기획 기준</th><th>현재 체감 상태</th><th>PR에서 먼저 볼 것</th></tr></thead>
+  <tbody>
+    <tr><td>교역 루프</td><td>항구 선택 → 항해 → 결과 → 성장의 단일 흐름</td><td>핵심 구조 구현됨</td><td>한 항해 완료 후 자발적 재시작이 자연스럽게 이어지는지 확인</td></tr>
+    <tr><td>날씨 시스템</td><td>4종 날씨가 속도·화물 손실에 즉시 영향</td><td>기본 구현됨</td><td>폭풍 피해 계산과 스태미나 완화가 예외 상황에서도 안정적인지 확인</td></tr>
+    <tr><td>항구/시세</td><td>9개 항구, 특산품 할인/프리미엄, 스파크라인</td><td>핵심 기능 있음</td><td>시세 갱신 타이밍과 priceHistory 연속성 불일치 여부 확인</td></tr>
+    <tr><td>퀘스트</td><td>3개 일반 + 4개 일일 목표, 세금 레벨 스케일</td><td>운영 중</td><td>일일 자정 리셋과 세금 레벨 스케일 계산이 엣지 케이스에서 안정적인지 확인</td></tr>
+    <tr><td>성장 시스템</td><td>금화·보석으로 선원·배 강화, 선단 규모 확장</td><td>기능 있음</td><td>강화 선택이 다음 항해 전략을 실제로 바꾸는지 확인</td></tr>
+    <tr><td>UI/피드백</td><td>선택 전 예측과 선택 후 결과를 즉시 전달</td><td>개선 필요</td><td>항구 선택 화면 9개 항구 정보 밀도, 결과 화면 손실 체감 여부 확인</td></tr>
+    <tr><td>빌드/배포</td><td>Electron portable로 공유 가능</td><td>배포 경로 보유</td><td>문서·실행파일·버전 정보가 서로 어긋나지 않는지 확인</td></tr>
+    <tr><td>코드 구조</td><td>기능별 모듈 분리 권장</td><td>단일 파일 (~1,700줄)</td><td>App.jsx 단일 파일이 신규 기능 추가 시 충돌 위험이 없는지 확인</td></tr>
+  </tbody>
+</table>
+<h3>PR 체크리스트</h3>
+<ul class="checklist">
+  <li>항해 완료 후 이익/손실 결과가 즉시 화면에 표시된다.</li>
+  <li>날씨 이벤트가 속도 배율과 화물 손실에 정확히 반영된다.</li>
+  <li>항구별 특산품 할인/프리미엄이 시세 계산에 올바르게 적용된다.</li>
+  <li>퀘스트·일일 목표 진행 상태가 항해 결과와 동기화된다.</li>
+  <li>일일 목표가 자정에 올바르게 리셋된다.</li>
+  <li>강화 선택이 다음 항해의 실제 결과에 차이를 만든다.</li>
+  <li>저장·불러오기 시 선단·퀘스트·priceHistory 데이터가 유실되지 않는다.</li>
+</ul>
+<hr>
+<h2>빌드, 테스트, 릴리스</h2>
+<table>
+  <thead><tr><th>목적</th><th>명령</th></tr></thead>
+  <tbody>
+    <tr><td>테스트</td><td><code>npm test</code></td></tr>
+    <tr><td>웹 빌드</td><td><code>npm run build</code></td></tr>
+    <tr><td>Electron 패키징</td><td><code>cd C:/temp/pioneer-electron &amp;&amp; npm run dist</code></td></tr>
+  </tbody>
+</table>
+<p>문서만 수정한 경우 실행파일 재빌드는 필요하지 않다. 게임플레이, UI, 리소스, 패키징 설정을 바꾸는 PR에서는 테스트와 빌드 후 기획서/업데이트 내역서를 함께 확인한다.</p>
+<hr>
+<h2>남은 리스크와 다음 우선순위</h2>
+<table>
+  <thead><tr><th>우선순위</th><th>작업</th><th>이유</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>항해 결과 화면에 다음 전략 힌트 자동 제시</td><td>2회차 항해 진입률(55%) 달성의 가장 직접적인 레버</td></tr>
+    <tr><td>2</td><td>항구 선택 화면 정보 과부하 해소 (추천 항구 강조)</td><td>9개 항구 동시 노출이 선택 피로를 유발해 KPI 이탈률에 영향</td></tr>
+    <tr><td>3</td><td>priceHistory와 prices 저장 불일치 수정</td><td>불러오기 시 스파크라인이 현재 시세와 어긋나 플레이어 혼란 발생</td></tr>
+    <tr><td>4</td><td>App.jsx 단일 파일 모듈 분리</td><td>신규 기능 추가 시 충돌 위험이 높고 병렬 개발이 어려운 구조</td></tr>
+    <tr><td>5</td><td>폭풍 발생 시 화물 선택 미니 결정 화면</td><td>현재 단순 난수 손실을 플레이어 개입 가능한 위기로 전환해 통제감 유지</td></tr>
+  </tbody>
+</table>
+<hr>
+<h2>개선 제안</h2>
+<blockquote>
+<p>아래 제안은 현재 기획을 바탕으로 도출한 우선순위별 개선 방향입니다.</p>
+</blockquote>
+<h3>🎮 게임플레이 / 핵심 기능</h3>
+<table>
+  <thead><tr><th>우선순위</th><th>제안</th><th>기대 효과</th></tr></thead>
+  <tbody>
+    <tr><td>높음</td><td>항해 결과 화면에서 "다음에 이 항로를 선택했다면 +N 금화였다"는 반사실 힌트 표시 — 플레이어가 실수를 학습 재료로 인식하도록 유도</td><td>2회차 항해 진입률 10%p 이상 상승, 결과 불만 피드백 감소</td></tr>
+    <tr><td>높음</td><td>폭풍 발생 시 화물 손실 전 "버릴 화물 선택" 미니 결정 화면 추가 (1~2초 제한) — 현재 단순 난수 손실을 플레이어 개입 가능한 위기로 전환</td><td>위기 상황에서 통제감 유지, 폭풍 이벤트 수용도 향상</td></tr>
+    <tr><td>중간</td><td>항구 간 거리를 기반으로 "이 항해의 예상 소요 시간" 표시 — 짧은 세션 유저가 항해 완료 여부를 시작 전에 판단 가능</td><td>세션 중간 이탈 감소, 일일 목표 완료율 향상</td></tr>
+    <tr><td>중간</td><td>선단 규모 3 이상 도달 시 자동 교역 보조선 1척 배치 기능 — 메인 항해 중 보조선이 단거리 루트를 자동으로 1회 수행</td><td>D3 이후 리텐션 향상, 성장 후 반복 플레이 피로 완화</td></tr>
+    <tr><td>낮음</td><td>특정 항구 3회 이상 반복 방문 시 "단골 상인 칭호" 부여 및 해당 항구 특산품 추가 5% 할인 — 루트 고착화를 장점으로 전환</td><td>반복 루트 유저의 만족감 상승, 루트 다양성 탐구 동기 유지</td></tr>
+  </tbody>
+</table>
+<h3>🖥️ UX / UI</h3>
+<ul>
+  <li><strong>항구 선택 화면 정보 과부하:</strong> 현재 9개 항구가 동시 노출될 때 시세 차이와 날씨를 한눈에 비교하기 어렵다 — 현재 날씨 기준 상위 3개 추천 항구를 강조 표시(배경색 분리)하고 나머지는 접기 옵션으로 숨겨 선택 피로를 줄인다.</li>
+  <li><strong>퀘스트 달성 직전 알림 부재:</strong> 퀘스트 목표의 80% 진행 시점에 "거의 다 됐어요!" 뱃지 또는 진행바 강조로 완료 동기를 즉시 환기시킨다 — 퀘스트 완료율이 낮은 이유가 인지 실패일 가능성 대응.</li>
+  <li><strong>빈 상태(신규 플레이어 첫 화면):</strong> 저장 데이터가 없을 때 빈 선단 화면 대신 "첫 출항 준비 완료" 온보딩 카드를 표시하고, 첫 항해 추천 항로(런던→리스본)를 자동 하이라이트해 30초 이내 첫 선택을 유도한다.</li>
+  <li><strong>폭풍 피해 결과 표시:</strong> 화물 손실량을 수치만 표시하지 않고 "양모 3개 유실 → -240 금화 기회손실"처럼 금전 환산값을 병기해 손실 체감을 명확히 한다.</li>
+</ul>
+<h3>💰 수익화 전략</h3>
+<ul>
+  <li><strong>보석 소모 가속 패스:</strong> 현재 보석은 선원 강화에만 사용된다 — "항해 중 폭풍 회피권(보석 2개)", "시세 갱신 즉시 트리거(보석 1개)" 같은 즉각적 편의 소비 항목을 추가해 보석 소모 루프를 만든다. 짧은 세션 유저가 "이번 한 판만 더"를 결정할 때 마찰을 낮추는 데 적합하다.</li>
+  <li><strong>선단 스킨 판매(일회성 구매):</strong> 배 외관·깃발 스킨을 보석 또는 소액 결제로 판매 — 기능에 영향 없는 과금으로 전략 게임 팬 거부감이 낮고, 선단에 대한 소유감을 강화해 장기 리텐션에 기여한다.</li>
+  <li><strong>광고형 보석 적립:</strong> 세션 종료 직후 "광고 보기 → 보석 2개" 제안으로 무과금 유저 유지 — D1 리텐션 목표(30%)를 위한 진입 장벽 제거용.</li>
+</ul>
+<h3>📦 콘텐츠 확장</h3>
+<ul>
+  <li><strong>단기(1~2개월):</strong> 항구별 고유 이벤트 카드 추가 (예: "런던 안개 - 항해 속도 0.8×, 세관 면제"), 날씨 이벤트 2종 추가(안개·폭우), 선단 규모 5단계까지 확장</li>
+  <li><strong>중기(3~6개월):</strong> 계절 시스템 도입 — 계절마다 특산품 수요가 변동해 장기 루트 최적화가 필요한 층위 추가. 경쟁 상인 NPC 1~2명이 같은 항로를 선점해 가격을 변동시키는 시장 경쟁 레이어 추가.</li>
+  <li><strong>장기(6개월+):</strong> 플레이어 간 교역 결과 리더보드(주간 최고 수익), 공동 퀘스트(여러 플레이어가 같은 항구에 물자를 납품해 보상을 나눔) 등 소셜 레이어 도입으로 D7 이후 리텐션 강화</li>
+</ul>
+<h3>⚙️ 기술적 개선</h3>
+<ul>
+  <li><strong>단일 파일(App.jsx ~1,700줄) 분리:</strong> 현재 구조는 기능 추가 시 충돌 위험이 높다 — 항구/날씨/퀘스트/선단/저장 모듈을 각각 독립 파일로 분리하면 병렬 개발 속도가 향상되고 버그 격리가 쉬워진다.</li>
+  <li><strong>prices 저장 제외 → 시세 예측 불일치:</strong> 불러오기 시 시세가 재생성되면 priceHistory 스파크라인과 실제 현재가가 어긋나 플레이어 혼란이 발생할 수 있다 — 최소한 마지막 시세(prices)를 저장해 불러오기 시 히스토리와 연속성을 유지한다.</li>
+  <li><strong>localStorage 단일 저장 → 슬롯 저장 지원:</strong> 복수 저장 슬롯(최대 3개) 지원으로 다른 전략 시도 시 기존 진행 보존 — 3판 이내 다른 루트 시도율(KPI 50%) 달성에 직접 기여한다.</li>
+</ul>
+<hr>
+<h2>2026-06-28 v1.4.1 비주얼 리소스 갱신</h2>
+<p>런타임 세계 항해도 <code>src/assets/map/world-landmasses.png</code>를 동일 크기 1672x941 PNG로 교체했다. 항구/항로 UI가 올라가는 중심 지도 리소스이므로 기존 React 참조를 유지하면서 대륙 실루엣과 항해 지도 질감을 강화했다. 원본은 <code>_temp/world-landmasses_backup_20260628.png</code>, 생성 후보는 <code>_temp/world-landmasses_source_20260628.png</code>에 보관한다.</p>
+<h2>2026-06-29 v1.5.0 Route Risk / Profit Summary</h2>
+<ul>
+  <li>Added a reusable route summary before departure: expected profit, travel time, risk level, threat source, and blockers.</li>
+  <li>Surfaced the same summary beside the route confirmation CTA so the player can decide without switching between map, cargo, and market context.</li>
+  <li>Added three route-summary logic tests for profitable low-risk, profitable high-risk, and blocked/unprofitable routes.</li>
+  <li>Verification: npm test (22 passed), npm run build (Vite production build passed).</li>
+</ul>
+<h2>v1.7.0 Fleet / Trade Screen Flow</h2>
+<ul>
+  <li>선택 선박 카드에 Fleet selected → Cargo check → Market action → Route review → Depart 흐름 표시줄을 추가했다.</li>
+  <li>빈 화물, 시장 진입, 항로 선택 상태를 한 곳에서 보여주고 Back/Primary 행동을 같은 패널에 모았다.</li>
+  <li>버튼이 시장/선박/지도 곳곳에 흩어져 보이던 문제를 줄이기 위해 기존 모달은 유지하되 현재 진행 단계와 다음 행동을 선박 상세 패널에 고정했다.</li>
+  <li>검증: fleetTradeFlow 테스트 3개를 추가했고 npm test, npm run build로 확인한다.</li>
+</ul>
+<h2>2026-06-30 v1.7.0 Release Artifact Consistency</h2>
+<ul>
+  <li>누락됐던 <code>C:/temp/pioneer-electron</code> Electron 래퍼를 HTTP 서버 방식으로 재생성해 Vite 빌드를 데스크톱 포터블로 다시 패키징했다.</li>
+  <li>최신 실행파일은 <code>Pioneer_v1.7.0_portable.exe</code>이며 프로젝트 루트와 <code>release/</code>에 동일하게 배치했다.</li>
+  <li>오래된 <code>v1.4.1</code> 로컬 포터블 산출물은 제거했다.</li>
+  <li>검증: <code>npm test</code> 25개 통과, <code>npm run build</code>, <code>cd C:/temp/pioneer-electron &amp;&amp; npm run dist</code>.</li>
+</ul>
+<h2>2026-07-03 메타데이터 및 포터블 갱신</h2>
+<ul>
+  <li>페르소나 피드백과 <code>package.json</code> 설명의 깨진 문자열을 정리했다.</li>
+  <li><code>npm test</code> 25개 통과, <code>npm run build</code> 성공, <code>C:/temp/pioneer-electron</code> wrapper의 <code>npm run dist</code> 성공을 확인했다.</li>
+  <li>최신 실행파일 <code>Pioneer_v1.7.0_portable.exe</code>를 프로젝트 루트, <code>release/</code>, Google Drive 실행파일 폴더에 다시 배치했다.</li>
+</ul>
 
 <section>
-  <h2>2026-06-19 업데이트 - SVG 런타임 이미지 교체</h2>
+  <h2>2026-07-15 v1.7.0 Fleet Result Explanation Cue</h2>
   <ul>
-    <li>런타임 UI/아이콘/프레임 SVG 파일을 PNG 자산으로 교체했다.</li>
-    <li>앱 로딩 경로를 PNG glob으로 갱신하고, 모달 프레임 CSS 참조를 PNG로 변경했다.</li>
-    <li>차트와 항로 지도에 쓰이는 인라인 SVG는 데이터 시각화 레이어로 남겨두고 별도 개선 대상으로 분리했다.</li>
-  </ul>
-</section>
-
-<section>
-  <h2>2026-06-19 업데이트 - 인라인 SVG 제거</h2>
-  <ul>
-    <li>가격 그래프와 항로/해류/격자 지도 레이어를 Canvas 렌더링으로 전환했다.</li>
-    <li>런타임 앱 코드의 SVG 이미지 사용을 제거하고 PNG 자산 및 Canvas 기반 시각화로 정리했다.</li>
+    <li>선단/교역 흐름 패널에 결과 설명 cue를 추가했다.</li>
+    <li>cue는 원인(cause), 변화(delta), 다음 행동(next action)을 한 줄로 묶어 빈 화물, 막힌 항로, 고위험 수익 항로의 판단 이유를 빠르게 보여준다.</li>
+    <li>검증: fleetTradeFlow.test.js cue 케이스를 포함해 npm test 28개 통과.</li>
   </ul>
 </section>
 </body>
 </html>
-

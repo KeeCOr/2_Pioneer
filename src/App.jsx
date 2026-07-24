@@ -3,6 +3,7 @@ import { createDepartureState, findPortForShip } from './navigation.js';
 import { clampMapView, getDockedShipScreenOffset, relaxVisibleMapPoints, zoomMapViewAt } from './mapView.js';
 import { getCargoSaleHints } from './mapHints.js';
 import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
+import { getFleetTradeFlow } from './fleetTradeFlow.js';
 import { getNextUnlockProgress } from './unlockProgress.js';
 import worldLandmassesUrl from './assets/map/world-landmasses.png';
 
@@ -1506,6 +1507,17 @@ const OceanTycoon = () => {
     totalEarned: gs.totalEarned,
     getPortAccessState,
     limit: 3,
+  });
+  const fleetTradeFlow = getFleetTradeFlow({
+    ship: cur ? {
+      id: cur.id,
+      name: cur.name,
+      cargoUsed: cargoN(cur),
+      cargoCapacity: st?.capacity || 0,
+    } : null,
+    atPort,
+    marketOpen: showMarket,
+    routeMode,
   });
   const journeyProgress = (s) => {
     if (!s?.isMoving || s.startX == null) return 0;
@@ -3339,6 +3351,44 @@ const OceanTycoon = () => {
                   </div>
                 </div>
               </div>
+              <div className="fleet-trade-flow mb-2" aria-label="fleet trade flow">
+                <div className="fleet-trade-steps">
+                  {fleetTradeFlow.steps.map((step) => (
+                    <span key={step.id} className={`fleet-trade-step is-${step.state}`}>
+                      <span>{step.label}</span>
+                    </span>
+                  ))}
+                </div>
+                <div className="fleet-trade-actions">
+                  <div className="fleet-trade-copy">
+                    <span className="fleet-trade-summary" title={fleetTradeFlow.summary}>{fleetTradeFlow.summary}</span>
+                    <span className="fleet-trade-result-cue" title={`${fleetTradeFlow.resultCue.cause} ${fleetTradeFlow.resultCue.delta} ${fleetTradeFlow.resultCue.nextAction}`}>{fleetTradeFlow.resultCue.cause} | {fleetTradeFlow.resultCue.delta} | {fleetTradeFlow.resultCue.nextAction}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="fleet-trade-back"
+                    onClick={() => {
+                      if (routeMode) setRouteMode(false);
+                      else if (showMarket) setShowMarket(false);
+                    }}
+                    disabled={fleetTradeFlow.backAction.id === 'keep-selection'}
+                  >
+                    {fleetTradeFlow.backAction.label}
+                  </button>
+                  <button
+                    type="button"
+                    className="fleet-trade-primary"
+                    onClick={() => {
+                      if (fleetTradeFlow.primaryAction.id === 'open-market') { setShowPortPrice(null); setSelectedPortRes(null); setShowMarket(true); }
+                      if (fleetTradeFlow.primaryAction.id === 'choose-route') setRouteMode(true);
+                      if (fleetTradeFlow.primaryAction.id === 'review-route') setShowInfo(true);
+                    }}
+                    disabled={fleetTradeFlow.primaryAction.id === 'select-fleet' || fleetTradeFlow.primaryAction.id === 'confirm-route'}
+                  >
+                    {fleetTradeFlow.primaryAction.label}
+                  </button>
+                </div>
+              </div>
               <div className="flex gap-0.5 mb-2">
                 {[['info','현황'],['crew','승무원'],['cargo','화물'],['upgrade','강화'],['mission','임무']].map(([k,l]) => (
                   <button key={k} onClick={() => setTab(k)} className={`flex-1 py-0.5 rounded text-xs font-bold ${tab===k?'bg-gold text-ocean-dark':'bg-ocean-blue hover:bg-ocean-light'}`}>{l}</button>
@@ -3693,7 +3743,4 @@ const OceanTycoon = () => {
 };
 
 export default OceanTycoon;
-
-
-
 

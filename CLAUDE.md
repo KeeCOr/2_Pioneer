@@ -13,7 +13,7 @@ cd C:/Development/2_Pioneer && npm run build
 # 2. dist를 Electron 프로젝트로 복사
 cp -r C:/Development/2_Pioneer/dist/. C:/temp/pioneer-electron/dist/
 
-# 3. Electron 패키징
+# 3. 스모크 테스트 후 Electron 패키징 (테스트 실패 시 자동 중단)
 cd C:/temp/pioneer-electron && npm run dist
 ```
 

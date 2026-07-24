@@ -14,7 +14,7 @@ body {
   color: #e4d5c9;
 }
 
-/* 애니메이션 정의 */
+/* Animation definitions */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -188,6 +188,7 @@ body {
   left: 50%;
   top: 44px;
   transform: translateX(-50%);
+  max-width: min(8.5rem, 36vw);
   padding: 2px 7px;
   border-radius: 5px;
   border: 1px solid rgba(125, 211, 252, 0.35);
@@ -196,7 +197,9 @@ body {
   font-size: 0.58rem;
   font-weight: 800;
   line-height: 1.1;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
   text-shadow: 0 1px 2px #000;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
 }
@@ -228,7 +231,7 @@ body {
   flex: 0 0 auto;
 }
 
-/* 카드 스타일 */
+/* Card styles */
 .card {
   @apply bg-gradient-to-b from-ocean-blue to-ocean-dark border border-gold rounded-lg p-4 shadow-lg;
   background-image: linear-gradient(180deg, rgba(26, 59, 92, 0.96), rgba(10, 26, 47, 0.98));
@@ -328,6 +331,7 @@ body {
 }
 
 .market-summary-chip {
+  min-width: 0;
   min-height: 48px;
   border: 1px solid rgba(248, 201, 106, 0.18);
   border-radius: 8px;
@@ -337,17 +341,21 @@ body {
 
 .market-summary-chip span {
   display: block;
+  min-width: 0;
   color: rgba(203, 213, 225, 0.78);
   font-size: 10px;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 .market-summary-chip b {
   display: block;
+  min-width: 0;
   color: #f8e1a5;
   font-size: 14px;
   line-height: 1.25;
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
 
 .ship-status-hero {
@@ -372,6 +380,7 @@ body {
 }
 
 .ship-stat-chip {
+  min-width: 0;
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 7px;
   background: rgba(15, 23, 42, 0.6);
@@ -380,17 +389,21 @@ body {
 
 .ship-stat-chip span {
   display: block;
+  min-width: 0;
   color: rgba(203, 213, 225, 0.74);
   font-size: 10px;
   line-height: 1.1;
+  overflow-wrap: anywhere;
 }
 
 .ship-stat-chip b {
   display: block;
+  min-width: 0;
   color: #f8e1a5;
   font-size: 12px;
   line-height: 1.2;
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
 
 .port-nameplate {
@@ -403,13 +416,16 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  min-width: 0;
+  max-width: 100%;
   min-height: 2.25rem;
   padding: 0.35rem 0.65rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(248, 201, 106, 0.42);
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(6, 12, 22, 0.96));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(0, 0, 0, 0.22);
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .currency-pill-gem {
@@ -422,7 +438,153 @@ body {
 }
 
 .currency-value {
+  min-width: 0;
   font-variant-numeric: tabular-nums;
   font-weight: 900;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
+
+.fleet-trade-flow {
+  border: 1px solid rgba(248, 201, 106, 0.2);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(15, 42, 66, 0.86), rgba(3, 10, 18, 0.94));
+  padding: 8px;
+}
+
+.fleet-trade-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.fleet-trade-step {
+  min-height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.62);
+  color: rgba(203, 213, 225, 0.78);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 5px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.fleet-trade-step.is-ready,
+.fleet-trade-step.is-active {
+  border-color: rgba(248, 201, 106, 0.48);
+  color: #f8e1a5;
+  background: rgba(120, 79, 22, 0.24);
+}
+
+.fleet-trade-step.is-needs-attention {
+  border-color: rgba(250, 204, 21, 0.5);
+  color: #fde68a;
+  background: rgba(113, 63, 18, 0.34);
+}
+
+.fleet-trade-step.is-blocked {
+  border-color: rgba(248, 113, 113, 0.38);
+  color: #fecaca;
+  background: rgba(69, 10, 10, 0.28);
+}
+
+.fleet-trade-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
+  gap: 6px;
+  align-items: center;
+  margin-top: 7px;
+}
+
+.fleet-trade-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.fleet-trade-summary,
+.fleet-trade-result-cue {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.fleet-trade-result-cue {
+  color: rgba(186, 230, 253, 0.86);
+  font-size: 10px;
+}
+
+.fleet-trade-back,
+.fleet-trade-primary {
+  min-width: 0;
+  max-width: min(9.5rem, 34vw);
+  min-height: 34px;
+  border-radius: 7px;
+  padding: 0 9px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.fleet-trade-back {
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.fleet-trade-primary {
+  border: 1px solid rgba(248, 201, 106, 0.54);
+  color: #0a1a2f;
+  background: #f8c96a;
+}
+
+.fleet-trade-back:disabled,
+.fleet-trade-primary:disabled {
+  opacity: 0.45;
+}
+
+.inventory-slot-frame > .absolute.bottom-full,
+.ocean-map .port-nameplate,
+.ocean-map .absolute.whitespace-nowrap {
+  max-width: min(12rem, calc(100vw - 24px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.ocean-map .port-nameplate {
+  width: max-content;
+  max-width: min(7.5rem, 30vw);
+}
+
+@media (max-width: 520px) {
+  .market-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-inline: 10px;
+  }
+
+  .fleet-trade-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fleet-trade-back,
+  .fleet-trade-primary {
+    width: 100%;
+    max-width: none;
+  }
+}
+
