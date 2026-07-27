@@ -521,8 +521,21 @@ body {
 }
 
 .fleet-trade-result-cue {
+  display: grid;
+  gap: 3px;
   color: rgba(186, 230, 253, 0.86);
   font-size: 10px;
+}
+.fleet-trade-result-cue span {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+}
+.fleet-trade-result-cue b {
+  color: #f8d989;
+  font-size: 0.7rem;
+  letter-spacing: 0;
 }
 
 .fleet-trade-back,

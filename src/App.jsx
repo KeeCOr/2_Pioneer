@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createDepartureState, findPortForShip } from './navigation.js';
 import { clampMapView, getDockedShipScreenOffset, relaxVisibleMapPoints, zoomMapViewAt } from './mapView.js';
 import { getCargoSaleHints } from './mapHints.js';
@@ -3362,7 +3362,11 @@ const OceanTycoon = () => {
                 <div className="fleet-trade-actions">
                   <div className="fleet-trade-copy">
                     <span className="fleet-trade-summary" title={fleetTradeFlow.summary}>{fleetTradeFlow.summary}</span>
-                    <span className="fleet-trade-result-cue" title={`${fleetTradeFlow.resultCue.cause} ${fleetTradeFlow.resultCue.delta} ${fleetTradeFlow.resultCue.nextAction}`}>{fleetTradeFlow.resultCue.cause} | {fleetTradeFlow.resultCue.delta} | {fleetTradeFlow.resultCue.nextAction}</span>
+                    <div className="fleet-trade-result-cue" aria-label="항해 복귀 브리핑">
+                      <span><b>복귀 상태</b>{fleetTradeFlow.resultCue.cause}</span>
+                      <span><b>수익 · 손실</b>{fleetTradeFlow.resultCue.delta}</span>
+                      <span><b>다음 추천</b>{fleetTradeFlow.resultCue.nextAction}</span>
+                    </div>
                   </div>
                   <button
                     type="button"
