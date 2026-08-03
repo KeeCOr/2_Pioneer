@@ -11,7 +11,9 @@
 cd C:/Development/2_Pioneer && npm run build
 
 # 2. dist를 Electron 프로젝트로 복사
-cp -r C:/Development/2_Pioneer/dist/. C:/temp/pioneer-electron/dist/
+Remove-Item -LiteralPath C:/temp/pioneer-electron/dist -Recurse -Force
+New-Item -ItemType Directory -Path C:/temp/pioneer-electron/dist | Out-Null
+Copy-Item -Path C:/Development/2_Pioneer/dist/* -Destination C:/temp/pioneer-electron/dist -Recurse -Force
 
 # 3. Electron 패키징
 cd C:/temp/pioneer-electron && npm run dist
