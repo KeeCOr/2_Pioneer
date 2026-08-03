@@ -5,6 +5,14 @@ import { getCargoSaleHints } from './mapHints.js';
 import { clampTradeQuantity, getBuyTotal, getSellTotal, getTradePreview } from './trade.js';
 import { getFleetTradeFlow } from './fleetTradeFlow.js';
 import { getNextUnlockProgress } from './unlockProgress.js';
+import {
+  MARKET_EVENT_INTERVAL_SECONDS,
+  SMALL_PRICE_INTERVAL_SECONDS,
+  appendPriceHistorySnapshot,
+  applyMajorMarketEvent,
+  applyPlayerTradeImpact,
+  applySmallMarketDrift,
+} from './marketPrices.js';
 import worldLandmassesUrl from './assets/map/world-landmasses.png';
 
 const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.png', { eager: true, query: '?url', import: 'default' });
@@ -441,8 +449,6 @@ const MAX_ACTIVE_MAP_EVENTS = 2;
 const SAILING_PACE_MULT = 0.55;
 const BOOSTER_SPEED_MULT = 1.2;
 const BOOSTER_FUEL_COST_MULT = 1.5;
-const PRICE_INTERVAL_BASE = 3600;
-const PRICE_INTERVAL_MIN = 1200;
 const DEFAULT_MAP_VIEW = { x: -260, y: -70, zoom: 1.35 };
 const PORT_SHIPS = {
   london:['sloop','brigantine','merchant','galleon'], bristol:['rowboat','sloop'],
@@ -813,7 +819,9 @@ const OceanTycoon = () => {
   const [selectedPortRes, setSelectedPortRes] = useState(null);
   const [paused,        setPaused]        = useState(false);
   const [lastPrice,     setLastPrice]     = useState(Date.now());
-  const [nextUpd,       setNextUpd]       = useState(3600);
+  const [nextUpd,       setNextUpd]       = useState(SMALL_PRICE_INTERVAL_SECONDS);
+  const [lastMarketEvent, setLastMarketEvent] = useState(Date.now());
+  const [nextMarketEvent, setNextMarketEvent] = useState(MARKET_EVENT_INTERVAL_SECONDS);
   const [lastTax,       setLastTax]       = useState(Date.now());
   const [nextTax,       setNextTax]       = useState(TAX_INTERVAL);
   const [showMarket,    setShowMarket]    = useState(false);
@@ -1408,53 +1416,78 @@ const OceanTycoon = () => {
     return () => clearInterval(id);
   }, [paused, addLog]);
 
-  // ── 시세 갱신 + 퀘스트 순환 ──
+  // 3-minute small market drift and 1-hour external market event.
   useEffect(() => {
     if (paused) return;
     const id = setInterval(() => {
-      const el = Math.floor((Date.now() - lastPrice) / 1000);
-      const priceInterval = Math.max(PRICE_INTERVAL_MIN, PRICE_INTERVAL_BASE - (gsRef.current.taxLevel - 1) * 240); // Lv.1=1h, 후반에도 최소 20분
-      if (el >= priceInterval) {
-        setPrices(p => {
-          const n = { ...p };
-          Object.entries(n).forEach(([k, r]) =>
-            Object.entries(r).forEach(([res, v]) => { n[k][res] = Math.max(20, Math.floor(v + (Math.random() - 0.5) * 60)); })
-          );
-          setGs(prev => {
-            const applied = prev.predictions.map(pred => {
-              if (pred.applied) return pred;
-              const remaining = (pred.turnsRemaining ?? 1) - 1;
-              if (remaining > 0) return { ...pred, turnsRemaining: remaining };
-              const hit = Math.random() < pred.accuracy;
-              if (hit) { const dir = pred.direction === 'up' ? 1 : -1; n[pred.targetPort][pred.resource] = Math.max(20, (n[pred.targetPort][pred.resource] || 100) + dir * pred.mag); }
-              return { ...pred, turnsRemaining: 0, applied: true, hit };
-            });
-            return {
-              ...prev,
-              availableQuests: generateQuests(),
-              predictions: applied.slice(-30),
-            };
-          });
-          return n;
-        });
-        setPriceHistory(h => {
-          const nh = {};
-          Object.entries(n).forEach(([k, r]) => {
-            nh[k] = { ...(h[k] || {}) };
-            Object.entries(r).forEach(([res, v]) => {
-              const arr = nh[k][res] || [];
-              nh[k][res] = [...arr, v].slice(-20);
-            });
-          });
-          return nh;
+      const elapsed = Math.floor((Date.now() - lastPrice) / 1000);
+      if (elapsed >= SMALL_PRICE_INTERVAL_SECONDS) {
+        setPrices(prevPrices => {
+          const result = applySmallMarketDrift(prevPrices);
+          setPriceHistory(history => appendPriceHistorySnapshot(history, result.prices));
+          return result.prices;
         });
         setLastPrice(Date.now());
-        addLog('📈 전세계 시세 변동!');
-        saveGame(); // 자동 저장
-      } else setNextUpd(priceInterval - el);
+        setNextUpd(SMALL_PRICE_INTERVAL_SECONDS);
+        addLog('📈 시장 시세가 소폭 변동했습니다.');
+        saveGame();
+      } else {
+        setNextUpd(SMALL_PRICE_INTERVAL_SECONDS - elapsed);
+      }
     }, 1000);
     return () => clearInterval(id);
   }, [paused, lastPrice, addLog]);
+
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - lastMarketEvent) / 1000);
+      if (elapsed >= MARKET_EVENT_INTERVAL_SECONDS) {
+        setPrices(prevPrices => {
+          const eventResult = applyMajorMarketEvent(prevPrices);
+          let nextPrices = eventResult.prices;
+          const predictionPrices = Object.fromEntries(
+            Object.entries(nextPrices).map(([port, resources]) => [port, { ...resources }]),
+          );
+          const applied = (gsRef.current?.predictions || []).map(pred => {
+            if (pred.applied) return pred;
+            const remaining = (pred.turnsRemaining ?? 1) - 1;
+            if (remaining > 0) return { ...pred, turnsRemaining: remaining };
+            const hit = Math.random() < pred.accuracy;
+            if (hit) {
+              const dir = pred.direction === 'up' ? 1 : -1;
+              predictionPrices[pred.targetPort][pred.resource] = Math.max(
+                20,
+                (predictionPrices[pred.targetPort][pred.resource] || 100) + dir * pred.mag,
+              );
+            }
+            return { ...pred, turnsRemaining: 0, applied: true, hit };
+          });
+          nextPrices = predictionPrices;
+          setGs(prev => ({
+            ...prev,
+            availableQuests: generateQuests(),
+            predictions: applied.slice(-30),
+          }));
+          setPriceHistory(history => appendPriceHistorySnapshot(history, nextPrices));
+          const firstImpact = eventResult.impacts[0];
+          if (firstImpact) {
+            const directionText = firstImpact.direction > 0 ? '급등' : '급락';
+            addLog('🌐 대형 시장 사건! ' + firstImpact.resource + ' 가격이 ' + eventResult.impacts.length + '개 항구에서 ' + directionText + '했습니다.');
+          } else {
+            addLog('🌐 대형 시장 사건이 지나갔지만 가격 충격은 제한적이었습니다.');
+          }
+          return nextPrices;
+        });
+        setLastMarketEvent(Date.now());
+        setNextMarketEvent(MARKET_EVENT_INTERVAL_SECONDS);
+        saveGame();
+      } else {
+        setNextMarketEvent(MARKET_EVENT_INTERVAL_SECONDS - elapsed);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [paused, lastMarketEvent, addLog]);
 
   // ── 세금 (하루 1회 징수, 급격한 지수 성장) ──
   useEffect(() => {
@@ -1646,10 +1679,15 @@ const OceanTycoon = () => {
     if (cargoN(cur) + n > cap) { addLog(`❌ 화물 공간 부족! 여유: ${cap - cargoN(cur)}개`); return; }
     setGs(prev => ({ ...prev, gold: prev.gold - total,
       ships: prev.ships.map(s => s.id === cur.id ? { ...s, cargo: { ...s.cargo, [res]: (s.cargo[res] || 0) + n } } : s) }));
+    setPrices(prevPrices => {
+      const nextPrices = applyPlayerTradeImpact(prevPrices, portKey, res, n, 'buy');
+      setPriceHistory(history => appendPriceHistorySnapshot(history, nextPrices));
+      return nextPrices;
+    });
     addLog(`✅ ${RESOURCES[res].icon} ${res} ×${n} 구매 -${total.toLocaleString()}금 (구매 수수료 없음)`);
     setTradeDone({ type: 'buy', ts: Date.now() });
     setTimeout(() => setTradeDone(null), 800);
-  }, [cur, portKey, prices, setGs, gs.crew, addLog]);
+  }, [cur, portKey, prices, setGs, gs.crew, addLog, setPrices]);
 
   const doSell = useCallback((res, n) => {
     if (!cur || !portKey || n < 1 || cur.isMoving) return;
@@ -1700,6 +1738,11 @@ const OceanTycoon = () => {
     });
     addLog(`💰 ${RESOURCES[res].icon} ${res} ×${qty} 판매 +${total.toLocaleString()}금 (수수료 ${feeRate}%)`);
     if (milestoneCrossed > 0) addLog(`📊 무역 규모 성장! 세금 레벨 상승 (${EARN_MILESTONES.find(m => m > prevEarned && m <= newEarned)?.toLocaleString()}금 돌파)`);
+    setPrices(prevPrices => {
+      const nextPrices = applyPlayerTradeImpact(prevPrices, portKey, res, qty, 'sell');
+      setPriceHistory(history => appendPriceHistorySnapshot(history, nextPrices));
+      return nextPrices;
+    });
     setTradeDone({ type: 'sell', ts: Date.now() });
     setTimeout(() => setTradeDone(null), 800);
     if (total >= 1000) {
@@ -2099,7 +2142,7 @@ const OceanTycoon = () => {
             <div className="overflow-y-auto flex-1 p-3">
               {/* 수주 가능 */}
               <div className="text-xs font-bold text-gold mb-2 flex items-center gap-2">
-                <span>수주 가능 <span className="text-gray-400 font-normal">(매 시세 갱신마다 순환)</span></span>
+                <span>수주 가능 <span className="text-gray-400 font-normal">(대형 시장 사건마다 순환)</span></span>
               </div>
               {!pricesReady
                 ? <div className="text-xs text-gray-400 text-center py-4 flex items-center justify-center gap-2"><span className="animate-spin inline-block">⏳</span> 정보를 가져오는 중...</div>
@@ -2827,7 +2870,7 @@ const OceanTycoon = () => {
         <div className="ml-auto nautical-hud bg-ocean-dark rounded-lg p-2 border border-gold flex flex-wrap justify-end gap-2 items-center min-w-0 max-w-[calc(100vw-230px)]">
           <div className="text-right">
             <CurrencyPill type="gold" value={gs.gold} label="금" />
-            <div className="text-xs text-gray-400 mt-1">시세: <span className="text-yellow-300">{fmt(nextUpd)}</span></div>
+            <div className="text-xs text-gray-400 mt-1">시세: <span className="text-yellow-300">{fmt(nextUpd)}</span> · 사건: <span className="text-orange-300">{fmt(nextMarketEvent)}</span></div>
           </div>
           {nextUnlockProgress && (
             <div className="border-l border-gold pl-3 min-w-[180px] max-w-[240px]">
