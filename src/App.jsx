@@ -14,6 +14,14 @@ import {
   applySmallMarketDrift,
 } from './marketPrices.js';
 import worldLandmassesUrl from './assets/map/world-landmasses.png';
+import pioneerLogoUrl from './assets/pioneer-logo.png';
+import pioneerWordmarkUrl from './assets/pioneer-wordmark.png';
+import portEuropeUrl from './assets/port-europe.png';
+import portMediterraneanUrl from './assets/port-mediterranean.png';
+import portArabianUrl from './assets/port-arabian.png';
+import portSouthAsiaUrl from './assets/port-south_asia.png';
+import portEastAsiaUrl from './assets/port-east_asia.png';
+import portLockedUrl from './assets/port-locked.png';
 
 const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.png', { eager: true, query: '?url', import: 'default' });
 const SHIP_ICON_FILES = import.meta.glob('./assets/icons/ships/*.png', { eager: true, query: '?url', import: 'default' });
@@ -465,11 +473,11 @@ const PORT_SHIPS = {
 };
 
 const REGION_STYLE = {
-  europe:       { icon: '🏰', color: '#60a5fa', border: 'border-blue-400',   label: '유럽'    },
-  mediterranean:{ icon: '⛪', color: '#a78bfa', border: 'border-purple-400', label: '지중해'  },
-  arabian:      { icon: '🕌', color: '#fb923c', border: 'border-orange-400', label: '아라비아' },
-  south_asia:   { icon: '🛕', color: '#34d399', border: 'border-green-400',  label: '남아시아' },
-  east_asia:    { icon: '🏯', color: '#f87171', border: 'border-red-400',    label: '동아시아' },
+  europe:       { icon: '🏰', img: portEuropeUrl,       color: '#60a5fa', border: 'border-blue-400',   label: '유럽'    },
+  mediterranean:{ icon: '⛪', img: portMediterraneanUrl, color: '#a78bfa', border: 'border-purple-400', label: '지중해'  },
+  arabian:      { icon: '🕌', img: portArabianUrl,       color: '#fb923c', border: 'border-orange-400', label: '아라비아' },
+  south_asia:   { icon: '🛕', img: portSouthAsiaUrl,     color: '#34d399', border: 'border-green-400',  label: '남아시아' },
+  east_asia:    { icon: '🏯', img: portEastAsiaUrl,      color: '#f87171', border: 'border-red-400',    label: '동아시아' },
   americas:     { icon: '🗽', color: '#38bdf8', border: 'border-sky-400',    label: '아메리카' },
 };
 
@@ -1959,8 +1967,8 @@ const OceanTycoon = () => {
             {INTRO_SLIDES.map((_, i) => <div key={i} className={`h-2 rounded-full transition-all ${i===introSlide?'w-6 bg-yellow-400':i<introSlide?'w-2 bg-yellow-600':'w-2 bg-gray-600'}`}/>)}
           </div>
           <div className="bg-gray-900 border-2 border-yellow-600 rounded-2xl p-8 shadow-2xl text-center">
-            <div className="text-6xl mb-4">{slide.img}</div>
-            <h1 className="text-2xl font-bold text-yellow-400 mb-1">{slide.title}</h1>
+            <img src={pioneerLogoUrl} alt="Pioneer" className="w-28 h-28 mx-auto mb-4 drop-shadow-lg" />
+            <img src={pioneerWordmarkUrl} alt="PIONEER" className="h-10 mx-auto mb-1" />
             <p className="text-sm text-blue-300 mb-5">{slide.subtitle}</p>
             <div className="text-sm text-gray-200 whitespace-pre-line leading-relaxed text-left bg-blue-950 rounded-xl p-4 mb-6">{slide.body}</div>
             <div className="flex gap-3">
@@ -2864,7 +2872,7 @@ const OceanTycoon = () => {
       {/* 헤더 */}
       <div className="flex items-center gap-3 px-4 py-2 border-b border-gold border-opacity-30 flex-shrink-0">
         <div className="flex-shrink-0">
-          <h1 className="text-3xl font-bold text-gold">⛵ Pioneer</h1>
+          <img src={pioneerWordmarkUrl} alt="PIONEER" className="h-8" />
           <p className="text-xs text-ocean-light">항해와 정보의 시대</p>
         </div>
         <div className="ml-auto nautical-hud bg-ocean-dark rounded-lg p-2 border border-gold flex flex-wrap justify-end gap-2 items-center min-w-0 max-w-[calc(100vw-230px)]">
@@ -3180,7 +3188,10 @@ const OceanTycoon = () => {
                               boxShadow:(routeMode||isTutTarget)?`0 0 16px ${rs.color}`:'none',
                               opacity: visited ? 1 : access.unlocked ? 0.78 : 0.45,
                             }}>
-                            {visited || access.unlocked ? rs.icon : '🔒'}
+                            {visited || access.unlocked
+                              ? <img src={rs.img} alt={rs.label} className={`${compactPort ? 'w-6 h-6' : 'w-8 h-8'} object-contain`} />
+                              : <img src={portLockedUrl} alt="잠김" className={`${compactPort ? 'w-6 h-6' : 'w-8 h-8'} object-contain opacity-60`} />
+                            }
                           </div>
                           {saleHint && (
                             <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none whitespace-nowrap rounded-full border border-yellow-300 bg-yellow-950/90 px-2 py-0.5 text-[10px] font-black text-yellow-100 shadow-lg shadow-black/40" style={{ bottom: `${54 + saleHintIndex * 54}px` }}>
