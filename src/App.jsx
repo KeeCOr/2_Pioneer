@@ -22,6 +22,12 @@ import portArabianUrl from './assets/port-arabian.png';
 import portSouthAsiaUrl from './assets/port-south_asia.png';
 import portEastAsiaUrl from './assets/port-east_asia.png';
 import portLockedUrl from './assets/port-locked.png';
+import hudCrewUrl from './assets/hud-crew.png';
+import hudQuestUrl from './assets/hud-quest.png';
+import hudSaveUrl from './assets/hud-save.png';
+import hudDailyUrl from './assets/hud-daily.png';
+import hudHelpUrl from './assets/hud-help.png';
+import pioneerSubtitleUrl from './assets/pioneer-subtitle.png';
 
 const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.png', { eager: true, query: '?url', import: 'default' });
 const SHIP_ICON_FILES = import.meta.glob('./assets/icons/ships/*.png', { eager: true, query: '?url', import: 'default' });
@@ -2873,7 +2879,7 @@ const OceanTycoon = () => {
       <div className="flex items-center gap-3 px-4 py-2 border-b border-gold border-opacity-30 flex-shrink-0">
         <div className="flex-shrink-0">
           <img src={pioneerWordmarkUrl} alt="PIONEER" className="h-8" />
-          <p className="text-xs text-ocean-light">항해와 정보의 시대</p>
+          <img src={pioneerSubtitleUrl} alt="항해와 정보의 시대" className="h-3.5 mt-0.5" />
         </div>
         <div className="ml-auto nautical-hud bg-ocean-dark rounded-lg p-2 border border-gold flex flex-wrap justify-end gap-2 items-center min-w-0 max-w-[calc(100vw-230px)]">
           <div className="text-right">
@@ -2909,22 +2915,28 @@ const OceanTycoon = () => {
           <div className="border-l border-gold pl-3 text-center">
             <CurrencyPill type="gem" value={gs.gems} label="보석" />
           </div>
-          <button onClick={() => setShowAllCrew(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap">
-            👥 승무원<br/><span className="text-gray-500">{gs.crew.length}명</span>
+          <button onClick={() => setShowAllCrew(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap flex flex-col items-center">
+            <img src={hudCrewUrl} alt="승무원" className="w-5 h-5 mb-0.5" />
+            <span>승무원</span><span className="text-gray-500">{gs.crew.length}명</span>
           </button>
-          <button onClick={() => setShowDailyGoals(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-yellow-400 whitespace-nowrap relative">
-            🌅 일일목표<br/>
+          <button onClick={() => setShowDailyGoals(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-yellow-400 whitespace-nowrap relative flex flex-col items-center">
+            <img src={hudDailyUrl} alt="일일목표" className="w-5 h-5 mb-0.5" />
+            <span>일일목표</span>
             <span className="text-gray-500">{dailyGoals.filter(g=>g.completed).length}/{dailyGoals.length}완료</span>
             {dailyGoals.some(g=>g.completed) && <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"/>}
           </button>
-          <button onClick={() => setShowQuests(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap relative">
-            📋 퀘스트<br/><span className="text-gray-500">{gs.activeQuests.length}/3</span>
+          <button onClick={() => setShowQuests(true)} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap relative flex flex-col items-center">
+            <img src={hudQuestUrl} alt="퀘스트" className="w-5 h-5 mb-0.5" />
+            <span>퀘스트</span><span className="text-gray-500">{gs.activeQuests.length}/3</span>
             {completedQuests > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"/>}
           </button>
-          <button onClick={saveGame} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap">
-            💾 저장<br/><span className="text-gray-600">{lastSaved || '—'}</span>
+          <button onClick={saveGame} className="border-l border-gold pl-2 text-xs text-gray-300 hover:text-gold whitespace-nowrap flex flex-col items-center">
+            <img src={hudSaveUrl} alt="저장" className="w-5 h-5 mb-0.5" />
+            <span>저장</span><span className="text-gray-600">{lastSaved || '—'}</span>
           </button>
-          <button onClick={() => setIntroSlide(0)} className="border-l border-gold pl-2 text-xs text-gray-400 hover:text-gold">❓</button>
+          <button onClick={() => setIntroSlide(0)} className="border-l border-gold pl-2 text-xs text-gray-400 hover:text-gold flex flex-col items-center">
+            <img src={hudHelpUrl} alt="도움말" className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
