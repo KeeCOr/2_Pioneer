@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-08-08T21:06:55",
+  "sourceExecutable": "Pioneer_v1.8.1_portable.exe",
+  "viewport": "1440x920",
+  "shots": [
+    {
+      "file": "01_story_intro.png",
+      "title": "스토리 인트로",
+      "caption": "대항해시대 상인의 첫 출발을 짧고 선명하게 제시합니다."
+    },
+    {
+      "file": "02_lisbon_market_exchange.png",
+      "title": "리스본 거래소",
+      "caption": "보유 화물, 판매 수수료, 가격 변화, 거래 버튼이 한 화면에 묶입니다."
+    },
+    {
+      "file": "03_world_map_and_hud.png",
+      "title": "세계 항해도",
+      "caption": "29개 항구, 잠금 조건, HUD, 함대 카드가 동시에 읽히는 기본 플레이 화면입니다."
+    },
+    {
+      "file": "04_market_intelligence_panel.png",
+      "title": "시장 정보",
+      "caption": "항구별 흐름과 다음 항해 판단을 돕는 정보 패널입니다."
+    },
+    {
+      "file": "05_crew_roster_panel.png",
+      "title": "승무원 현황",
+      "caption": "선박별 배치 인원과 능력치 기반 운용 상태를 관리합니다."
+    },
+    {
+      "file": "06_daily_goals_panel.png",
+      "title": "일일 목표",
+      "caption": "반복 접속 동기를 주는 단기 목표와 보상 구조입니다."
+    },
+    {
+      "file": "07_quest_panel.png",
+      "title": "퀘스트",
+      "caption": "현재 수주/목표 진행도를 확인하는 장면입니다."
+    },
+    {
+      "file": "08_fleet_ship_detail.png",
+      "title": "함대 상세",
+      "caption": "연료, 내구도, 화물, 승무원 슬롯을 선박 단위로 보여줍니다."
+    },
+    {
+      "file": "09_route_planning.png",
+      "title": "항로 선택",
+      "caption": "목적지 후보와 무역 판단을 자연스럽게 이어줍니다."
+    },
+    {
+      "file": "10_market_reopened_from_map.png",
+      "title": "지도-시장 왕복",
+      "caption": "항해 지도에서 거래소로 빠르게 돌아오는 흐름입니다."
+    },
+    {
+      "file": "11_immediate_trade_feedback.png",
+      "title": "즉시 거래 피드백",
+      "caption": "거래 직후 자금과 화물 변화가 바로 반영됩니다."
+    },
+    {
+      "file": "12_live_market_timers.png",
+      "title": "실시간 시장 타이머",
+      "caption": "3분 소폭 변동과 1시간 대형 사건 주기를 계속 노출합니다."
+    }
+  ]
+}
