@@ -167,7 +167,7 @@ AutoDemo 구현 후에는 현재 캡처 중 패널이 정확히 열리지 않은
 - 촬영판: `Pioneer_v1.9.0_AutoDemo_portable.exe`
 - Drive 촬영판: `G:\내 드라이브\실행파일\02_Pioneer_v1.9.0_AutoDemo_portable.exe`
 - 일반판과 촬영판은 각각 최신 버전 하나만 유지한다.
-- 소개서 최신 PDF와 소스 MD·HTML은 프로젝트와 `G:\내 드라이브\기획서\Pioneer\NAN2026`에 동기화한다.
+- 소개서 최신 PDF와 소스 MD·HTML은 프로젝트와 `G:\내 드라이브\NAN2026`에 동기화한다.
 
 ## 성공 KPI
 
