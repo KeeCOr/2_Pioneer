@@ -574,6 +574,36 @@ tbody td {
   </div>
 </div>
 
+<!-- ══════════════ 3-B. 시장 정보 패널 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03-B</span>
+    <span class="section-title">시장 정보 — 감이 아닌 데이터로 판단한다</span>
+  </div>
+  <p>Pioneer의 시장 정보 패널은 4단계 정보 티어로 구성됩니다. 플레이어는 골드를 지불해 특정 항구·상품의 가격 방향과 변동 폭 예측을 구입할 수 있으며, 티어가 높을수록 정확도와 예측 강도가 높아집니다.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>정보 티어</th><th>기본 비용</th><th>정확도</th><th>예측 강도</th><th>특성</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>거리 소문</td><td>300금</td><td>30%</td><td>±15~45%</td><td>반복 구매 가능</td></tr>
+        <tr><td>상인 귀띔</td><td>700금</td><td>40%</td><td>±25~65%</td><td>반복 구매 가능</td></tr>
+        <tr><td>상업 분석 보고서</td><td>3,000금</td><td>58%</td><td>±60~130%</td><td>1회 한정</td></tr>
+        <tr><td>내부 정보</td><td>8,000금</td><td>72%</td><td>±100~200%</td><td>1회 한정</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>세금 레벨이 높아질수록 정보 구입 비용이 1.12배씩 상승하므로, 후반 플레이에서는 <strong>"정보 구입 비용 대비 예상 수익"을 계산하는 투자 판단 층</strong>이 추가됩니다. 항구 관리인의 내부 정보는 가장 정확하지만 가장 비싸 — 언제 투자할지 스스로 판단해야 합니다.</p>
+
+  <div class="img-block">
+    <img src="nan2026_screenshots/04_market_intelligence_panel.png" alt="시장 정보 패널">
+    <div class="img-caption">시장 정보 패널 — 티어별 가격·정확도를 비교하고 현재 세금 레벨에서의 실제 비용을 확인</div>
+  </div>
+</div>
+
 <!-- ══════════════ 4. 선원 ══════════════ -->
 <div class="section page-break">
   <div class="section-header">
@@ -685,7 +715,7 @@ tbody td {
         <tr><td>예상 수익·시간·위험·차단 사유 항로 요약</td><td class="status-done">✓ 구현 완료</td></tr>
         <tr><td>퀘스트·일일 목표·저장/불러오기</td><td class="status-done">✓ 구현 완료</td></tr>
         <tr><td>Electron portable 실행파일</td><td class="status-done">✓ Pioneer_v1.8.1_portable.exe 배치 완료</td></tr>
-        <tr><td>자동 테스트</td><td class="status-done">✓ node --test 32개 통과</td></tr>
+        <tr><td>자동 테스트 (7개 모듈)</td><td class="status-done">✓ node --test 33개 통과</td></tr>
       </tbody>
     </table>
   </div>

@@ -448,6 +448,80 @@ tbody td {
   <p style="font-size:9pt; color:#475569;">이 세 레이어 독립 구조는 AI가 아키텍처 초안을 제안하고, 개발자가 게임 밸런스에 맞게 수치를 직접 조정해 확정했습니다.</p>
 </div>
 
+<!-- ══════════════ 1-B. 추천·판단 AI 시스템 ══════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <span class="section-num">01-B</span>
+    <span class="section-title">게임 내부 추천·판단 AI 시스템</span>
+  </div>
+  <p>Pioneer는 동적 시장 모델 외에도, 플레이어의 현재 상태(보유 화물·선택한 항로·거래 단계·날씨)를 실시간 분석해 최적 행동을 제안하는 네 가지 알고리즘 시스템을 갖추고 있습니다.</p>
+
+  <div class="subsection">
+    <div class="subsection-title">mapHints.js — 최적 판매 항구 추천 엔진</div>
+    <p>플레이어가 화물을 보유한 채 지도를 열면, <code>getCargoSaleHints</code>가 접근 가능한 모든 항구의 현재 가격을 비교해 수익 상위 3개 항구를 자동 추천합니다.</p>
+    <pre><span class="comment">// 핵심 알고리즘: 보유 화물 × 모든 접근 가능 항구 가격 비교</span>
+getCargoSaleHints({ ports, prices, cargo, currentPortKey, totalEarned, limit: 3 })
+
+<span class="comment">// 알고리즘 흐름</span>
+1. 현재 항구 제외 + 잠긴 항구 제외 → 접근 가능 항구 필터
+2. 각 항구에서 화물별 unitPrice × quantity = 예상 수익 계산
+3. 현재 항구 대비 % 상승폭: (목적지가 - 현재가) / 현재가
+4. 총 수익 내림차순 정렬 → 상위 limit개 반환
+5. 수익 0 이하 항구 제외 (손해 추천 방지)</pre>
+    <div class="highlight-box">
+      단순 "가격이 높은 항구"가 아닌 <strong>보유 수량 × 가격차</strong> 기준으로 정렬하므로, 조금 비싸더라도 대량으로 팔 수 있는 항구가 우선 추천됩니다. 플레이어는 29개 항구를 수동 비교하는 인지 부하 없이 AI 추천 상위 3곳에서 즉시 결정할 수 있습니다.
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">routeSummary.js — 항로 어드바이저</div>
+    <p><code>getRouteSummary</code>는 선박 상태·화물·목적지를 입력받아 출항 가능 여부, 예상 수익, 이동 시간, 위험 등급, 차단 사유, <strong>자연어 권장 문장</strong>을 한 번에 반환합니다.</p>
+    <pre><span class="comment">// 반환 구조 — 수치와 판단 권고를 동시 제공</span>
+{
+  canDepart:      boolean,                              <span class="comment">// 출항 가능 여부</span>
+  expectedProfit: number,                               <span class="comment">// 예상 순수익</span>
+  travelTime:     number,                               <span class="comment">// 이동 시간 추정</span>
+  riskLevel:      <span class="string">'low'</span> | <span class="string">'medium'</span> | <span class="string">'high'</span> | <span class="string">'blocked'</span>,
+  riskScore:      number,                               <span class="comment">// 0–99 정량 위험 점수</span>
+  blockers:       string[],                             <span class="comment">// 출항 차단 사유</span>
+  recommendation: string,                               <span class="comment">// 자연어 권장 문장</span>
+}
+
+<span class="comment">// 자연어 권고 예시</span>
+<span class="string">"Good route: profit is positive and risk is manageable."</span>
+<span class="string">"Do not depart: resolve blockers or choose a better market."</span>
+<span class="string">"Profit is strong, but prepare for the listed threats."</span></pre>
+    <p style="font-size:9pt; color:#475569;">수익·거리·위험·차단 사유를 종합해 규칙 기반 자연어 문장을 선택하므로, 플레이어는 수치를 직접 계산하지 않고 AI의 판단 요약만으로 즉시 결정을 내릴 수 있습니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">fleetTradeFlow.js — 거래 단계 결정 시스템</div>
+    <p><code>getFleetTradeFlow</code>는 선박·항구·화물·시장 상태를 분석해 플레이어가 현재 어느 거래 단계(함대 선택 → 화물 확인 → 시장 거래 → 항로 검토 → 출항)에 있는지 판단하고, 다음 행동을 자연어로 안내합니다.</p>
+    <pre><span class="comment">// 5단계 흐름 — 현재 상태 분기 후 안내 반환</span>
+{
+  cause:      string,  <span class="comment">// 현재 상태 설명</span>
+  delta:      string,  <span class="comment">// 화물·수익 현황</span>
+  nextAction: string,  <span class="comment">// 다음 행동 지침</span>
+}</pre>
+    <p style="font-size:9pt; color:#475569;">항해 중·화물 없음·차단 사유 있음·목적지 가격이 매입가 이하 등 8가지 이상의 상황 분기를 처리해, 초보 플레이어가 어느 화면에서든 다음 행동을 명확히 이해하도록 안내합니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">날씨 결정 알고리즘 — 위도 기반 결정론적 시스템</div>
+    <p>10종 날씨(맑음·흐림·강풍·안개·순풍·거친 바다·눈보라·무역풍·열파·비)는 난수가 아닌 <strong>선박 ID × 위도 밴드 × 15분 시간 시드</strong>의 해시 함수로 결정됩니다.</p>
+    <pre><span class="comment">// 위도별 날씨 풀: 북쪽(한랭) ↔ 열대(무역풍)</span>
+WEATHER_POOL(y &lt; 15) = [<span class="string">'blizzard'</span>, <span class="string">'foggy'</span>, <span class="string">'cloudy'</span>, <span class="string">'rainy'</span>, ...]
+WEATHER_POOL(y 30–50) = [<span class="string">'sunny'</span>, <span class="string">'windy'</span>, <span class="string">'fairwind'</span>, ...]
+WEATHER_POOL(y > 65) = [<span class="string">'tradewind'</span>, <span class="string">'tradewind'</span>, <span class="string">'roughsea'</span>, ...]
+
+<span class="comment">// 결정론적 해시 — 같은 항로는 항상 같은 날씨 경험</span>
+const hash = Math.abs(Math.round(
+  Math.sin(ship.id * <span class="number">1.7</span> + weatherBand * <span class="number">2.91</span> + timeSeed * <span class="number">2.13</span>) * <span class="number">10000</span>
+)) % pool.length;</pre>
+    <p style="font-size:9pt; color:#475569;">같은 함선이 같은 항로를 항해하면 일관된 날씨 패턴을 경험합니다. 선원의 <code>favoriteWeather</code>가 현재 날씨와 일치하면 속도·전투력에 +40% 보너스가 연계되어 크루 배치 전략에 날씨 변수가 추가됩니다.</p>
+  </div>
+</div>
+
 <!-- ══════════════ 2. AI 데이터 구조 설계 ══════════════ -->
 <div class="section page-break">
   <div class="section-header">
@@ -688,7 +762,7 @@ const [uiState,     setUiState]     = useState(<span class="comment">/* 모달·
     <span class="section-title">AI 보조 테스트 케이스 도출</span>
   </div>
 
-  <p><code>marketPrices.test.js</code>의 32개 테스트 케이스 중 절반은 AI가 엣지 케이스를 먼저 제안했습니다.</p>
+  <p>7개 모듈(<code>marketPrices</code>, <code>trade</code>, <code>navigation</code>, <code>mapHints</code>, <code>routeSummary</code>, <code>fleetTradeFlow</code>, <code>unlockProgress</code>)의 33개 테스트 케이스 중 절반 이상은 AI가 엣지 케이스를 먼저 제안했습니다.</p>
 
   <div class="table-wrap">
     <table>
@@ -725,7 +799,7 @@ const [uiState,     setUiState]     = useState(<span class="comment">/* 모달·
         <tr><td>아키텍처</td><td>marketPrices.js 3함수 분리, React 상태 3레이어 분리</td><td>marketPrices.js 모듈 경계</td><td>단위 테스트 독립성 확인</td></tr>
         <tr><td>인터페이스</td><td>routeSummary.js 반환 형식 설계</td><td>routeSummary.js 타입 구조</td><td>UI 연동 후 화면 검증</td></tr>
         <tr><td>기초 코드</td><td>각 모듈 함수 시그니처와 초기 구현 뼈대 생성</td><td>편집 전 첫 파일 초안</td><td>로직 검토 후 수정 적용</td></tr>
-        <tr><td>테스트</td><td>엣지 케이스 목록 도출, 타이머 드리프트 버그 발견</td><td>marketPrices.test.js 케이스 절반</td><td>node --test 32개 통과</td></tr>
+        <tr><td>테스트</td><td>엣지 케이스 목록 도출, 타이머 드리프트 버그 발견</td><td>7개 모듈 테스트 파일, 케이스 절반 AI 제안</td><td>node --test 33개 통과</td></tr>
         <tr><td>밸런스</td><td>항구별 수익 시나리오 시뮬레이션, 과적 구간 식별</td><td>29개 항구 수익 분산 ±22% 이내 수렴</td><td>개발자 수치 조정 후 재검증</td></tr>
         <tr><td>이미지 에셋</td><td>선원·선박·항구 컨셉 아트 생성, 리소스 경로 직접 연결</td><td>pioneer_crew/ship/harbor_scene.png 3종</td><td>비주얼 톤 검토 후 프록시 적용</td></tr>
         <tr><td>스크린샷 선별</td><td>심사 기준 기반 화면 우선순위 제안</td><td>nan2026_screenshots/ 8개</td><td>실제 exe 캡처로 대체 검증</td></tr>
