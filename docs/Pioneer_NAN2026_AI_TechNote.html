@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pioneer — NAN 2026 AI 활용 기술문서</title>
+<style>
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm 16mm;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
+  font-size: 10pt;
+  line-height: 1.7;
+  color: #1e293b;
+  background: #ffffff;
+}
+
+/* ─── COVER ─────────────────────────────────────────── */
+.cover {
+  background: linear-gradient(150deg, #0d1f3c 0%, #1a3a6b 60%, #0f2a50 100%);
+  color: #fff;
+  padding: 44px 44px 36px;
+  margin-bottom: 36px;
+  position: relative;
+  overflow: hidden;
+  page-break-after: avoid;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  top: -50px; right: -70px;
+  width: 280px; height: 280px;
+  border: 3px solid rgba(201,147,14,0.2);
+  border-radius: 50%;
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: -50px;
+  width: 180px; height: 180px;
+  border: 2px solid rgba(201,147,14,0.12);
+  border-radius: 50%;
+}
+.cover-badge {
+  display: inline-block;
+  background: rgba(201,147,14,0.2);
+  border: 1px solid #c9930e;
+  color: #c9930e;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 3px;
+  margin-bottom: 16px;
+}
+.cover-sub {
+  font-size: 10pt;
+  color: #a8bcd6;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+.cover-title {
+  font-size: 30pt;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.cover-title span { color: #c9930e; }
+.cover-divider {
+  width: 60px;
+  height: 3px;
+  background: #c9930e;
+  margin: 20px 0;
+}
+.cover-meta {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.meta-item {
+  font-size: 8.5pt;
+  color: #a8bcd6;
+  margin-right: 24px;
+  margin-bottom: 6px;
+}
+.meta-item strong { color: #e2eaf4; font-weight: 600; }
+
+/* ─── SUMMARY BOX ────────────────────────────────────── */
+.summary-box {
+  background: #f0f5ff;
+  border: 1px solid #c3d4ef;
+  border-left: 5px solid #1a3a6b;
+  border-radius: 0 8px 8px 0;
+  padding: 18px 22px;
+  margin-bottom: 32px;
+  page-break-inside: avoid;
+}
+.summary-box h3 {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #1a3a6b;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.summary-points {
+  list-style: none;
+  padding: 0;
+}
+.summary-points li {
+  padding: 5px 0 5px 20px;
+  position: relative;
+  font-size: 9.5pt;
+  color: #2d4a7a;
+}
+.summary-points li::before {
+  content: '▶';
+  position: absolute;
+  left: 0;
+  color: #c9930e;
+  font-size: 7pt;
+  top: 8px;
+}
+
+/* ─── SECTION ────────────────────────────────────────── */
+.section {
+  margin-bottom: 32px;
+  page-break-inside: avoid;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  page-break-after: avoid;
+}
+.section-num {
+  font-size: 8pt;
+  font-weight: 800;
+  color: #c9930e;
+  letter-spacing: 1px;
+  min-width: 28px;
+}
+.section-title {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #0d1f3c;
+  border-bottom: 2.5px solid #c9930e;
+  padding-bottom: 4px;
+  flex: 1;
+}
+
+/* ─── SUB-SECTION ────────────────────────────────────── */
+.subsection {
+  margin-bottom: 20px;
+  page-break-inside: avoid;
+}
+.subsection-title {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #1a3a6b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.subsection-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 13px;
+  background: #c9930e;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+p { margin-bottom: 10px; }
+
+/* ─── CODE ───────────────────────────────────────────── */
+pre {
+  background: #0d1f3c;
+  color: #a8d8ff;
+  padding: 14px 18px;
+  border-radius: 6px;
+  font-size: 8.5pt;
+  line-height: 1.55;
+  margin: 12px 0;
+  overflow-x: auto;
+  font-family: 'Consolas', 'D2Coding', monospace;
+  page-break-inside: avoid;
+}
+pre .comment { color: #607080; }
+pre .keyword { color: #c9930e; }
+pre .string  { color: #98d98e; }
+pre .number  { color: #b5d3f7; }
+code {
+  font-family: 'Consolas', 'D2Coding', monospace;
+  font-size: 8.5pt;
+  background: #f1f5f9;
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #c05200;
+}
+pre code { background: none; color: inherit; padding: 0; }
+
+/* ─── TABLE ──────────────────────────────────────────── */
+.table-wrap {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #d1dae8;
+  overflow: hidden;
+  margin: 14px 0;
+  page-break-inside: avoid;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9pt;
+}
+thead {
+  background: #0d1f3c;
+  color: #fff;
+}
+thead th {
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+tbody tr:nth-child(even) { background: #f6f9ff; }
+tbody td {
+  padding: 7px 12px;
+  border-top: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+.tag-arch { background: #e8f0ff; color: #1a3a6b; padding: 2px 6px; border-radius: 3px; font-size: 8pt; font-weight: 600; }
+.tag-done { background: #e8f8ee; color: #166534; padding: 2px 6px; border-radius: 3px; font-size: 8pt; font-weight: 600; }
+
+/* ─── SYSTEM DIAGRAM ─────────────────────────────────── */
+.sys-diagram {
+  background: #0d1f3c;
+  color: #a8d8ff;
+  padding: 18px 22px;
+  border-radius: 8px;
+  margin: 14px 0;
+  font-family: 'Consolas', 'D2Coding', monospace;
+  font-size: 9pt;
+  line-height: 1.9;
+  page-break-inside: avoid;
+}
+.sys-diagram .layer-title { color: #c9930e; font-weight: 600; }
+.sys-diagram .layer-desc  { color: #607080; margin-left: 20px; font-size: 8.5pt; }
+
+/* ─── IMAGES ─────────────────────────────────────────── */
+.img-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 14px 0;
+  page-break-inside: avoid;
+}
+.img-block {
+  page-break-inside: avoid;
+}
+.img-block img {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 5px;
+  display: block;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.img-caption {
+  font-size: 8pt;
+  color: #64748b;
+  text-align: center;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* ─── HIGHLIGHT BOX ──────────────────────────────────── */
+.highlight-box {
+  background: linear-gradient(135deg, #fff8e7, #fef3c7);
+  border: 1px solid #d4a017;
+  border-left: 4px solid #c9930e;
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 9.5pt;
+  color: #78350f;
+  page-break-inside: avoid;
+}
+
+/* ─── FOOTER ─────────────────────────────────────────── */
+.doc-footer {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  page-break-inside: avoid;
+}
+.footer-tagline { font-size: 9pt; color: #64748b; font-style: italic; }
+.footer-mark { font-size: 8pt; color: #94a3b8; }
+
+/* ─── PRINT ──────────────────────────────────────────── */
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ COVER ══════════════ -->
+<div class="cover">
+  <div class="cover-badge">Technical Note</div>
+  <div class="cover-sub">Pioneer · NAN 2026</div>
+  <div class="cover-title">AI 활용 <span>기술문서</span></div>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="meta-item"><strong>버전</strong> v1.8.1</div>
+    <div class="meta-item"><strong>작성일</strong> 2026-08-08</div>
+    <div class="meta-item"><strong>실행파일</strong> Pioneer_v1.8.1_portable.exe</div>
+  </div>
+</div>
+
+<!-- ══════════════ SUMMARY ══════════════ -->
+<div class="summary-box">
+  <h3>요약</h3>
+  <ul class="summary-points">
+    <li><strong>게임 내부 AI형 시스템:</strong> 3분 소폭 가격 변동, 1시간 대형 시장 사건, 플레이어 거래 영향, 가격 히스토리를 결합해 반복 플레이의 예측 불확실성을 만듭니다.</li>
+    <li><strong>개발 과정 AI 보조:</strong> 데이터 구조 설계, 기초 코드 생성, 리소스 연결, 로직 분리, 테스트 케이스 도출, 문서 정리에 이르기까지 개발 전 단계에서 생성형 AI를 협업 파트너로 활용했습니다.</li>
+  </ul>
+  <div style="margin-top:10px; font-size:9pt; color:#2d4a7a;">
+    AI는 단순 코드 완성 도구가 아니라 <strong>스펙을 코드로 전환하는 첫 초안 생성기</strong>, <strong>실수를 찾아내는 두 번째 눈</strong>으로 활용했습니다.
+  </div>
+</div>
+
+<!-- ══════════════ 1. 동적 시장 모델 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">게임 내부 동적 시장 모델</span>
+  </div>
+
+  <div class="sys-diagram">
+    <span class="layer-title">3분 소폭 변동</span><br>
+    <span class="layer-desc">모든 항구와 상품의 기준가에 작은 노이즈를 적용</span><br><br>
+    <span class="layer-title">플레이어 거래 영향</span><br>
+    <span class="layer-desc">매입/판매 수량에 따라 해당 항구의 해당 상품 가격을 즉시 조정</span><br><br>
+    <span class="layer-title">1시간 대형 시장 사건</span><br>
+    <span class="layer-desc">플레이어 거래 맥락과 독립적으로 2~4개 항구에 큰 가격 충격 적용</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>시스템</th><th>주기</th><th>목적</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>소폭 변동</td><td>3분</td><td>시장이 멈춰 있지 않다는 리듬 제공</td></tr>
+        <tr><td>거래 영향</td><td>즉시</td><td>플레이어 행동이 세계에 반영되는 감각 제공</td></tr>
+        <tr><td>대형 사건</td><td>1시간</td><td>장기 세션의 판도를 바꾸는 외부 변수 제공</td></tr>
+        <tr><td>가격 히스토리</td><td>최근 20개</td><td>과거 흐름을 읽고 판단하는 정보 플레이 제공</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="font-size:9pt; color:#475569;">이 세 레이어가 독립적으로 동작하는 구조는 AI가 초기 아키텍처 초안을 제안했고, 개발자가 실제 게임 밸런스에 맞게 수치를 조정해 확정했습니다.</p>
+</div>
+
+<!-- ══════════════ 2. AI 데이터 구조 설계 ══════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">AI 보조 데이터 구조 설계</span>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">항구·상품 데이터 스키마</div>
+    <p>29개 항구와 8종 상품의 기준가·변동 범위·수수료율을 정의하는 초기 JSON 스키마는 AI가 생성했습니다.</p>
+    <pre>{
+  "portId": "lisbon",
+  "name": "리스본",
+  "region": "유럽",
+  "goods": [
+    { "id": "spice", "basePrice": 120, "volatility": 0.025, "fee": 0.03 },
+    { "id": "cloth", "basePrice": 80,  "volatility": 0.015, "fee": 0.02 }
+  ],
+  "riskLevel": 1,
+  "unlocked": true
+}</pre>
+    <div class="highlight-box">
+      AI가 제안한 <code>volatility</code> 필드는 소폭 변동 계산과 대형 사건 충격 비율 모두에 재사용됩니다. 단일 필드가 두 시스템을 연결하는 설계 덕분에 항구별 특성을 한 곳에서 관리할 수 있습니다.
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">선원 능력치 공식</div>
+    <p>선원 능력치가 실제 운항 수치에 미치는 영향 공식도 AI가 초안을 제시했습니다.</p>
+    <pre><span class="comment">// AI 제안 초안 → 개발자 조정 후 확정</span>
+const speedMultiplier = 1 + crew.navigation * 0.04;   <span class="comment">// 항해 능력치</span>
+const cargoMultiplier = 1 + crew.logistics  * 0.06;   <span class="comment">// 물류 능력치</span>
+const repairRate      = crew.repair * 2.5;             <span class="comment">// 초당 선체 수리량</span>
+const fuelReduction   = 1 - crew.fuelEff   * 0.03;    <span class="comment">// 연료 소모 계수</span></pre>
+    <p style="font-size:9pt; color:#475569;">단순 덧셈이 아닌 곱셈 계수 구조를 AI가 제안한 덕분에, 선원이 여럿일 때 능력치가 과도하게 누적되지 않으면서도 체감 성장이 가능한 균형을 잡았습니다.</p>
+  </div>
+</div>
+
+<!-- ══════════════ 3. 핵심 모듈 구현 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">AI 보조 핵심 모듈 구현</span>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">marketPrices.js — 시장 로직 분리와 초기 뼈대</div>
+    <p>초기에는 App.jsx 내부에 시장 로직이 혼재해 있었으나, AI는 <strong>세 가지 독립 책임</strong>으로 분리할 것을 제안했습니다.</p>
+    <pre><span class="comment">// AI가 제안한 모듈 분리 초안</span>
+export function applyMinorFluctuation(prices, ports)           { <span class="comment">/* 3분 소폭 변동 */</span> }
+export function applyTradeImpact(prices, portId, goodId, qty)  { <span class="comment">/* 거래 영향 */</span>   }
+export function applyMajorEvent(prices, ports)                 { <span class="comment">/* 1시간 대형 사건 */</span> }</pre>
+    <p style="font-size:9pt; color:#475569;">이 분리 덕분에 <code>marketPrices.test.js</code>에서 각 함수를 독립적으로 검증할 수 있게 되었고, 대형 사건이 거래 영향과 독립적으로 동작하는지를 단위 테스트로 확인할 수 있었습니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">routeSummary.js — 인터페이스 설계</div>
+    <p>AI가 먼저 인터페이스를 설계하고 개발자가 구현을 채우는 방식으로 개발했습니다.</p>
+    <pre><span class="comment">// AI 제안 반환 형식</span>
+return {
+  estimatedProfit: number,         <span class="comment">// 예상 순수익 (수수료 차감 후)</span>
+  travelTimeMin:   number,         <span class="comment">// 편도 이동 시간 (분)</span>
+  riskLevel:       1 | 2 | 3,      <span class="comment">// 위험 등급</span>
+  blockedReason:   string | null,  <span class="comment">// 차단 사유 (선원 부족, 연료 부족 등)</span>
+  threatSources:   string[],       <span class="comment">// 위협 원인 목록</span>
+};</pre>
+    <div class="highlight-box">
+      인터페이스를 먼저 확정한 뒤 구현을 채우는 방식으로 개발했기 때문에, UI 레이어가 구현 세부사항에 의존하지 않았고 나중에 내부 계산 방식을 바꿔도 화면 코드를 건드릴 필요가 없었습니다.
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">React 상태 아키텍처 최적화</div>
+    <p>초기 구현에서 시장 가격, 함대 상태, UI 선택 상태가 하나의 <code>useState</code> 객체에 혼재해 3분마다 전체 리렌더링이 발생했습니다. AI는 상태를 <strong>세 레이어로 분리</strong>할 것을 제안했습니다.</p>
+    <pre>const [marketState, setMarketState] = useState(<span class="comment">/* 가격·타이머 */</span>);
+const [fleetState,  setFleetState]  = useState(<span class="comment">/* 선박·선원·화물 */</span>);
+const [uiState,     setUiState]     = useState(<span class="comment">/* 모달·선택·탭 */</span>);</pre>
+    <p style="font-size:9pt; color:#475569;">이 분리 이후 시장 가격 업데이트가 UI 선택 상태를 초기화하지 않게 되었고, 3분 타이머 실행 시 리렌더 범위가 marketState 구독 컴포넌트로 제한되었습니다.</p>
+  </div>
+</div>
+
+<!-- ══════════════ 4. 리소스 및 자산 ══════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">AI 보조 리소스 및 자산 연결</span>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">NAN 제출용 스크린샷 선별</div>
+    <p>AI는 "심사위원이 처음 30초 안에 확인하고 싶어할 화면"을 기준으로 우선순위를 제시했습니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>스크린샷</th><th>보여주는 것</th><th>선정 이유</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>03_world_map_and_hud</code></td><td>세계 항해도 전체</td><td>게임 규모와 항구 수 직관적 파악</td></tr>
+          <tr><td><code>02_lisbon_market_exchange</code></td><td>거래소 UI</td><td>핵심 루프의 정보 밀도 확인</td></tr>
+          <tr><td><code>11_immediate_trade_feedback</code></td><td>거래 직후 변화</td><td>즉각 피드백 메커니즘 증명</td></tr>
+          <tr><td><code>12_live_market_timers</code></td><td>시장 타이머</td><td>동적 시장 시스템 시각적 근거</td></tr>
+          <tr><td><code>05_crew_roster_panel</code></td><td>승무원 현황</td><td>선원 배치 시스템 복잡도 제시</td></tr>
+          <tr><td><code>08_fleet_ship_detail</code></td><td>선박 구매 비교</td><td>전략적 선택 구조 확인</td></tr>
+          <tr><td><code>09_route_planning</code></td><td>항로 선택 화면</td><td>리스크/리워드 판단 UI 증명</td></tr>
+          <tr><td><code>04_market_intelligence_panel</code></td><td>시장 정보 패널</td><td>정보 플레이 요소 확인</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="img-grid">
+    <div class="img-block">
+      <img src="nan2026_screenshots/02_lisbon_market_exchange.png" alt="리스본 거래소">
+      <div class="img-caption">리스본 거래소</div>
+    </div>
+    <div class="img-block">
+      <img src="nan2026_screenshots/04_market_intelligence_panel.png" alt="시장 정보 패널">
+      <div class="img-caption">시장 정보 패널</div>
+    </div>
+    <div class="img-block">
+      <img src="nan2026_screenshots/05_crew_roster_panel.png" alt="승무원 현황">
+      <div class="img-caption">승무원 현황</div>
+    </div>
+    <div class="img-block">
+      <img src="nan2026_screenshots/11_immediate_trade_feedback.png" alt="즉시 거래 피드백">
+      <div class="img-caption">즉시 거래 피드백</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 5. 테스트 케이스 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">AI 보조 테스트 케이스 도출</span>
+  </div>
+
+  <p><code>marketPrices.test.js</code>의 32개 테스트 케이스 중 절반은 AI가 엣지 케이스를 먼저 제안했습니다.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>테스트 범주</th><th>AI가 제안한 케이스</th><th>이유</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>소폭 변동</td><td>최소/최대 변동폭 경계값, 기준가 0 근접 시 음수 방지</td><td>극단값 처리</td></tr>
+        <tr><td>거래 영향</td><td>최대 물량 거래 시 상한(±18%) 초과 방지, 연속 대량 매도 후 재매수</td><td>누적 효과</td></tr>
+        <tr><td>대형 사건</td><td>소폭 변동 직후 대형 사건 중첩, 동일 항구에 두 사건 동시 발생</td><td>독립성 검증</td></tr>
+        <tr><td>가격 히스토리</td><td>20개 초과 시 FIFO 처리, 사건 전후 연속 기록</td><td>버퍼 경계</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <strong>타이머 동기화 버그 발견:</strong> 3분 주기 소폭 변동 타이머가 장시간 실행 시 누적 오차가 생기는 문제를 AI가 코드 리뷰 중 발견했습니다. <code>Date.now()</code> 기반의 <code>setInterval</code> 대신 누적 경과 시간을 기준으로 판단하는 방식을 AI가 제안했고, 이를 반영한 뒤 장시간 플레이 테스트에서 오차가 해소되었습니다.
+  </div>
+</div>
+
+<!-- ══════════════ 6. 전체 내역 ══════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">개발 AI 사용 전체 내역</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>단계</th><th>AI 보조 내용</th><th>결과물</th><th>최종 확인</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>데이터 설계</td><td>29개 항구 JSON 스키마, 선원 능력치 공식 초안</td><td>portsData.js, crewStats.js 초기 구조</td><td>개발자 수치 조정 후 밸런스 플레이</td></tr>
+        <tr><td>아키텍처</td><td>marketPrices.js 3함수 분리, React 상태 3레이어 분리</td><td>marketPrices.js 모듈 경계</td><td>단위 테스트 독립성 확인</td></tr>
+        <tr><td>인터페이스</td><td>routeSummary.js 반환 형식 설계</td><td>routeSummary.js 타입 구조</td><td>UI 연동 후 화면 검증</td></tr>
+        <tr><td>기초 코드</td><td>각 모듈 함수 시그니처와 초기 구현 뼈대 생성</td><td>편집 전 첫 파일 초안</td><td>로직 검토 후 수정 적용</td></tr>
+        <tr><td>테스트</td><td>엣지 케이스 목록 도출, 타이머 드리프트 버그 발견</td><td>marketPrices.test.js 케이스 절반</td><td>node --test 32개 통과</td></tr>
+        <tr><td>리소스</td><td>스크린샷 선별 기준, 게임플레이 이미지 생성 방향</td><td>nan2026_screenshots/ 8개</td><td>실제 exe 캡처로 대체 검증</td></tr>
+        <tr><td>문서</td><td>소개서·기술문서 구조 설계, 섹션 초안 작성</td><td>본 문서 포함 NAN 제출 자료</td><td>제출 전 버전/내용 전체 대조</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ 7. 개선 계획 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">개선안 및 후속 적용 계획</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>개선 범주</th><th>현재 반영</th><th>후속 적용</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>시장 모델 고도화</td><td>3레이어 독립 작동 구현</td><td>항구 간 교역량 연동 효과 추가</td></tr>
+        <tr><td>AI 추천 레이어</td><td>가격 히스토리 표시</td><td>"추천 이유" 문장을 붙이는 AI 해석 패널</td></tr>
+        <tr><td>UX 정돈</td><td>핵심 화면 위주 갤러리 재구성</td><td>함대 카드 아이콘/한글 라벨 정리</td></tr>
+        <tr><td>Unity 이식</td><td>React 로직과 테스트 근거 문서화</td><td>marketPrices, routeSummary, crew stat 계산 C# 포팅</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ 8. Unity 전환 / 라이선스 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">Unity 전환 체크포인트 · 권리 메모</span>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">Unity 전환 로드맵</div>
+    <ul style="list-style:none; padding:0; margin:8px 0;">
+      <li style="padding:5px 0 5px 18px; position:relative; font-size:9.5pt; border-bottom:1px dashed #e2e8f0;">
+        <span style="position:absolute;left:0;color:#c9930e;font-size:7pt;top:9px;">◆</span>
+        현재는 React/Vite 실행파일 제출이 기준이며, 실제 Unity 프로젝트 파일은 아직 생성하지 않았습니다.
+      </li>
+      <li style="padding:5px 0 5px 18px; position:relative; font-size:9.5pt; border-bottom:1px dashed #e2e8f0;">
+        <span style="position:absolute;left:0;color:#c9930e;font-size:7pt;top:9px;">◆</span>
+        Unity 전환 시 AI 보조로 작성된 데이터 스키마(portsData, crewStats)를 ScriptableObject로 이식하는 것이 첫 단계입니다.
+      </li>
+      <li style="padding:5px 0 5px 18px; position:relative; font-size:9.5pt;">
+        <span style="position:absolute;left:0;color:#c9930e;font-size:7pt;top:9px;">◆</span>
+        <code>marketPrices.js</code>의 세 함수 분리 구조는 Unity MonoBehaviour 분리 설계와 1:1 대응되어 이식 참조 기준으로 활용됩니다.
+      </li>
+    </ul>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">권리 및 라이선스 메모</div>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td style="width:180px;font-weight:600;">게임명·코드·기획·제출 문서</td><td>프로젝트 고유 창작물</td></tr>
+          <tr><td style="font-weight:600;">오픈소스 의존성</td><td>React, Vite, Tailwind 등 각 라이선스 범위에서 사용</td></tr>
+          <tr><td style="font-weight:600;">제출용 화면 자료</td><td>Pioneer_v1.8.1_portable.exe 실제 실행 화면 직접 캡처</td></tr>
+          <tr><td style="font-weight:600;">AI 생성·보조 산출물</td><td>개발자가 검토·수정·채택한 내용만 반영</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<div class="doc-footer">
+  <div class="footer-tagline">AI는 첫 초안을 썼고, 바다를 설계한 것은 개발자였습니다.</div>
+  <div class="footer-mark">Pioneer v1.8.1 · NAN 2026</div>
+</div>
+
+</body>
+</html>

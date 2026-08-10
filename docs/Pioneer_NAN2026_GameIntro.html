@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pioneer — NAN 2026 게임 소개서</title>
+<style>
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm 16mm;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
+  font-size: 10pt;
+  line-height: 1.7;
+  color: #1e293b;
+  background: #ffffff;
+}
+
+/* ─── COVER ─────────────────────────────────────────── */
+.cover {
+  background: linear-gradient(150deg, #0d1f3c 0%, #1a3a6b 60%, #0f2a50 100%);
+  color: #fff;
+  padding: 48px 44px 40px;
+  margin-bottom: 36px;
+  position: relative;
+  overflow: hidden;
+  page-break-after: avoid;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -80px;
+  width: 320px; height: 320px;
+  border: 3px solid rgba(201,147,14,0.25);
+  border-radius: 50%;
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -60px;
+  width: 200px; height: 200px;
+  border: 2px solid rgba(201,147,14,0.15);
+  border-radius: 50%;
+}
+.cover-label {
+  font-size: 9pt;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #c9930e;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.cover-title {
+  font-size: 36pt;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.cover-tagline {
+  font-size: 13pt;
+  color: #c9d4e8;
+  margin-bottom: 28px;
+  font-style: italic;
+}
+.cover-divider {
+  width: 60px;
+  height: 3px;
+  background: #c9930e;
+  margin-bottom: 24px;
+}
+.cover-meta {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.meta-item {
+  font-size: 8.5pt;
+  color: #a8bcd6;
+  margin-right: 24px;
+  margin-bottom: 6px;
+}
+.meta-item strong {
+  color: #e2eaf4;
+  font-weight: 600;
+}
+
+/* ─── HERO IMAGE ─────────────────────────────────────── */
+.hero-image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  display: block;
+}
+
+/* ─── SECTION ────────────────────────────────────────── */
+.section {
+  margin-bottom: 32px;
+  page-break-inside: avoid;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  page-break-after: avoid;
+}
+.section-num {
+  font-size: 8pt;
+  font-weight: 800;
+  color: #c9930e;
+  letter-spacing: 1px;
+  min-width: 28px;
+}
+.section-title {
+  font-size: 15pt;
+  font-weight: 700;
+  color: #0d1f3c;
+  border-bottom: 2.5px solid #c9930e;
+  padding-bottom: 4px;
+  flex: 1;
+}
+
+/* ─── SUB-SECTION ────────────────────────────────────── */
+.subsection {
+  margin-bottom: 20px;
+  page-break-inside: avoid;
+}
+.subsection-title {
+  font-size: 10.5pt;
+  font-weight: 700;
+  color: #1a3a6b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.subsection-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  background: #c9930e;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ─── BODY TEXT ──────────────────────────────────────── */
+p { margin-bottom: 10px; }
+
+/* ─── BLOCKQUOTE ─────────────────────────────────────── */
+blockquote {
+  margin: 16px 0;
+  padding: 14px 18px;
+  background: #f0f5ff;
+  border-left: 4px solid #1a3a6b;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  color: #2d4a7a;
+  font-size: 10pt;
+}
+
+/* ─── CODE BLOCK ─────────────────────────────────────── */
+pre {
+  background: #0d1f3c;
+  color: #a8d8ff;
+  padding: 14px 18px;
+  border-radius: 6px;
+  font-size: 9pt;
+  line-height: 1.5;
+  margin: 12px 0;
+  overflow-x: auto;
+  font-family: 'Consolas', 'D2Coding', monospace;
+}
+code { font-family: 'Consolas', 'D2Coding', monospace; font-size: 9pt; }
+
+/* ─── TABLE ──────────────────────────────────────────── */
+.table-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid #d1dae8;
+  margin: 14px 0;
+  page-break-inside: avoid;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5pt;
+}
+thead {
+  background: #0d1f3c;
+  color: #fff;
+}
+thead th {
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  font-size: 9pt;
+}
+tbody tr:nth-child(even) { background: #f6f9ff; }
+tbody tr:hover { background: #edf2ff; }
+tbody td {
+  padding: 8px 12px;
+  border-top: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+/* ─── IMAGES ─────────────────────────────────────────── */
+.img-block {
+  margin: 18px 0;
+  page-break-inside: avoid;
+}
+.img-block img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+.img-caption {
+  font-size: 8.5pt;
+  color: #64748b;
+  text-align: center;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* ─── LOOP DIAGRAM ───────────────────────────────────── */
+.loop-box {
+  background: linear-gradient(135deg, #f0f5ff, #e8f0ff);
+  border: 1px solid #b8c8e8;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 14px 0;
+  font-size: 9pt;
+  color: #1a3a6b;
+  font-family: 'Consolas', 'D2Coding', monospace;
+  text-align: center;
+  letter-spacing: 0.5px;
+  page-break-inside: avoid;
+}
+
+/* ─── FEATURE LIST ───────────────────────────────────── */
+.feature-list {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+}
+.feature-list li {
+  padding: 7px 0 7px 18px;
+  border-bottom: 1px dashed #e2e8f0;
+  position: relative;
+  font-size: 9.5pt;
+}
+.feature-list li::before {
+  content: '◆';
+  position: absolute;
+  left: 0;
+  color: #c9930e;
+  font-size: 7pt;
+  top: 10px;
+}
+.feature-list li:last-child { border-bottom: none; }
+.feature-list li strong { color: #0d1f3c; }
+
+/* ─── STATUS TABLE ───────────────────────────────────── */
+.status-done { color: #16a34a; font-weight: 600; }
+
+/* ─── FOOTER ─────────────────────────────────────────── */
+.doc-footer {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  page-break-inside: avoid;
+}
+.footer-tagline {
+  font-size: 9pt;
+  color: #64748b;
+  font-style: italic;
+}
+.footer-mark {
+  font-size: 8pt;
+  color: #94a3b8;
+}
+
+/* ─── PRINT OVERRIDES ────────────────────────────────── */
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-break { page-break-before: always; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ COVER ══════════════ -->
+<div class="cover">
+  <div class="cover-label">NAN 2026 — 게임 소개서</div>
+  <div class="cover-title">Pioneer</div>
+  <div class="cover-tagline">지금 팔까, 더 멀리 갈까?</div>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="meta-item"><strong>장르</strong> 대항해 무역 / 함대 경영 / 캐주얼 전략</div>
+    <div class="meta-item"><strong>플랫폼</strong> React + Vite · Electron portable</div>
+    <div class="meta-item"><strong>버전</strong> v1.8.1</div>
+    <div class="meta-item"><strong>작성일</strong> 2026-08-08</div>
+    <div class="meta-item"><strong>실행파일</strong> Pioneer_v1.8.1_portable.exe</div>
+  </div>
+</div>
+
+<!-- ══════════════ HERO IMAGE ══════════════ -->
+<img class="hero-image" src="nan2026_screenshots/03_world_map_and_hud.png" alt="세계 항해도">
+
+<!-- ══════════════ 1. 왜 재미있는가 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">왜 재미있는가</span>
+  </div>
+
+  <p>Pioneer의 시장에는 외워서 반복할 하나의 정답이 없습니다. 3분마다 가격이 조금씩 움직이고, 플레이어가 상품을 사거나 팔면 해당 항구의 가격이 즉시 반응합니다. 여기에 1시간마다 외부 대형 사건이 일부 항구의 특정 상품을 크게 흔듭니다.</p>
+
+  <p>그래서 플레이어는 매번 같은 질문을 다시 하게 됩니다.</p>
+
+  <blockquote>지금 이 가격에 살까? 여기서 팔까? 더 큰 차익을 위해 먼 항구까지 갈까?</blockquote>
+
+  <p>좋은 가격을 찾았다고 끝이 아닙니다. 빠른 배는 적재량이 작고, 큰 화물선은 느립니다. 긴 항로에서는 연료와 선체를 버틸 선원이 필요합니다. 출항 전에는 예상 수익, 이동 시간, 위험 등급, 위협과 차단 사유를 함께 비교해야 합니다.</p>
+
+  <div class="loop-box">
+    시세 판단 → 거래 결과 확인 → 선원 배치 → 선박 선택 → 항로 결정 → 출항과 성장 → 다시 시세 판단
+  </div>
+</div>
+
+<!-- ══════════════ 2. 재미의 심리학적 설계 ══════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">재미의 심리학적 설계</span>
+  </div>
+  <p>Pioneer의 핵심 루프는 게임 이론과 행동심리학의 검증된 원리를 무역 시뮬레이션 문법으로 번역한 결과입니다.</p>
+
+  <div class="subsection">
+    <div class="subsection-title">변동 비율 강화 — 다음 기회를 예측할 수 없다</div>
+    <p>가격은 3분마다 ±2.5% 범위에서 소폭 변동하고, 1시간 주기의 대형 사건은 특정 항구를 16~38% 흔듭니다. 이 두 주기가 서로 독립적으로 작동하기 때문에 "다음 기회"가 언제 올지 플레이어는 정확히 알 수 없습니다. 행동심리학의 <strong>변동 비율 강화(Variable Ratio Reinforcement)</strong>는 가장 강한 지속 행동을 유도하는 보상 구조입니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">손실 회피 — 떠난 배를 돌릴 수 없다는 긴장감</div>
+    <p>Kahneman과 Tversky의 연구에 따르면 인간은 동일한 크기의 이익보다 손실을 약 2배 더 크게 느낍니다(<strong>손실 회피, Loss Aversion</strong>). Pioneer는 이 원리를 항해 위험 구조에 직접 연결합니다. 화물을 가득 싣고 출항한 뒤 시세가 급락하면, 플레이어는 이익 기대치보다 손실 가능성에 훨씬 강하게 반응합니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">행위성과 인과감 — 내가 시장을 움직인다</div>
+    <p>플레이어가 대량 거래를 하면 해당 항구의 가격이 최대 ±18% 즉시 반응합니다. "내 결정이 세계에 흔적을 남긴다"는 <strong>행위성(Agency)</strong> 감각은 나쁜 결과에서도 재도전 동기를 만들어냅니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">정보 우위 추구 — 감이 아니라 분석으로 이기고 싶다</div>
+    <p>가격 히스토리(최근 20개)와 시장 정보 패널은 <strong>역량감(Sense of Competence)</strong>을 자극합니다. 데이터를 분석해서 좋은 거래를 성사시킨 플레이어는 "내가 잘 읽었다"고 느끼며, 이 역량감은 어려운 시세 상황에서도 포기하지 않게 만드는 동력이 됩니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">시간 압박과 기회 비용 — 타이머가 만드는 긴장</div>
+    <p>3분 소폭 변동과 1시간 대형 사건의 카운트다운은 화면 상단에 항상 노출됩니다. "90초 뒤에 가격이 바뀐다"는 정보는 <strong>FOMO(Fear of Missing Out)</strong>를 자극하며 플레이어를 결정 지연에서 행동으로 밀어냅니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">점진적 성장과 가능성 확장 — 어제는 못 갔던 항구를 오늘 간다</div>
+    <p>Pioneer의 성장 구조는 단순 수치 상승이 아닙니다. 성장할수록 플레이어가 고려할 전략의 범위가 넓어지고, 같은 시세표에서도 전에는 보이지 않던 기회가 보이기 시작합니다. <strong>판단의 범위를 넓혀주는 것</strong>이 핵심입니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">미완의 루프 — 항구에 도착할 때까지 멈출 수 없다</div>
+    <p><strong>자이가르닉 효과(Zeigarnik Effect)</strong>에 따르면 인간은 미완료 작업을 더 강하게 기억합니다. 출항 중인 선박, 카운트다운 중인 타이머, 진행 중인 퀘스트가 플레이어를 화면에 붙잡습니다.</p>
+  </div>
+</div>
+
+<!-- ══════════════ 3. 살아 있는 항구 상품 시장 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">살아 있는 항구 상품 시장</span>
+  </div>
+  <p>Pioneer의 시장은 모의 주식처럼 가격 흐름을 읽고 매수·매도 타이밍을 판단하는 경험을 항구 상품 무역으로 옮겼습니다.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>시장 변화</th>
+          <th>실제 규칙</th>
+          <th>플레이 감각</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>소폭 변동</td><td>3분마다 최대 ±2.5%</td><td>기다릴지 지금 거래할지 고민</td></tr>
+        <tr><td>플레이어 거래 영향</td><td>거래 즉시, 영향 상한 ±18%</td><td>내 행동이 가격을 움직이는 손맛</td></tr>
+        <tr><td>대형 시장 사건</td><td>1시간마다 2~4개 항구의 한 상품 16~38% 변동</td><td>익숙한 항로가 갑자기 기회나 함정으로 변화</td></tr>
+        <tr><td>가격 히스토리</td><td>최근 20개 가격</td><td>감이 아니라 흐름을 보고 판단</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="img-block">
+    <img src="nan2026_screenshots/02_lisbon_market_exchange.png" alt="리스본 거래소">
+    <div class="img-caption">리스본 거래소 — 보유 금화, 화물칸, 매입·판매 단가, 수수료와 거래 후 결과를 한 화면에서 비교</div>
+  </div>
+
+  <div class="img-block">
+    <img src="nan2026_screenshots/11_immediate_trade_feedback.png" alt="즉시 거래 피드백">
+    <div class="img-caption">거래 직후 — 보유 수량과 금화가 즉시 바뀌고, 매도한 상품의 현지 가격은 내려갑니다</div>
+  </div>
+
+  <div class="img-block">
+    <img src="nan2026_screenshots/12_live_market_timers.png" alt="시장 변화 타이머">
+    <div class="img-caption">3분 소폭 변동과 1시간 대형 사건의 남은 시간 — 시장의 리듬 자체가 다음 행동의 정보</div>
+  </div>
+</div>
+
+<!-- ══════════════ 4. 선원 ══════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">선원 — 같은 배의 항해를 바꾸는 구성</span>
+  </div>
+  <p>선원은 단순 수집 카드가 아니라 실제 운항 수치에 연결됩니다.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>능력</th><th>실제 효과</th><th>배치 판단</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>항해</td><td>이동 속도 증가</td><td>빠른 회전이 필요한 항로</td></tr>
+        <tr><td>수리</td><td>선체 자동 수리</td><td>손상이 누적되는 장거리 항해</td></tr>
+        <tr><td>연료 효율</td><td>연료 소모 감소</td><td>먼 항구까지 안정적으로 이동</td></tr>
+        <tr><td>선체 효율</td><td>선체 손상 완화와 수리 보조</td><td>악천후와 긴 항로 대응</td></tr>
+        <tr><td>물류</td><td>화물칸 증가</td><td>느리더라도 큰 차익을 노리는 운송</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="img-block">
+    <img src="nan2026_screenshots/05_crew_roster_panel.png" alt="함대와 승무원 현황">
+    <div class="img-caption">함대별 승무원 수와 운항 상태 — 항해 목적에 맞춰 선원을 배치합니다</div>
+  </div>
+</div>
+
+<!-- ══════════════ 5. 선박 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">선박 — 속도와 적재량 사이의 선택</span>
+  </div>
+  <p>11종 선박은 속도, 기본 적재량, 최대 승원 수와 가격이 다릅니다. 빠른 소형선은 짧은 항로에서 시세 변화에 민첩하게 대응하고, 큰 화물선은 한 번의 성공에서 더 큰 이익을 만들지만 이동 시간이 길어집니다.</p>
+
+  <div class="img-block">
+    <img src="nan2026_screenshots/08_fleet_ship_detail.png" alt="선박 구매 비교">
+    <div class="img-caption">선박 구매 비교 — 속도·화물·승원 규모의 가치는 노리는 시장 기회에 따라 달라집니다</div>
+  </div>
+</div>
+
+<!-- ══════════════ 6. 항로 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">항로 — 수익만 보지 않는 마지막 결정</span>
+  </div>
+  <p>출항 전 항로 요약은 예상 수익, 이동 시간, 위험 등급, 위협 원인과 출항 차단 사유를 함께 보여줍니다. 이익이 커도 위험이 높거나 선원이 없으면 출항을 다시 생각해야 합니다.</p>
+
+  <div class="img-block">
+    <img src="nan2026_screenshots/09_route_planning.png" alt="항로 선택">
+    <div class="img-caption">목적지 후보의 상품별 시세와 매매가 확인 후 항로 확정</div>
+  </div>
+
+  <p>안전한 근거리 거래를 반복할지, 변동이 끝나기 전에 먼 항구로 갈지, 큰 배에 화물을 가득 싣고 위험을 감수할지가 플레이어의 항해 스타일을 만듭니다.</p>
+</div>
+
+<!-- ══════════════ 7. 핵심 매력 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">핵심 매력</span>
+  </div>
+  <ul class="feature-list">
+    <li><strong>정답이 움직이는 시장:</strong> 3분 변동, 즉시 거래 영향, 1시간 대형 사건이 서로 다른 시간축으로 작동합니다.</li>
+    <li><strong>행동이 곧 피드백:</strong> 사고파는 순간 자금·화물·현지 가격이 함께 바뀝니다.</li>
+    <li><strong>구성이 만드는 차이:</strong> 선원과 선박의 조합이 속도, 유지력과 운송량을 바꿉니다.</li>
+    <li><strong>정보를 보고 감수하는 위험:</strong> 항로의 수익과 위험을 함께 확인한 뒤 출항합니다.</li>
+    <li><strong>짧은 판단이 긴 성장으로 연결:</strong> 한 번의 차익이 다음 배와 다음 항구를 엽니다.</li>
+  </ul>
+</div>
+
+<!-- ══════════════ 8. 구현 현황 ══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">구현 및 검증 현황</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>항목</th><th>상태</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>29개 항구와 상품 거래</td><td class="status-done">✓ 구현 완료</td></tr>
+        <tr><td>11종 선박과 함대 운용</td><td class="status-done">✓ 구현 완료</td></tr>
+        <tr><td>선원 고용·배치·성장</td><td class="status-done">✓ 구현 완료</td></tr>
+        <tr><td>3분 소폭 변동 · 즉시 거래 영향 · 1시간 대형 사건</td><td class="status-done">✓ 구현 완료</td></tr>
+        <tr><td>예상 수익·시간·위험·차단 사유 항로 요약</td><td class="status-done">✓ 구현 완료</td></tr>
+        <tr><td>퀘스트·일일 목표·저장/불러오기</td><td class="status-done">✓ 구현 완료</td></tr>
+        <tr><td>Electron portable 실행파일</td><td class="status-done">✓ Pioneer_v1.8.1_portable.exe 배치 완료</td></tr>
+        <tr><td>자동 테스트</td><td class="status-done">✓ node --test 32개 통과</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:12px; font-size:9pt; color:#64748b;">본 문서의 이미지는 <code>Pioneer_v1.8.1_portable.exe</code>를 1440×920 환경에서 직접 실행해 캡처한 실제 게임 화면입니다.</p>
+</div>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<div class="doc-footer">
+  <div class="footer-tagline">바다는 계속 움직입니다. 그 흐름을 먼저 읽는 사람이 Pioneer가 됩니다.</div>
+  <div class="footer-mark">Pioneer v1.8.1 · NAN 2026</div>
+</div>
+
+</body>
+</html>
