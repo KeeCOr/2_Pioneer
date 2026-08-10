@@ -15,9 +15,12 @@
 body {
   font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
   font-size: 10pt;
-  line-height: 1.7;
-  color: #1e293b;
-  background: #ffffff;
+  line-height: 1.9;
+  color: #e2eaf4;
+  background: #0a1628;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 28px;
 }
 
 /* ─── COVER ─────────────────────────────────────────── */
@@ -25,7 +28,7 @@ body {
   background: linear-gradient(150deg, #0d1f3c 0%, #1a3a6b 60%, #0f2a50 100%);
   color: #fff;
   padding: 44px 44px 36px;
-  margin-bottom: 36px;
+  margin: 0 -28px 36px;
   position: relative;
   overflow: hidden;
   page-break-after: avoid;
@@ -94,9 +97,9 @@ body {
 
 /* ─── SUMMARY BOX ────────────────────────────────────── */
 .summary-box {
-  background: #f0f5ff;
-  border: 1px solid #c3d4ef;
-  border-left: 5px solid #1a3a6b;
+  background: #0f2040;
+  border: 1px solid #1e3a5a;
+  border-left: 5px solid #3a6aab;
   border-radius: 0 8px 8px 0;
   padding: 18px 22px;
   margin-bottom: 32px;
@@ -105,7 +108,7 @@ body {
 .summary-box h3 {
   font-size: 10pt;
   font-weight: 700;
-  color: #1a3a6b;
+  color: #8ab0d4;
   margin-bottom: 10px;
   letter-spacing: 0.5px;
 }
@@ -117,7 +120,7 @@ body {
   padding: 5px 0 5px 20px;
   position: relative;
   font-size: 9.5pt;
-  color: #2d4a7a;
+  color: #a8bcd6;
 }
 .summary-points li::before {
   content: '▶';
@@ -130,14 +133,14 @@ body {
 
 /* ─── SECTION ────────────────────────────────────────── */
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 48px;
   page-break-inside: avoid;
 }
 .section-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 20px;
   page-break-after: avoid;
 }
 .section-num {
@@ -150,7 +153,7 @@ body {
 .section-title {
   font-size: 14pt;
   font-weight: 700;
-  color: #0d1f3c;
+  color: #e2eaf4;
   border-bottom: 2.5px solid #c9930e;
   padding-bottom: 4px;
   flex: 1;
@@ -158,14 +161,14 @@ body {
 
 /* ─── SUB-SECTION ────────────────────────────────────── */
 .subsection {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   page-break-inside: avoid;
 }
 .subsection-title {
   font-size: 10pt;
   font-weight: 700;
-  color: #1a3a6b;
-  margin-bottom: 8px;
+  color: #8ab0d4;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -180,7 +183,7 @@ body {
   flex-shrink: 0;
 }
 
-p { margin-bottom: 10px; }
+p { margin-bottom: 14px; }
 
 /* ─── CODE ───────────────────────────────────────────── */
 pre {
@@ -202,10 +205,10 @@ pre .number  { color: #b5d3f7; }
 code {
   font-family: 'Consolas', 'D2Coding', monospace;
   font-size: 8.5pt;
-  background: #f1f5f9;
+  background: #142850;
   padding: 1px 4px;
   border-radius: 3px;
-  color: #c05200;
+  color: #ff9a5c;
 }
 pre code { background: none; color: inherit; padding: 0; }
 
@@ -213,7 +216,7 @@ pre code { background: none; color: inherit; padding: 0; }
 .table-wrap {
   width: 100%;
   border-radius: 6px;
-  border: 1px solid #d1dae8;
+  border: 1px solid #1e3a5a;
   overflow: hidden;
   margin: 14px 0;
   page-break-inside: avoid;
@@ -233,14 +236,14 @@ thead th {
   font-weight: 600;
   letter-spacing: 0.3px;
 }
-tbody tr:nth-child(even) { background: #f6f9ff; }
+tbody tr:nth-child(even) { background: #0f2040; }
 tbody td {
   padding: 7px 12px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #1e3a5a;
   vertical-align: top;
 }
-.tag-arch { background: #e8f0ff; color: #1a3a6b; padding: 2px 6px; border-radius: 3px; font-size: 8pt; font-weight: 600; }
-.tag-done { background: #e8f8ee; color: #166534; padding: 2px 6px; border-radius: 3px; font-size: 8pt; font-weight: 600; }
+.tag-arch { background: #142850; color: #8ab0d4; padding: 2px 6px; border-radius: 3px; font-size: 8pt; font-weight: 600; }
+.tag-done { background: #0a2418; color: #4ade80; padding: 2px 6px; border-radius: 3px; font-size: 8pt; font-weight: 600; }
 
 /* ─── SYSTEM DIAGRAM ─────────────────────────────────── */
 .sys-diagram {
@@ -270,17 +273,16 @@ tbody td {
 }
 .img-block img {
   width: 100%;
-  max-height: 220px;
-  object-fit: contain;
-  background: #f8fafc;
+  height: auto;
+  background: #0d1f3c;
   border-radius: 5px;
   display: block;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #1e3a5a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .img-caption {
   font-size: 8pt;
-  color: #64748b;
+  color: #6b82a0;
   text-align: center;
   margin-top: 5px;
   font-style: italic;
@@ -300,46 +302,46 @@ tbody td {
   border: 1px solid;
   gap: 12px;
 }
-.arch-market { background: #f0f5ff; border-color: #6b8fd4; }
-.arch-fleet  { background: #fff8e7; border-color: #d4a017; }
-.arch-ui     { background: #f0fdf4; border-color: #86bfa0; }
+.arch-market { background: #0a1628; border-color: #2a4a8a; }
+.arch-fleet  { background: #1e1400; border-color: #8b6a10; }
+.arch-ui     { background: #061210; border-color: #1a5a3a; }
 .arch-layer-left { flex: 1; }
 .arch-layer-name {
   font-size: 10.5pt;
   font-weight: 700;
   font-family: 'Consolas', 'D2Coding', monospace;
-  color: #0d1f3c;
+  color: #e2eaf4;
   margin-bottom: 3px;
 }
-.arch-layer-items { font-size: 8.5pt; color: #475569; }
+.arch-layer-items { font-size: 8.5pt; color: #a8bcd6; }
 .arch-trigger {
   font-size: 7.5pt;
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 12px;
   white-space: nowrap;
-  background: #0d1f3c;
+  background: #1e3a5a;
   color: #a8bcd6;
   flex-shrink: 0;
 }
 .arch-sep {
   text-align: center;
   font-size: 8pt;
-  color: #94a3b8;
+  color: #4a6280;
   padding: 4px 0;
   font-style: italic;
 }
 
 /* ─── HIGHLIGHT BOX ──────────────────────────────────── */
 .highlight-box {
-  background: linear-gradient(135deg, #fff8e7, #fef3c7);
-  border: 1px solid #d4a017;
+  background: linear-gradient(135deg, #1e1400, #241800);
+  border: 1px solid #8b6a10;
   border-left: 4px solid #c9930e;
   border-radius: 0 6px 6px 0;
   padding: 12px 16px;
   margin: 12px 0;
   font-size: 9.5pt;
-  color: #78350f;
+  color: #d4aa40;
   page-break-inside: avoid;
 }
 
@@ -347,20 +349,24 @@ tbody td {
 .doc-footer {
   margin-top: 40px;
   padding-top: 16px;
-  border-top: 2px solid #e2e8f0;
+  border-top: 2px solid #1e3a5a;
   display: flex;
   justify-content: space-between;
   align-items: center;
   page-break-inside: avoid;
 }
-.footer-tagline { font-size: 9pt; color: #64748b; font-style: italic; }
-.footer-mark { font-size: 8pt; color: #94a3b8; }
+.footer-tagline { font-size: 9pt; color: #7a94b8; font-style: italic; }
+.footer-mark { font-size: 8pt; color: #4a6280; }
 
 /* ─── PRINT ──────────────────────────────────────────── */
 @media print {
-  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #0a1628; color: #e2eaf4; max-width: none; padding: 0; margin: 0; }
+  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0 0 36px; }
   .page-break { page-break-before: always; }
+  tbody tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .summary-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .highlight-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .arch-layer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
 </head>
@@ -384,10 +390,11 @@ tbody td {
   <h3>요약</h3>
   <ul class="summary-points">
     <li><strong>게임 내부 AI형 시스템:</strong> 3분 소폭 가격 변동, 1시간 대형 시장 사건, 플레이어 거래 영향, 가격 히스토리를 결합해 반복 플레이의 예측 불확실성을 만듭니다.</li>
-    <li><strong>개발 과정 AI 보조:</strong> 데이터 구조 설계, 기초 코드 생성, 리소스 연결, 로직 분리, 테스트 케이스 도출, 문서 정리에 이르기까지 개발 전 과정에 걸쳐 생성형 AI를 협업 파트너로 활용했습니다.</li>
+    <li><strong>개발 과정 AI 보조:</strong> 데이터 구조 설계, 기초 코드 생성, 밸런스 수치 반복 검증, 로직 분리, 테스트 케이스 도출, 문서 정리에 이르기까지 개발 전 과정에 걸쳐 생성형 AI를 협업 파트너로 활용했습니다.</li>
+    <li><strong>AI 생성 에셋:</strong> 선원·선박·항구 컨셉 이미지를 AI 이미지 생성 도구로 제작해 문서 및 인트로 비주얼에 직접 연결했습니다. 사운드 에셋도 AI 생성 도구를 통해 제작할 계획입니다.</li>
   </ul>
   <div style="margin-top:10px; font-size:9pt; color:#2d4a7a;">
-    AI는 단순 코드 완성 도구가 아니라 <strong>스펙을 코드로 전환하는 첫 초안 생성기</strong>, <strong>실수를 찾아내는 두 번째 눈</strong>으로 활용했습니다.
+    AI는 단순 코드 완성 도구가 아니라 <strong>스펙을 코드로 전환하는 첫 초안 생성기</strong>, <strong>실수를 찾아내는 두 번째 눈</strong>, <strong>에셋을 빠르게 시각화하는 제작 파트너</strong>로 활용했습니다.
   </div>
 </div>
 
@@ -476,6 +483,31 @@ const cargoMultiplier = 1 + crew.logistics  * 0.06;   <span class="comment">// �
 const repairRate      = crew.repair * 2.5;             <span class="comment">// 초당 선체 수리량</span>
 const fuelReduction   = 1 - crew.fuelEff   * 0.03;    <span class="comment">// 연료 소모 계수</span></pre>
     <p style="font-size:9pt; color:#475569;">단순 덧셈이 아닌 곱셈 계수 구조를 AI가 제안한 덕분에, 선원이 여럿일 때 능력치가 과도하게 누적되지 않으면서도 체감 성장이 가능한 균형을 잡았습니다.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">AI 보조 밸런스 수치 반복 조정</div>
+    <p>29개 항구·8종 상품·4종 선박에 걸친 수백 개의 수치를 수동으로 조정하는 것은 현실적으로 어렵습니다. AI에게 특정 플레이 시나리오를 입력하면 수치를 시뮬레이션하고 과도한 수익 구간을 잡아냅니다.</p>
+
+    <div class="sys-diagram">
+      <div class="layer-title">▶ AI 밸런스 반복 루프</div>
+      <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="background:#1a3a6b; border:1px solid #2a5a9b; border-radius:6px; padding:7px 14px; font-size:9pt; color:#e2eaf4; min-width:160px; text-align:center;">가상 시나리오 입력</div>
+          <div style="color:#c9930e; font-size:12pt;">→</div>
+          <div style="background:#1a3a6b; border:1px solid #2a5a9b; border-radius:6px; padding:7px 14px; font-size:9pt; color:#e2eaf4; min-width:160px; text-align:center;">AI 수익 시뮬레이션</div>
+          <div style="color:#c9930e; font-size:12pt;">→</div>
+          <div style="background:#1a1400; border:1px solid #8b6a10; border-radius:6px; padding:7px 14px; font-size:9pt; color:#e2eaf4; min-width:160px; text-align:center;">과적 구간 식별</div>
+          <div style="color:#c9930e; font-size:12pt;">→</div>
+          <div style="background:#061210; border:1px solid #1a5a3a; border-radius:6px; padding:7px 14px; font-size:9pt; color:#e2eaf4; min-width:160px; text-align:center;">수치 조정 · 재검증</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <strong>적용 예시:</strong> "상인형 플레이어가 스파이스 루트를 독점할 경우 10항차 내 자금 축적량"을 AI로 시뮬레이션한 결과, 특정 항구 조합에서 수익이 목표치의 2.8배로 과적됨을 발견했습니다. 소폭 변동 상한(±2.5%)과 수수료율을 조정한 뒤 재검증해 ±22% 이내로 수렴시켰습니다.
+    </div>
+    <p style="font-size:9pt; color:#475569;">이 루프를 반복함으로써 전체 플레이 경로의 수익 분산을 유지하면서도 경쟁적이고 매력적인 항구 선택 전략이 성립하도록 밸런스를 잡고 있습니다.</p>
   </div>
 </div>
 
@@ -597,6 +629,56 @@ const [uiState,     setUiState]     = useState(<span class="comment">/* 모달·
       <div class="img-caption">즉시 거래 피드백</div>
     </div>
   </div>
+
+  <div class="subsection" style="margin-top:28px;">
+    <div class="subsection-title">AI 생성 컨셉 아트 리소스 연결</div>
+    <p>게임 내 정식 그래픽 에셋 제작 이전, AI 이미지 생성 도구로 컨셉 이미지를 만들어 문서·인트로 화면의 비주얼 방향을 검토하고 리소스 경로에 직접 연결했습니다.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>생성 이미지</th><th>연결 위치</th><th>프롬프트 핵심 키워드</th><th>용도</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>선원 캐릭터 컨셉</td>
+            <td><code>docs/pioneer_crew_character.png</code></td>
+            <td>age-of-sail merchant captain, dark navy palette</td>
+            <td>NPC 비주얼 톤 검토</td>
+          </tr>
+          <tr>
+            <td>선박 씬</td>
+            <td><code>docs/pioneer_ship_scene.png</code></td>
+            <td>tall ship in stormy sea, cinematic lighting</td>
+            <td>인트로·로딩 비주얼</td>
+          </tr>
+          <tr>
+            <td>항구 씬</td>
+            <td><code>docs/pioneer_harbor_scene.png</code></td>
+            <td>golden hour harbor docks, trading post atmosphere</td>
+            <td>배경 일러스트 방향성</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="img-grid" style="grid-template-columns:1fr 1fr 1fr; margin-top:14px;">
+      <div class="img-block">
+        <img src="pioneer_crew_character.png" alt="선원 캐릭터 컨셉">
+        <div class="img-caption">선원 캐릭터 컨셉</div>
+      </div>
+      <div class="img-block">
+        <img src="pioneer_ship_scene.png" alt="선박 씬">
+        <div class="img-caption">선박 씬</div>
+      </div>
+      <div class="img-block">
+        <img src="pioneer_harbor_scene.png" alt="항구 씬">
+        <div class="img-caption">항구 씬</div>
+      </div>
+    </div>
+
+    <p style="font-size:9pt; color:#475569; margin-top:10px;">AI 컨셉 이미지는 최종 게임 에셋이 아닌 <strong>비주얼 방향성 검토용 프록시</strong>로 활용되었으며, 실제 제품 출시 시 별도 제작 에셋으로 교체할 예정입니다.</p>
+  </div>
 </div>
 
 <!-- ══════════════ 5. 테스트 케이스 ══════════════ -->
@@ -644,7 +726,10 @@ const [uiState,     setUiState]     = useState(<span class="comment">/* 모달·
         <tr><td>인터페이스</td><td>routeSummary.js 반환 형식 설계</td><td>routeSummary.js 타입 구조</td><td>UI 연동 후 화면 검증</td></tr>
         <tr><td>기초 코드</td><td>각 모듈 함수 시그니처와 초기 구현 뼈대 생성</td><td>편집 전 첫 파일 초안</td><td>로직 검토 후 수정 적용</td></tr>
         <tr><td>테스트</td><td>엣지 케이스 목록 도출, 타이머 드리프트 버그 발견</td><td>marketPrices.test.js 케이스 절반</td><td>node --test 32개 통과</td></tr>
-        <tr><td>리소스</td><td>스크린샷 선별 기준, 게임플레이 이미지 생성 방향</td><td>nan2026_screenshots/ 8개</td><td>실제 exe 캡처로 대체 검증</td></tr>
+        <tr><td>밸런스</td><td>항구별 수익 시나리오 시뮬레이션, 과적 구간 식별</td><td>29개 항구 수익 분산 ±22% 이내 수렴</td><td>개발자 수치 조정 후 재검증</td></tr>
+        <tr><td>이미지 에셋</td><td>선원·선박·항구 컨셉 아트 생성, 리소스 경로 직접 연결</td><td>pioneer_crew/ship/harbor_scene.png 3종</td><td>비주얼 톤 검토 후 프록시 적용</td></tr>
+        <tr><td>스크린샷 선별</td><td>심사 기준 기반 화면 우선순위 제안</td><td>nan2026_screenshots/ 8개</td><td>실제 exe 캡처로 대체 검증</td></tr>
+        <tr><td>사운드 <span class="tag-arch">계획</span></td><td>배경음·효과음 AI 생성 도구 활용 예정</td><td>항구·항해·거래 효과음 세트</td><td>실제 게임 내 청취 검증 예정</td></tr>
         <tr><td>문서</td><td>소개서·기술문서 구조 설계, 섹션 초안 작성</td><td>본 문서 포함 NAN 제출 자료</td><td>제출 전 버전/내용 전체 대조</td></tr>
       </tbody>
     </table>
@@ -664,6 +749,9 @@ const [uiState,     setUiState]     = useState(<span class="comment">/* 모달·
       </thead>
       <tbody>
         <tr><td>시장 모델 고도화</td><td>3레이어 독립 작동 구현</td><td>항구 간 교역량 연동 효과 추가</td></tr>
+        <tr><td>밸런스 자동화</td><td>AI 시뮬레이션 반복 루프 운용 중</td><td>전 항구 수익 분산 목표 ±15% 이내로 추가 수렴</td></tr>
+        <tr><td>이미지 에셋 고도화</td><td>컨셉 아트 3종 프록시 적용</td><td>정식 에셋 교체 전 AI 생성 이미지로 전체 화면 커버</td></tr>
+        <tr><td>AI 사운드 생성</td><td>–</td><td>항구 배경음·거래 효과음·항해 사운드를 AI 도구로 생성해 게임에 직접 연결 예정</td></tr>
         <tr><td>AI 추천 레이어</td><td>가격 히스토리 표시</td><td>"추천 이유" 문장을 붙이는 AI 해석 패널</td></tr>
         <tr><td>UX 정돈</td><td>핵심 화면 위주 갤러리 재구성</td><td>함대 카드 아이콘/한글 라벨 정리</td></tr>
         <tr><td>Unity 이식</td><td>React 로직과 테스트 근거 문서화</td><td>marketPrices, routeSummary, crew stat 계산 C# 포팅</td></tr>

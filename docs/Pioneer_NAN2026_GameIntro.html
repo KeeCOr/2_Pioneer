@@ -15,9 +15,12 @@
 body {
   font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
   font-size: 10pt;
-  line-height: 1.7;
-  color: #1e293b;
-  background: #ffffff;
+  line-height: 1.9;
+  color: #e2eaf4;
+  background: #0a1628;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 28px;
 }
 
 /* ─── COVER ─────────────────────────────────────────── */
@@ -25,7 +28,7 @@ body {
   background: linear-gradient(150deg, #0d1f3c 0%, #1a3a6b 60%, #0f2a50 100%);
   color: #fff;
   padding: 48px 44px 40px;
-  margin-bottom: 36px;
+  margin: 0 -28px 36px;
   position: relative;
   overflow: hidden;
   page-break-after: avoid;
@@ -91,25 +94,26 @@ body {
 
 /* ─── HERO IMAGE ─────────────────────────────────────── */
 .hero-image {
-  width: 100%;
-  max-height: 220px;
-  object-fit: cover;
-  border-radius: 6px;
+  width: calc(100% + 56px);
+  margin-left: -28px;
+  height: auto;
   margin-bottom: 32px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.5);
   display: block;
+  border-top: 1px solid #1e3a5a;
+  border-bottom: 1px solid #1e3a5a;
 }
 
 /* ─── SECTION ────────────────────────────────────────── */
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 48px;
   page-break-inside: avoid;
 }
 .section-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin-bottom: 20px;
   page-break-after: avoid;
 }
 .section-num {
@@ -122,7 +126,7 @@ body {
 .section-title {
   font-size: 15pt;
   font-weight: 700;
-  color: #0d1f3c;
+  color: #e2eaf4;
   border-bottom: 2.5px solid #c9930e;
   padding-bottom: 4px;
   flex: 1;
@@ -130,14 +134,14 @@ body {
 
 /* ─── SUB-SECTION ────────────────────────────────────── */
 .subsection {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   page-break-inside: avoid;
 }
 .subsection-title {
   font-size: 10.5pt;
   font-weight: 700;
-  color: #1a3a6b;
-  margin-bottom: 8px;
+  color: #8ab0d4;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -153,17 +157,17 @@ body {
 }
 
 /* ─── BODY TEXT ──────────────────────────────────────── */
-p { margin-bottom: 10px; }
+p { margin-bottom: 14px; }
 
 /* ─── BLOCKQUOTE ─────────────────────────────────────── */
 blockquote {
   margin: 16px 0;
   padding: 14px 18px;
-  background: #f0f5ff;
-  border-left: 4px solid #1a3a6b;
+  background: #0f2040;
+  border-left: 4px solid #3a6aab;
   border-radius: 0 6px 6px 0;
   font-style: italic;
-  color: #2d4a7a;
+  color: #8ab0d4;
   font-size: 10pt;
 }
 
@@ -186,7 +190,7 @@ code { font-family: 'Consolas', 'D2Coding', monospace; font-size: 9pt; }
   width: 100%;
   overflow: hidden;
   border-radius: 6px;
-  border: 1px solid #d1dae8;
+  border: 1px solid #1e3a5a;
   margin: 14px 0;
   page-break-inside: avoid;
 }
@@ -206,11 +210,11 @@ thead th {
   letter-spacing: 0.3px;
   font-size: 9pt;
 }
-tbody tr:nth-child(even) { background: #f6f9ff; }
-tbody tr:hover { background: #edf2ff; }
+tbody tr:nth-child(even) { background: #0f2040; }
+tbody tr:hover { background: #142850; }
 tbody td {
   padding: 8px 12px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #1e3a5a;
   vertical-align: top;
 }
 
@@ -219,19 +223,40 @@ tbody td {
   margin: 18px 0;
   page-break-inside: avoid;
 }
+
+/* ─── AI 컨셉 아트 블록 (full-bleed) ──────────────────── */
+.art-block {
+  margin: 20px -28px;
+  page-break-inside: avoid;
+}
+.art-block img {
+  width: calc(100% + 56px);
+  height: auto;
+  display: block;
+  border-top: 1px solid #1e3a5a;
+  border-bottom: 1px solid #1e3a5a;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+.art-block .img-caption {
+  padding: 0 28px;
+  margin-top: 8px;
+  font-size: 8.5pt;
+  color: #6b82a0;
+  text-align: center;
+  font-style: italic;
+}
 .img-block img {
   width: 100%;
-  max-height: 300px;
-  object-fit: contain;
-  background: #f8fafc;
+  height: auto;
+  background: #0d1f3c;
   border-radius: 6px;
   display: block;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  border: 1px solid #1e3a5a;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
 }
 .img-caption {
   font-size: 8.5pt;
-  color: #64748b;
+  color: #6b82a0;
   text-align: center;
   margin-top: 6px;
   font-style: italic;
@@ -244,8 +269,8 @@ tbody td {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: linear-gradient(135deg, #f0f5ff, #e8f0ff);
-  border: 1px solid #b8c8e8;
+  background: linear-gradient(135deg, #0d1f3c, #142850);
+  border: 1px solid #1e3a5a;
   border-radius: 8px;
   padding: 16px 20px;
   margin: 14px 0;
@@ -290,9 +315,9 @@ tbody td {
   border-radius: 6px;
   border: 1px solid;
 }
-.mld-macro { background: #fff8e7; border-color: #d4a017; }
-.mld-player { background: #f0f5ff; border-color: #6b8fd4; }
-.mld-micro  { background: #f0fdf4; border-color: #86bfa0; }
+.mld-macro { background: #1e1400; border-color: #8b6a10; }
+.mld-player { background: #0a1628; border-color: #2a4a8a; }
+.mld-micro  { background: #061210; border-color: #1a5a3a; }
 .mld-badge {
   font-size: 7pt;
   font-weight: 800;
@@ -309,19 +334,19 @@ tbody td {
 .mld-name {
   font-size: 10pt;
   font-weight: 700;
-  color: #0d1f3c;
+  color: #e2eaf4;
   min-width: 116px;
   flex-shrink: 0;
 }
 .mld-stats {
   font-size: 8.5pt;
-  color: #475569;
+  color: #a8bcd6;
   min-width: 160px;
   flex-shrink: 0;
 }
 .mld-desc {
   font-size: 8.5pt;
-  color: #64748b;
+  color: #7a94b8;
   font-style: italic;
   flex: 1;
 }
@@ -334,7 +359,7 @@ tbody td {
 }
 .feature-list li {
   padding: 7px 0 7px 18px;
-  border-bottom: 1px dashed #e2e8f0;
+  border-bottom: 1px dashed #1e3a5a;
   position: relative;
   font-size: 9.5pt;
 }
@@ -347,16 +372,16 @@ tbody td {
   top: 10px;
 }
 .feature-list li:last-child { border-bottom: none; }
-.feature-list li strong { color: #0d1f3c; }
+.feature-list li strong { color: #e2eaf4; }
 
 /* ─── STATUS TABLE ───────────────────────────────────── */
-.status-done { color: #16a34a; font-weight: 600; }
+.status-done { color: #4ade80; font-weight: 600; }
 
 /* ─── FOOTER ─────────────────────────────────────────── */
 .doc-footer {
   margin-top: 40px;
   padding-top: 16px;
-  border-top: 2px solid #e2e8f0;
+  border-top: 2px solid #1e3a5a;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -364,19 +389,27 @@ tbody td {
 }
 .footer-tagline {
   font-size: 9pt;
-  color: #64748b;
+  color: #7a94b8;
   font-style: italic;
 }
 .footer-mark {
   font-size: 8pt;
-  color: #94a3b8;
+  color: #4a6280;
 }
 
 /* ─── PRINT OVERRIDES ────────────────────────────────── */
 @media print {
-  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #0a1628; color: #e2eaf4; max-width: none; padding: 0; margin: 0; }
+  .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin: 0 0 36px; }
+  .hero-image { width: 100%; margin-left: 0; }
+  .art-block { margin: 16px 0; }
+  .art-block img { width: 100%; }
+  .art-block .img-caption { padding: 0; }
   .page-break { page-break-before: always; }
+  tbody tr:nth-child(even) { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  blockquote { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .loop-steps { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .mld-layer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style>
 </head>
@@ -398,7 +431,7 @@ tbody td {
 </div>
 
 <!-- ══════════════ HERO IMAGE ══════════════ -->
-<img class="hero-image" src="nan2026_screenshots/03_world_map_and_hud.png" alt="세계 항해도">
+<img class="hero-image" src="Pioneer_gameplay_preview.png" alt="Pioneer 컨셉 아트">
 
 <!-- ══════════════ 1. 왜 재미있는가 ══════════════ -->
 <div class="section">
@@ -547,6 +580,12 @@ tbody td {
     <span class="section-num">04</span>
     <span class="section-title">선원 — 같은 배의 항해를 바꾸는 구성</span>
   </div>
+
+  <div class="art-block">
+    <img src="pioneer_crew_character.png" alt="Pioneer 선원 캐릭터 컨셉 아트">
+    <div class="img-caption">Pioneer 선원 — 항해·수리·연료·물류 역량으로 같은 배의 운명을 완전히 바꾸는 핵심 전력</div>
+  </div>
+
   <p>선원은 단순 수집 카드가 아니라 실제 운항 수치에 연결됩니다.</p>
 
   <div class="table-wrap">
@@ -576,6 +615,12 @@ tbody td {
     <span class="section-num">05</span>
     <span class="section-title">선박 — 속도와 적재량 사이의 선택</span>
   </div>
+
+  <div class="art-block">
+    <img src="pioneer_ship_scene.png" alt="Pioneer 선박 컨셉 아트">
+    <div class="img-caption">Pioneer의 바다 — 빠른 소형선부터 대형 화물선까지, 어떤 배를 선택하느냐가 항해 스타일을 결정합니다</div>
+  </div>
+
   <p>11종 선박은 속도, 기본 적재량, 최대 승원 수와 가격이 다릅니다. 빠른 소형선은 짧은 항로에서 시세 변화에 민첩하게 대응하고, 큰 화물선은 한 번의 성공에서 더 큰 이익을 만들지만 이동 시간이 길어집니다.</p>
 
   <div class="img-block">
@@ -590,6 +635,12 @@ tbody td {
     <span class="section-num">06</span>
     <span class="section-title">항로 — 수익만 보지 않는 마지막 결정</span>
   </div>
+
+  <div class="art-block">
+    <img src="pioneer_harbor_scene.png" alt="Pioneer 항구 컨셉 아트">
+    <div class="img-caption">항구 — 29개 교역지 각각이 살아 있는 시장이자, 다음 항로를 향한 출발점입니다</div>
+  </div>
+
   <p>출항 전 항로 요약은 예상 수익, 이동 시간, 위험 등급, 위협 원인과 출항 차단 사유를 함께 보여줍니다. 이익이 커도 위험이 높거나 선원이 없으면 출항을 다시 생각해야 합니다.</p>
 
   <div class="img-block">
