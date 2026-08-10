@@ -270,8 +270,9 @@ tbody td {
 }
 .img-block img {
   width: 100%;
-  max-height: 160px;
-  object-fit: cover;
+  max-height: 220px;
+  object-fit: contain;
+  background: #f8fafc;
   border-radius: 5px;
   display: block;
   border: 1px solid #e2e8f0;
@@ -282,6 +283,50 @@ tbody td {
   color: #64748b;
   text-align: center;
   margin-top: 5px;
+  font-style: italic;
+}
+
+/* ─── ARCH DIAGRAM ───────────────────────────────────── */
+.arch-diagram {
+  margin: 14px 0;
+  page-break-inside: avoid;
+}
+.arch-layer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  border-radius: 6px;
+  border: 1px solid;
+  gap: 12px;
+}
+.arch-market { background: #f0f5ff; border-color: #6b8fd4; }
+.arch-fleet  { background: #fff8e7; border-color: #d4a017; }
+.arch-ui     { background: #f0fdf4; border-color: #86bfa0; }
+.arch-layer-left { flex: 1; }
+.arch-layer-name {
+  font-size: 10.5pt;
+  font-weight: 700;
+  font-family: 'Consolas', 'D2Coding', monospace;
+  color: #0d1f3c;
+  margin-bottom: 3px;
+}
+.arch-layer-items { font-size: 8.5pt; color: #475569; }
+.arch-trigger {
+  font-size: 7.5pt;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  background: #0d1f3c;
+  color: #a8bcd6;
+  flex-shrink: 0;
+}
+.arch-sep {
+  text-align: center;
+  font-size: 8pt;
+  color: #94a3b8;
+  padding: 4px 0;
   font-style: italic;
 }
 
@@ -339,7 +384,7 @@ tbody td {
   <h3>요약</h3>
   <ul class="summary-points">
     <li><strong>게임 내부 AI형 시스템:</strong> 3분 소폭 가격 변동, 1시간 대형 시장 사건, 플레이어 거래 영향, 가격 히스토리를 결합해 반복 플레이의 예측 불확실성을 만듭니다.</li>
-    <li><strong>개발 과정 AI 보조:</strong> 데이터 구조 설계, 기초 코드 생성, 리소스 연결, 로직 분리, 테스트 케이스 도출, 문서 정리에 이르기까지 개발 전 단계에서 생성형 AI를 협업 파트너로 활용했습니다.</li>
+    <li><strong>개발 과정 AI 보조:</strong> 데이터 구조 설계, 기초 코드 생성, 리소스 연결, 로직 분리, 테스트 케이스 도출, 문서 정리에 이르기까지 개발 전 과정에 걸쳐 생성형 AI를 협업 파트너로 활용했습니다.</li>
   </ul>
   <div style="margin-top:10px; font-size:9pt; color:#2d4a7a;">
     AI는 단순 코드 완성 도구가 아니라 <strong>스펙을 코드로 전환하는 첫 초안 생성기</strong>, <strong>실수를 찾아내는 두 번째 눈</strong>으로 활용했습니다.
@@ -353,13 +398,30 @@ tbody td {
     <span class="section-title">게임 내부 동적 시장 모델</span>
   </div>
 
-  <div class="sys-diagram">
-    <span class="layer-title">3분 소폭 변동</span><br>
-    <span class="layer-desc">모든 항구와 상품의 기준가에 작은 노이즈를 적용</span><br><br>
-    <span class="layer-title">플레이어 거래 영향</span><br>
-    <span class="layer-desc">매입/판매 수량에 따라 해당 항구의 해당 상품 가격을 즉시 조정</span><br><br>
-    <span class="layer-title">1시간 대형 시장 사건</span><br>
-    <span class="layer-desc">플레이어 거래 맥락과 독립적으로 2~4개 항구에 큰 가격 충격 적용</span>
+  <div class="arch-diagram" style="margin-bottom:14px;">
+    <div class="arch-layer arch-ui" style="background:#f0fdf4; border-color:#86bfa0;">
+      <div class="arch-layer-left">
+        <div class="arch-layer-name" style="font-family:inherit; font-size:10pt;">3분 소폭 변동</div>
+        <div class="arch-layer-items">모든 항구·상품의 기준가에 작은 노이즈 적용 — 시장의 기본 리듬</div>
+      </div>
+      <div class="arch-trigger" style="background:#166534;">BASE · ±2.5%</div>
+    </div>
+    <div class="arch-sep">+ 겹쳐서 독립 작동</div>
+    <div class="arch-layer arch-fleet" style="background:#fff8e7; border-color:#d4a017;">
+      <div class="arch-layer-left">
+        <div class="arch-layer-name" style="font-family:inherit; font-size:10pt;">플레이어 거래 영향</div>
+        <div class="arch-layer-items">매입/판매 수량에 따라 해당 항구·상품 가격 즉시 조정</div>
+      </div>
+      <div class="arch-trigger" style="background:#92400e;">REACTIVE · ±18%</div>
+    </div>
+    <div class="arch-sep">+ 겹쳐서 독립 작동</div>
+    <div class="arch-layer arch-market" style="background:#f0f5ff; border-color:#6b8fd4;">
+      <div class="arch-layer-left">
+        <div class="arch-layer-name" style="font-family:inherit; font-size:10pt;">1시간 대형 시장 사건</div>
+        <div class="arch-layer-items">플레이어 맥락과 완전히 독립적으로 2~4개 항구에 큰 가격 충격 적용</div>
+      </div>
+      <div class="arch-trigger">MACRO · ±38%</div>
+    </div>
   </div>
 
   <div class="table-wrap">
@@ -376,7 +438,7 @@ tbody td {
     </table>
   </div>
 
-  <p style="font-size:9pt; color:#475569;">이 세 레이어가 독립적으로 동작하는 구조는 AI가 초기 아키텍처 초안을 제안했고, 개발자가 실제 게임 밸런스에 맞게 수치를 조정해 확정했습니다.</p>
+  <p style="font-size:9pt; color:#475569;">이 세 레이어 독립 구조는 AI가 아키텍처 초안을 제안하고, 개발자가 게임 밸런스에 맞게 수치를 직접 조정해 확정했습니다.</p>
 </div>
 
 <!-- ══════════════ 2. AI 데이터 구조 설계 ══════════════ -->
@@ -388,7 +450,7 @@ tbody td {
 
   <div class="subsection">
     <div class="subsection-title">항구·상품 데이터 스키마</div>
-    <p>29개 항구와 8종 상품의 기준가·변동 범위·수수료율을 정의하는 초기 JSON 스키마는 AI가 생성했습니다.</p>
+    <p>29개 항구와 8종 상품의 기준가·변동 범위·수수료율을 담은 초기 JSON 스키마는 AI가 생성했습니다.</p>
     <pre>{
   "portId": "lisbon",
   "name": "리스본",
@@ -407,7 +469,7 @@ tbody td {
 
   <div class="subsection">
     <div class="subsection-title">선원 능력치 공식</div>
-    <p>선원 능력치가 실제 운항 수치에 미치는 영향 공식도 AI가 초안을 제시했습니다.</p>
+    <p>선원 능력치가 운항 수치에 미치는 영향 공식 역시 AI가 초안을 제시했습니다.</p>
     <pre><span class="comment">// AI 제안 초안 → 개발자 조정 후 확정</span>
 const speedMultiplier = 1 + crew.navigation * 0.04;   <span class="comment">// 항해 능력치</span>
 const cargoMultiplier = 1 + crew.logistics  * 0.06;   <span class="comment">// 물류 능력치</span>
@@ -456,6 +518,33 @@ return {
     <pre>const [marketState, setMarketState] = useState(<span class="comment">/* 가격·타이머 */</span>);
 const [fleetState,  setFleetState]  = useState(<span class="comment">/* 선박·선원·화물 */</span>);
 const [uiState,     setUiState]     = useState(<span class="comment">/* 모달·선택·탭 */</span>);</pre>
+
+    <div class="arch-diagram">
+      <div class="arch-layer arch-market">
+        <div class="arch-layer-left">
+          <div class="arch-layer-name">marketState</div>
+          <div class="arch-layer-items">가격 히스토리 · 소폭 변동 타이머 · 대형 사건 타이머</div>
+        </div>
+        <div class="arch-trigger">3분마다 업데이트</div>
+      </div>
+      <div class="arch-sep">↕ 독립적으로 업데이트 — 다른 상태에 영향 없음</div>
+      <div class="arch-layer arch-fleet">
+        <div class="arch-layer-left">
+          <div class="arch-layer-name">fleetState</div>
+          <div class="arch-layer-items">선박 목록 · 선원 배치 · 화물 현황 · 항로 상태</div>
+        </div>
+        <div class="arch-trigger">거래·출항 시 업데이트</div>
+      </div>
+      <div class="arch-sep">↕ 독립적으로 업데이트 — 다른 상태에 영향 없음</div>
+      <div class="arch-layer arch-ui">
+        <div class="arch-layer-left">
+          <div class="arch-layer-name">uiState</div>
+          <div class="arch-layer-items">열린 모달 · 선택된 항구·상품 · 활성 탭</div>
+        </div>
+        <div class="arch-trigger">UI 인터랙션 즉시</div>
+      </div>
+    </div>
+
     <p style="font-size:9pt; color:#475569;">이 분리 이후 시장 가격 업데이트가 UI 선택 상태를 초기화하지 않게 되었고, 3분 타이머 실행 시 리렌더 범위가 marketState 구독 컴포넌트로 제한되었습니다.</p>
   </div>
 </div>

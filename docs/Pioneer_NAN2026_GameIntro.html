@@ -221,8 +221,9 @@ tbody td {
 }
 .img-block img {
   width: 100%;
-  max-height: 200px;
-  object-fit: cover;
+  max-height: 300px;
+  object-fit: contain;
+  background: #f8fafc;
   border-radius: 6px;
   display: block;
   border: 1px solid #e2e8f0;
@@ -236,19 +237,93 @@ tbody td {
   font-style: italic;
 }
 
-/* ─── LOOP DIAGRAM ───────────────────────────────────── */
-.loop-box {
+/* ─── LOOP STEPS ─────────────────────────────────────── */
+.loop-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: linear-gradient(135deg, #f0f5ff, #e8f0ff);
   border: 1px solid #b8c8e8;
   border-radius: 8px;
   padding: 16px 20px;
   margin: 14px 0;
-  font-size: 9pt;
-  color: #1a3a6b;
-  font-family: 'Consolas', 'D2Coding', monospace;
-  text-align: center;
-  letter-spacing: 0.5px;
   page-break-inside: avoid;
+}
+.loop-step {
+  background: #0d1f3c;
+  color: #e2eaf4;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.loop-arrow {
+  color: #c9930e;
+  font-size: 13pt;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ─── MARKET LAYERS DIAGRAM ──────────────────────────── */
+.mld-wrap {
+  margin: 16px 0;
+  page-break-inside: avoid;
+}
+.mld-title {
+  font-size: 8.5pt;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.mld-layers { display: flex; flex-direction: column; gap: 6px; }
+.mld-layer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid;
+}
+.mld-macro { background: #fff8e7; border-color: #d4a017; }
+.mld-player { background: #f0f5ff; border-color: #6b8fd4; }
+.mld-micro  { background: #f0fdf4; border-color: #86bfa0; }
+.mld-badge {
+  font-size: 7pt;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  min-width: 66px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.mld-macro  .mld-badge { background: #c9930e; color: #fff; }
+.mld-player .mld-badge { background: #1a3a6b; color: #fff; }
+.mld-micro  .mld-badge { background: #166534; color: #fff; }
+.mld-name {
+  font-size: 10pt;
+  font-weight: 700;
+  color: #0d1f3c;
+  min-width: 116px;
+  flex-shrink: 0;
+}
+.mld-stats {
+  font-size: 8.5pt;
+  color: #475569;
+  min-width: 160px;
+  flex-shrink: 0;
+}
+.mld-desc {
+  font-size: 8.5pt;
+  color: #64748b;
+  font-style: italic;
+  flex: 1;
 }
 
 /* ─── FEATURE LIST ───────────────────────────────────── */
@@ -334,14 +409,25 @@ tbody td {
 
   <p>Pioneer의 시장에는 외워서 반복할 하나의 정답이 없습니다. 3분마다 가격이 조금씩 움직이고, 플레이어가 상품을 사거나 팔면 해당 항구의 가격이 즉시 반응합니다. 여기에 1시간마다 외부 대형 사건이 일부 항구의 특정 상품을 크게 흔듭니다.</p>
 
-  <p>그래서 플레이어는 매번 같은 질문을 다시 하게 됩니다.</p>
+  <p>그래서 플레이어는 매번 같은 질문 앞에 다시 서게 됩니다.</p>
 
   <blockquote>지금 이 가격에 살까? 여기서 팔까? 더 큰 차익을 위해 먼 항구까지 갈까?</blockquote>
 
-  <p>좋은 가격을 찾았다고 끝이 아닙니다. 빠른 배는 적재량이 작고, 큰 화물선은 느립니다. 긴 항로에서는 연료와 선체를 버틸 선원이 필요합니다. 출항 전에는 예상 수익, 이동 시간, 위험 등급, 위협과 차단 사유를 함께 비교해야 합니다.</p>
+  <p>좋은 가격을 찾았다고 끝이 아닙니다. 빠른 배는 적재량이 작고, 큰 화물선은 느립니다. 긴 항로에서는 연료를 아끼고 선체를 유지할 선원이 필요합니다. 출항 전에는 예상 수익, 이동 시간, 위험 등급, 위협과 차단 사유를 함께 비교해야 합니다.</p>
 
-  <div class="loop-box">
-    시세 판단 → 거래 결과 확인 → 선원 배치 → 선박 선택 → 항로 결정 → 출항과 성장 → 다시 시세 판단
+  <div class="loop-steps">
+    <div class="loop-step">시세 판단</div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step">선원·선박 구성</div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step">항로 결정</div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step">출항</div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step">수익 확인</div>
+    <div class="loop-arrow">→</div>
+    <div class="loop-step">성장</div>
+    <div class="loop-arrow" style="font-size:16pt;">↺</div>
   </div>
 </div>
 
@@ -395,7 +481,31 @@ tbody td {
     <span class="section-num">03</span>
     <span class="section-title">살아 있는 항구 상품 시장</span>
   </div>
-  <p>Pioneer의 시장은 모의 주식처럼 가격 흐름을 읽고 매수·매도 타이밍을 판단하는 경험을 항구 상품 무역으로 옮겼습니다.</p>
+  <p>Pioneer의 시장은 주식처럼 가격 흐름을 읽고 매수·매도 타이밍을 판단하는 경험을 항구 상품 무역의 언어로 옮겼습니다.</p>
+
+  <div class="mld-wrap">
+    <div class="mld-title">세 가지 독립 가격 레이어</div>
+    <div class="mld-layers">
+      <div class="mld-layer mld-macro">
+        <span class="mld-badge">MACRO</span>
+        <span class="mld-name">대형 시장 사건</span>
+        <span class="mld-stats">1시간 주기 · ±16~38% · 2~4개 항구</span>
+        <span class="mld-desc">친숙한 항로를 갑자기 기회나 함정으로 바꿉니다</span>
+      </div>
+      <div class="mld-layer mld-player">
+        <span class="mld-badge">REACTIVE</span>
+        <span class="mld-name">플레이어 거래 영향</span>
+        <span class="mld-stats">즉시 반응 · 최대 ±18% · 해당 항구·상품</span>
+        <span class="mld-desc">내 행동이 세계에 즉시 흔적을 남깁니다</span>
+      </div>
+      <div class="mld-layer mld-micro">
+        <span class="mld-badge">BASE</span>
+        <span class="mld-name">소폭 변동</span>
+        <span class="mld-stats">3분 주기 · 최대 ±2.5% · 전 항구 동시</span>
+        <span class="mld-desc">시장이 항상 살아 숨 쉬고 있다는 리듬을 만듭니다</span>
+      </div>
+    </div>
+  </div>
 
   <div class="table-wrap">
     <table>
@@ -487,7 +597,7 @@ tbody td {
     <div class="img-caption">목적지 후보의 상품별 시세와 매매가 확인 후 항로 확정</div>
   </div>
 
-  <p>안전한 근거리 거래를 반복할지, 변동이 끝나기 전에 먼 항구로 갈지, 큰 배에 화물을 가득 싣고 위험을 감수할지가 플레이어의 항해 스타일을 만듭니다.</p>
+  <p>안전한 근거리를 반복할지, 변동이 끝나기 전에 먼 항구로 달릴지, 큰 배에 화물을 가득 싣고 위험을 감수할지 — 그 선택의 패턴이 플레이어의 항해 스타일을 만듭니다.</p>
 </div>
 
 <!-- ══════════════ 7. 핵심 매력 ══════════════ -->
@@ -500,7 +610,7 @@ tbody td {
     <li><strong>정답이 움직이는 시장:</strong> 3분 변동, 즉시 거래 영향, 1시간 대형 사건이 서로 다른 시간축으로 작동합니다.</li>
     <li><strong>행동이 곧 피드백:</strong> 사고파는 순간 자금·화물·현지 가격이 함께 바뀝니다.</li>
     <li><strong>구성이 만드는 차이:</strong> 선원과 선박의 조합이 속도, 유지력과 운송량을 바꿉니다.</li>
-    <li><strong>정보를 보고 감수하는 위험:</strong> 항로의 수익과 위험을 함께 확인한 뒤 출항합니다.</li>
+    <li><strong>정보로 계산하는 위험:</strong> 항로의 수익과 위험을 함께 확인한 뒤 출항합니다.</li>
     <li><strong>짧은 판단이 긴 성장으로 연결:</strong> 한 번의 차익이 다음 배와 다음 항구를 엽니다.</li>
   </ul>
 </div>
