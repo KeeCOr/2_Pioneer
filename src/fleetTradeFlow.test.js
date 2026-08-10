@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getFleetTradeFlow } from './fleetTradeFlow.js';
 
@@ -27,7 +27,7 @@ test('makes empty cargo and market entry explicit before route confirmation', ()
 
   assert.equal(flow.steps.find((step) => step.id === 'cargo').state, 'needs-attention');
   assert.equal(flow.primaryAction.id, 'open-market');
-  assert.match(flow.summary, /cargo empty/i);
+  assert.match(flow.summary, /화물 없음/);
 });
 
 test('blocks depart when route is unavailable or risky enough to require review', () => {
@@ -36,12 +36,12 @@ test('blocks depart when route is unavailable or risky enough to require review'
     atPort: true,
     marketOpen: false,
     routeMode: true,
-    routeSummary: { canDepart: false, expectedProfit: -120, riskLevel: 'blocked', blockers: ['crew required'] },
+    routeSummary: { canDepart: false, expectedProfit: -120, riskLevel: 'blocked', blockers: ['승무원 필요'] },
   });
 
   assert.equal(flow.steps.find((step) => step.id === 'depart').state, 'blocked');
   assert.equal(flow.primaryAction.id, 'review-route');
-  assert.match(flow.summary, /crew required/i);
+  assert.match(flow.summary, /승무원 필요/);
 });
 
 test('explains why empty cargo cannot produce a trade result', () => {
@@ -52,9 +52,9 @@ test('explains why empty cargo cannot produce a trade result', () => {
     routeMode: false,
   });
 
-  assert.equal(flow.resultCue.cause, 'The fleet is docked without sellable cargo.');
-  assert.equal(flow.resultCue.delta, 'Cargo remains 0/18.');
-  assert.equal(flow.resultCue.nextAction, 'Open market and load a profitable cargo.');
+  assert.equal(flow.resultCue.cause, '항구에 정박 중이지만 판매할 화물이 없습니다.');
+  assert.equal(flow.resultCue.delta, '화물 0/18');
+  assert.equal(flow.resultCue.nextAction, '시장을 열어 수익성 있는 화물을 적재하세요.');
 });
 
 test('explains the blocker, delta, and next action for a blocked route', () => {
@@ -63,12 +63,12 @@ test('explains the blocker, delta, and next action for a blocked route', () => {
     atPort: true,
     marketOpen: false,
     routeMode: true,
-    routeSummary: { canDepart: false, expectedProfit: -120, riskLevel: 'blocked', blockers: ['crew required'] },
+    routeSummary: { canDepart: false, expectedProfit: -120, riskLevel: 'blocked', blockers: ['승무원 필요'] },
   });
 
-  assert.equal(flow.resultCue.cause, 'crew required');
-  assert.equal(flow.resultCue.delta, '-120g expected profit is blocked.');
-  assert.equal(flow.resultCue.nextAction, 'Resolve the blocker before departure.');
+  assert.equal(flow.resultCue.cause, '승무원 필요');
+  assert.equal(flow.resultCue.delta, '예상 수익 -120g 차단됨');
+  assert.equal(flow.resultCue.nextAction, '출항 전에 장애 요인을 해결하세요.');
 });
 
 test('explains high-risk profitable routes before confirmation', () => {
@@ -80,7 +80,20 @@ test('explains high-risk profitable routes before confirmation', () => {
     routeSummary: { canDepart: true, expectedProfit: 760, riskLevel: 'high', travelTime: 9, blockers: [] },
   });
 
-  assert.equal(flow.resultCue.cause, 'The route has high threat pressure.');
-  assert.equal(flow.resultCue.delta, '760g profit is possible with 9 days at sea.');
-  assert.equal(flow.resultCue.nextAction, 'Review threats and prepare crew before confirming.');
+  assert.equal(flow.resultCue.cause, '항로에 위협 요소가 많습니다.');
+  assert.equal(flow.resultCue.delta, '760g 수익 가능 · 항해 9일');
+  assert.equal(flow.resultCue.nextAction, '출항 전 위협을 검토하고 승무원을 준비하세요.');
+});
+
+test('shows sailing status when ship is moving', () => {
+  const flow = getFleetTradeFlow({
+    ship: { id: 2, name: 'Voyager', cargoUsed: 8, cargoCapacity: 20, isMoving: true },
+    atPort: false,
+    marketOpen: false,
+    routeMode: false,
+  });
+
+  assert.equal(flow.resultCue.cause, '항해 중입니다.');
+  assert.match(flow.resultCue.delta, /화물 8\/20/);
+  assert.match(flow.resultCue.nextAction, /도착 후/);
 });

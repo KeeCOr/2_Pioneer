@@ -1561,6 +1561,7 @@ const OceanTycoon = () => {
       name: cur.name,
       cargoUsed: cargoN(cur),
       cargoCapacity: st?.capacity || 0,
+      isMoving: cur.isMoving || false,
     } : null,
     atPort,
     marketOpen: showMarket,
