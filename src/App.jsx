@@ -1980,133 +1980,288 @@ const OceanTycoon = () => {
   useEffect(() => {
     if (!DEMO_MODE || !pricesReady) return;
 
-    // 전략 선택 함수
-    const pickStrategy = (snapshot, pk) => {
-      const roll = Math.random();
-      if (roll < 0.15) return 'explore';      // 새 항구 탐험
-      if (roll < 0.30) return 'volume';       // 대량 저가 화물
-      if (roll < 0.50) return 'premium';      // 소량 고가 화물
-      return 'best';                          // 최고 수익
+    // 배별 항구 처리 완료 기록 (같은 항구에서 중복 처리 방지)
+    const processedAt = new Map(); // shipId → portKey
+    let buyShipCooldown = 0;
+    let buyInfoCooldown = 0;
+    let tickCount = 0;
+    const TABS = ['cargo', 'info', 'crew', 'mission'];
+    let tabIdx = 0;
+
+    // ── 직접 판매 (setGs 기반, 모든 배 독립 처리)
+    const demoSell = (shipId, cargo, portK) => {
+      let earned = 0;
+      Object.entries(cargo).forEach(([res, qty]) => {
+        const base = prices[portK]?.[res] || 0;
+        if (base > 0 && qty > 0) earned += Math.floor(base * qty * (1 - TRADE_FEE_PCT / 100));
+      });
+      if (earned <= 0) return;
+      setGs(prev => ({
+        ...prev, gold: prev.gold + earned,
+        totalEarned: (prev.totalEarned || 0) + earned,
+        ships: prev.ships.map(s => s.id === shipId ? { ...s, cargo: {} } : s),
+      }));
+      addLog(`💰 화물 판매 +${earned.toLocaleString()}금`);
     };
 
-    // 최적 거래 탐색
-    const findTrade = (snapshot, pk, strategy) => {
-      const ship = snapshot.ships.find(s => s.id === selShipRef.current);
-      if (!ship) return null;
-      const stats = calcStats(ship, snapshot.crew);
-      const cap = stats.capacity;
+    // ── 직접 구매 (setGs 기반)
+    const demoBuy = (shipId, portK, res, qty) => {
+      const base = prices[portK]?.[res] || 0;
+      if (!base || qty < 1) return;
+      const cost = base * qty;
+      setGs(prev => {
+        if (prev.gold < cost) return prev;
+        return {
+          ...prev, gold: prev.gold - cost,
+          ships: prev.ships.map(s => s.id === shipId
+            ? { ...s, cargo: { ...s.cargo, [res]: (s.cargo[res] || 0) + qty } } : s),
+        };
+      });
+      addLog(`✅ ${RESOURCES[res]?.icon || ''} ${res} ×${qty} 구매 -${cost.toLocaleString()}금`);
+    };
+
+    // ── 배 구입 (setGs 기반)
+    const demoAddShip = (portK, shipType) => {
+      const t = SHIP_TYPES[shipType];
+      setGs(prev => {
+        if (prev.gold < t.cost) return prev;
+        const nid = Math.max(...prev.ships.map(s => s.id), 0) + 1;
+        const ns = {
+          id: nid, type: shipType, name: `${t.name} ${nid}호`,
+          x: portHarbor(portK).x, y: portHarbor(portK).y,
+          targetX: null, targetY: null, destinationX: null, destinationY: null,
+          route: null, routeIndex: 0, startX: null, startY: null,
+          isMoving: false, booster: false, stormUntil: null,
+          cargo: {}, fuel: 100, hull: 100, upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100,
+        };
+        // 새 배에 승무원 1명 자동 배치
+        const poolCrew = prev.availableCrew[0];
+        const newCrew = poolCrew
+          ? { ...poolCrew, shipId: nid }
+          : { ...makeCrew(), shipId: nid };
+        addLog(`⚓ ${t.icon} ${ns.name} 건조! -${t.cost.toLocaleString()}금`);
+        return {
+          ...prev, gold: prev.gold - t.cost,
+          ships: [...prev.ships, ns],
+          crew: [...prev.crew, newCrew],
+          availableCrew: poolCrew ? prev.availableCrew.slice(1) : prev.availableCrew,
+          taxLevel: prev.taxLevel + 1,
+        };
+      });
+    };
+
+    // ── 선원 고용 (setGs 기반)
+    const demoHireCrew = (shipId, portK) => {
+      setGs(prev => {
+        const ship = prev.ships.find(s => s.id === shipId);
+        if (!ship) return prev;
+        const stats = calcStats(ship, prev.crew);
+        const assigned = prev.crew.filter(c => c.shipId === shipId).length;
+        const slots = stats.maxCrew - assigned;
+        if (slots <= 0) return prev;
+
+        // 고용 가능한 풀에서 최대 slots명까지 고용
+        const region = PORTS[portK]?.region || null;
+        const toHire = Math.min(slots, Math.floor(slots / 2) + 1); // 빈 슬롯 절반+1 채움
+        let newGold = prev.gold;
+        const newCrew = [...prev.crew];
+        let newPool = [...prev.availableCrew];
+        let hired = 0;
+
+        for (let i = 0; i < toHire; i++) {
+          if (newPool.length === 0) {
+            // 풀이 비면 새로 생성
+            newPool = Array.from({ length: 4 }, () => makeCrew(region));
+          }
+          const c = newPool[0];
+          if (newGold < c.hireCost) break;
+          newGold -= c.hireCost;
+          newCrew.push({ ...c, shipId });
+          newPool = newPool.slice(1);
+          hired++;
+        }
+
+        if (hired === 0) return prev;
+        addLog(`👥 선원 ${hired}명 고용! -${(prev.gold - newGold).toLocaleString()}금`);
+        return { ...prev, gold: newGold, crew: newCrew, availableCrew: newPool };
+      });
+    };
+
+    // ── 정보 구매 (setGs 기반)
+    const demoBuyInfo = (portK) => {
+      const snap = gsRef.current;
+      const infoIdx = snap.gold > 15000 && Math.random() < 0.4 ? 1 : 0; // hint or rumor
+      const info = PORT_INFO[infoIdx];
+      const cost = infoCurrentCost(info, snap.infoBuyCounts, snap.taxLevel);
+      if (snap.gold < cost + 3000) return;
+      const pred = makePrediction(info.id, info.tier, portK, PORTS[portK].name, info.accuracy, info.magMin, info.magMax, 1 + Math.floor(Math.random() * 2));
+      setGs(prev => ({
+        ...prev, gold: prev.gold - cost,
+        predictions: [...prev.predictions, pred],
+        infoBuyCounts: { ...prev.infoBuyCounts, [info.id]: (prev.infoBuyCounts[info.id] || 0) + 1 },
+      }));
+      addLog(`${info.tier === 'premium' ? '⭐' : '💬'} [${pred.turnsUntil}턴 후] ${pred.resource} ${pred.targetPortName} ${pred.direction === 'up' ? '📈 상승' : '📉 하락'} 예상 -${cost}금`);
+    };
+
+    // ── 최적 거래 탐색 (배별 독립)
+    const findBestTrade = (snap, ship, portK) => {
+      const stats = calcStats(ship, snap.crew);
       const used = Object.values(ship.cargo || {}).reduce((a, v) => a + v, 0);
-      const available = Math.max(1, cap - used);
-      const spendable = Math.max(1000, snapshot.gold * 0.7);
-      const visited = (snapshot.visitedPorts || []).filter(k => k !== pk && prices[k]);
+      const available = Math.max(1, stats.capacity - used);
+      const portCount = Math.max(1, snap.ships.filter(s => !s.isMoving).length);
+      const spendable = Math.max(500, (snap.gold * 0.5) / portCount);
+      const visited = (snap.visitedPorts || []).filter(k => k !== portK && prices[k]);
       if (!visited.length) return null;
 
-      let candidates = [];
+      let best = null, bestProfit = 0;
       Object.keys(RESOURCES).forEach(res => {
-        const buyBase = prices[pk]?.[res];
+        const buyBase = prices[portK]?.[res];
         if (!buyBase || buyBase <= 0) return;
-        const buyPrice = calcBuyPrice(buyBase, stats.tradePct);
-        const singleCost = getBuyTotal(buyPrice, 1);
-        if (singleCost > spendable) return;
         visited.forEach(destPk => {
           const sellBase = prices[destPk]?.[res];
           if (!sellBase || sellBase <= buyBase) return;
-          const sellPrice = calcSellPrice(sellBase, stats.tradePct);
-          const feeRate = getFeeRate(stats.tradePct);
-          const maxByGold = Math.max(1, Math.floor(spendable / singleCost));
-          const qty = Math.min(available, maxByGold, strategy === 'volume' ? 50 : 30);
+          const qty = Math.min(available, Math.max(1, Math.floor(spendable / buyBase)), 35);
           if (qty < 1) return;
-          const profit = getSellTotal(sellPrice, qty, feeRate) - getBuyTotal(buyPrice, qty);
-          candidates.push({ res, destPk, qty, profit, price: buyPrice });
+          const profit = (sellBase * (1 - TRADE_FEE_PCT / 100) - buyBase) * qty;
+          if (profit > bestProfit) { bestProfit = profit; best = { res, destPk, qty }; }
         });
       });
-      if (!candidates.length) return null;
-
-      candidates.sort((a, b) => b.profit - a.profit);
-      if (strategy === 'explore') {
-        // 방문 횟수 적은 항구 우선
-        const lessVisited = candidates.filter((_, i) => i > candidates.length * 0.3);
-        return lessVisited[0] || candidates[0];
-      }
-      if (strategy === 'premium') return candidates[0]; // 최고 수익
-      if (strategy === 'volume') {
-        // 단가 낮고 수량 많은 것
-        const byQty = [...candidates].sort((a, b) => b.qty - a.qty);
-        return byQty[0];
-      }
-      return candidates[0];
+      return best;
     };
-
-    let phase = 0; // 0=selling, 1=buying, 2=sailing
-    let pendingDest = null;
-    let showMarketTimer = null;
-    let tabTimer = null;
-
-    const TABS = ['info', 'cargo', 'crew', 'mission'];
-    let tabIdx = 0;
 
     const tick = () => {
-      const snapshot = gsRef.current;
-      const ship = snapshot.ships.find(s => s.id === selShipRef.current);
-      if (!ship) return;
+      const snap = gsRef.current;
+      tickCount++;
+      buyShipCooldown = Math.max(0, buyShipCooldown - 1);
+      buyInfoCooldown = Math.max(0, buyInfoCooldown - 1);
 
-      // 항해 중 → 카메라 팔로우 ON + 가끔 탭 전환
-      if (ship.isMoving) {
-        setFollowShip(true);
-        return;
-      }
-
-      setFollowShip(false);
-      const pk = portOf(ship);
-      if (!pk || !prices[pk]) return;
-
-      // 도착 시 마켓 패널 잠깐 열기
-      if (showMarketTimer) { clearTimeout(showMarketTimer); showMarketTimer = null; }
-      setShowMarket(true);
-      showMarketTimer = setTimeout(() => setShowMarket(false), 1800);
-
-      // 화물 전량 판매
-      const cargo = ship.cargo || {};
-      Object.entries(cargo).forEach(([res, qty]) => { if (qty > 0) doSell(res, qty); });
-
-      // 탭 순환 (현황 → 화물 → 승무원 → 임무)
-      if (tabTimer) clearTimeout(tabTimer);
-      tabTimer = setTimeout(() => {
-        tabIdx = (tabIdx + 1) % TABS.length;
-        setTab(TABS[tabIdx]);
-      }, 600);
-
-      // 거래 탐색 및 출항
-      const strategy = pickStrategy(snapshot, pk);
-      const trade = findTrade(snapshot, pk, strategy);
-
-      setTimeout(() => {
-        setShowMarket(false);
-        if (trade) {
-          doBuy(trade.res, trade.qty);
-          setTimeout(() => {
-            chooseDestinationPort(trade.destPk);
-            setFollowShip(true);
-          }, 400);
-        } else {
-          // 수익 루트 없으면 가장 멀리 있는 방문 항구로 이동
-          const visited = (snapshot.visitedPorts || []).filter(k => k !== pk);
-          if (visited.length) {
-            const dest = visited[Math.floor(Math.random() * visited.length)];
-            chooseDestinationPort(dest);
-            setFollowShip(true);
+      // ── 정보 구매
+      if (buyInfoCooldown === 0 && snap.gold > 5000) {
+        const portShips = snap.ships.filter(s => !s.isMoving && portOf(s));
+        if (portShips.length > 0) {
+          const portK = portOf(portShips[0]);
+          if (portK) {
+            setTab('info');
+            setTimeout(() => { demoBuyInfo(portK); setTab('cargo'); }, 500);
+            buyInfoCooldown = 5 + Math.floor(Math.random() * 5);
           }
         }
-      }, 2000);
+      }
+
+      // ── 배 구입
+      if (buyShipCooldown === 0) {
+        const portShips = snap.ships.filter(s => !s.isMoving && portOf(s));
+        let shipType = null;
+        if (snap.ships.length < 3 && snap.gold > 12000) shipType = 'sloop';
+        else if (snap.ships.length < 4 && snap.gold > 25000) shipType = 'caravel';
+        else if (snap.ships.length < 5 && snap.gold > 50000) shipType = 'brigantine';
+        else if (snap.ships.length < 6 && snap.gold > 90000) shipType = 'merchant';
+
+        if (shipType && portShips.length > 0) {
+          const portK = portOf(portShips[0]);
+          if (portK) {
+            setShowBuy(true);
+            setTimeout(() => { demoAddShip(portK, shipType); }, 700);
+            setTimeout(() => setShowBuy(false), 2000);
+            buyShipCooldown = 25;
+          }
+        }
+      }
+
+      // ── 정박 중인 배 처리 (각 배 독립)
+      const portShips = snap.ships.filter(s => !s.isMoving && portOf(s));
+      portShips.forEach((ship, idx) => {
+        const portK = portOf(ship);
+        if (!portK || !prices[portK]) return;
+        if (processedAt.get(ship.id) === portK) return; // 이미 처리
+        processedAt.set(ship.id, portK);
+
+        const delay = idx * 3000; // 배 간 처리 시차 3초
+
+        setTimeout(() => {
+          const snap2 = gsRef.current;
+          const shipNow = snap2.ships.find(s => s.id === ship.id);
+          if (!shipNow || shipNow.isMoving) return;
+
+          // 이 배를 선택해 카메라 포커스
+          setSelShip(ship.id);
+          setFollowShip(false);
+          setShowMarket(true);
+
+          // 화물 판매
+          const cargo = shipNow.cargo || {};
+          if (Object.values(cargo).some(v => v > 0)) demoSell(ship.id, cargo, portK);
+
+          // 선원 고용 (승무원 탭 보여주면서)
+          setTimeout(() => {
+            setTab('crew');
+            demoHireCrew(ship.id, portK);
+          }, 600);
+
+          // 거래 탐색 후 구매 + 출항
+          setTimeout(() => {
+            setTab('cargo');
+            const snap3 = gsRef.current;
+            const shipBuy = snap3.ships.find(s => s.id === ship.id);
+            if (!shipBuy || shipBuy.isMoving) return;
+
+            const trade = findBestTrade(snap3, shipBuy, portK);
+            if (trade) demoBuy(ship.id, portK, trade.res, trade.qty);
+
+            setTimeout(() => {
+              setShowMarket(false);
+              const snap4 = gsRef.current;
+              const shipDepart = snap4.ships.find(s => s.id === ship.id);
+              if (!shipDepart || shipDepart.isMoving) return;
+
+              const destKey = trade?.destPk || (() => {
+                const others = (snap4.visitedPorts || []).filter(k => k !== portK);
+                return others.length ? others[Math.floor(Math.random() * others.length)] : null;
+              })();
+
+              if (destKey) {
+                setSelShip(ship.id); // selShipRef 동기 업데이트 → chooseDestinationPort가 올바른 배 사용
+                chooseDestinationPort(destKey);
+                setFollowShip(true);
+              }
+            }, 1400);
+          }, 2000);
+        }, delay);
+      });
+
+      // ── 도착한 배의 processedAt 클리어 (다음 항구 처리 허용)
+      snap.ships.forEach(s => {
+        if (s.isMoving) processedAt.delete(s.id);
+      });
     };
 
-    const id = setInterval(tick, 3000);
-    return () => {
-      clearInterval(id);
-      if (showMarketTimer) clearTimeout(showMarketTimer);
-      if (tabTimer) clearTimeout(tabTimer);
-    };
-  }, [pricesReady, prices, doBuy, doSell, chooseDestinationPort, setFollowShip, setTab, setShowMarket]);
+    // ── 1초 UI 인터벌: 탭 순환 + 카메라 로테이션
+    let uiTick = 0;
+    const uiId = setInterval(() => {
+      uiTick++;
+      const snap = gsRef.current;
+
+      // 탭 순환 (3초마다 = 3틱)
+      if (uiTick % 3 === 0) {
+        tabIdx = (tabIdx + 1) % TABS.length;
+        setTab(TABS[tabIdx]);
+      }
+
+      // 항해 중인 배 카메라 로테이션 (정박 중 배 없을 때만, 1초마다 교체)
+      const portShipsUi = snap.ships.filter(s => !s.isMoving && portOf(s));
+      if (portShipsUi.length === 0) {
+        const sailing = snap.ships.filter(s => s.isMoving);
+        if (sailing.length > 0) {
+          const idx = uiTick % sailing.length;
+          setSelShip(sailing[idx].id);
+          setFollowShip(true);
+        }
+      }
+    }, 1000);
+
+    const id = setInterval(tick, 2000);
+    return () => { clearInterval(id); clearInterval(uiId); };
+  }, [pricesReady, prices, chooseDestinationPort, setFollowShip, setTab, setShowMarket, setShowBuy, setSelShip, addLog, setGs]);
 
   const portGuard   = (l) => <div className="text-center py-4 text-gray-500 text-sm">⚓ 항구에 정박해야<br/>{l}을 이용할 수 있습니다.</div>;
   const gaugeColor  = (v) => v > 60 ? 'bg-green-500' : v > 30 ? 'bg-yellow-500' : 'bg-red-500';

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pioneer — NAN 2026 팀원 롤 기술서</title>
+<style>
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm 16mm;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
+  font-size: 10pt;
+  line-height: 1.9;
+  color: #e2eaf4;
+  background: #0a1628;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ─── COVER ─────────────────────────────────────────── */
+.cover {
+  background: linear-gradient(150deg, #0d1f3c 0%, #1a3a6b 60%, #0f2a50 100%);
+  color: #fff;
+  padding: 48px 44px 40px;
+  margin: 0 -28px 36px;
+  position: relative;
+  overflow: hidden;
+  page-break-after: avoid;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -80px;
+  width: 320px; height: 320px;
+  border: 3px solid rgba(201,147,14,0.25);
+  border-radius: 50%;
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -60px;
+  width: 200px; height: 200px;
+  border: 2px solid rgba(201,147,14,0.15);
+  border-radius: 50%;
+}
+.cover-label {
+  font-size: 9pt;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #c9930e;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.cover-title {
+  font-size: 36pt;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.cover-tagline {
+  font-size: 13pt;
+  color: #c9d4e8;
+  margin-bottom: 28px;
+  font-style: italic;
+}
+.cover-divider {
+  width: 60px;
+  height: 3px;
+  background: #c9930e;
+  margin-bottom: 24px;
+}
+.cover-meta {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.meta-item {
+  font-size: 8.5pt;
+  color: #a8bcd6;
+  margin-right: 24px;
+  margin-bottom: 6px;
+}
+.meta-item strong {
+  color: #e2eaf4;
+  font-weight: 600;
+}
+
+/* ─── SECTION ────────────────────────────────────────── */
+.section {
+  margin-bottom: 28px;
+  page-break-inside: avoid;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  page-break-after: avoid;
+}
+.section-num {
+  font-size: 8pt;
+  font-weight: 800;
+  color: #c9930e;
+  letter-spacing: 1px;
+  min-width: 28px;
+}
+.section-title {
+  font-size: 15pt;
+  font-weight: 700;
+  color: #e2eaf4;
+  border-bottom: 2.5px solid #c9930e;
+  padding-bottom: 4px;
+  flex: 1;
+}
+
+/* ─── TABLE ──────────────────────────────────────────── */
+.table-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid #1e3a5a;
+  margin: 14px 0;
+  page-break-inside: avoid;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  background: #0f2040;
+  color: #8ab0d4;
+  font-weight: 700;
+  font-size: 9pt;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #1e3a5a;
+}
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #162035;
+  vertical-align: top;
+  font-size: 9.5pt;
+}
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: #0d1a2e; }
+
+/* ─── MEMBER CARD ────────────────────────────────────── */
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 10px;
+}
+.member-card {
+  background: #0d1f3c;
+  border: 1px solid #1e3a5a;
+  border-radius: 10px;
+  padding: 24px 20px;
+  position: relative;
+  overflow: hidden;
+  page-break-inside: avoid;
+}
+.member-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 4px;
+  background: #c9930e;
+}
+.member-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a3a6b 0%, #2a5aab 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22pt;
+  margin-bottom: 14px;
+  border: 2px solid #2a4a7a;
+}
+.member-name {
+  font-size: 13pt;
+  font-weight: 800;
+  color: #e2eaf4;
+  margin-bottom: 4px;
+}
+.member-role-badge {
+  display: inline-block;
+  background: rgba(201, 147, 14, 0.18);
+  color: #c9930e;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 147, 14, 0.35);
+  margin-bottom: 16px;
+}
+.member-tasks {
+  list-style: none;
+  padding: 0;
+}
+.member-tasks li {
+  font-size: 9pt;
+  color: #a8bcd6;
+  line-height: 1.7;
+  padding-left: 14px;
+  position: relative;
+  margin-bottom: 4px;
+}
+.member-tasks li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: #c9930e;
+  font-size: 8pt;
+  top: 1px;
+}
+
+/* ─── OVERVIEW BOX ───────────────────────────────────── */
+.overview-box {
+  background: #0f2040;
+  border: 1px solid #1e3a5a;
+  border-left: 4px solid #c9930e;
+  border-radius: 0 8px 8px 0;
+  padding: 18px 22px;
+  margin-bottom: 28px;
+}
+.overview-box p {
+  margin-bottom: 6px;
+  font-size: 9.5pt;
+  color: #c9d4e8;
+}
+.overview-box p:last-child { margin-bottom: 0; }
+.overview-box strong { color: #e2eaf4; }
+
+/* ─── FOOTER ─────────────────────────────────────────── */
+.footer {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid #1e3a5a;
+  text-align: center;
+  font-size: 8pt;
+  color: #4a6a8a;
+  padding-bottom: 14px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ COVER -->
+<div class="cover">
+  <div class="cover-label">NHN Game × AI Hackathon NAN 2026</div>
+  <div class="cover-title">Pioneer</div>
+  <div class="cover-tagline">팀원 롤 기술서</div>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="meta-item"><strong>팀명</strong> &nbsp;Pioneer Team</div>
+    <div class="meta-item"><strong>인원</strong> &nbsp;3인</div>
+    <div class="meta-item"><strong>제출일</strong> &nbsp;2026. 08.</div>
+    <div class="meta-item"><strong>분류</strong> &nbsp;게임 / 무역 시뮬레이션</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ S01 팀 개요 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">팀 개요</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>프로젝트명:</strong> Pioneer — 대항해 AI 무역 시뮬레이션</p>
+    <p><strong>팀 구성:</strong> 개발 1인 · 기획 1인 · 아트/디자인 1인, 총 3인 팀</p>
+    <p><strong>공통 역할:</strong> 전원 AI 도구(Claude, Midjourney, ChatGPT 등)를 활용해 개발 속도 및 품질 향상에 기여</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%">이름</th>
+          <th style="width:16%">역할</th>
+          <th>주요 담당 업무</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>유민경</strong></td>
+          <td>개발</td>
+          <td>프로토타입 Unity 이식, 리소스 연결, 기술 구현</td>
+        </tr>
+        <tr>
+          <td><strong>고기혁</strong></td>
+          <td>기획</td>
+          <td>AI 이미지 생성, 게임 밸런스 설정, UX/UI 기획</td>
+        </tr>
+        <tr>
+          <td><strong>조시연</strong></td>
+          <td>아트/디자인</td>
+          <td>이펙트 제작, AI 생성 이미지 검수·디렉션</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ S02 팀원별 상세 역할 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">팀원별 상세 역할</span>
+  </div>
+
+  <div class="member-grid">
+
+    <!-- 유민경 -->
+    <div class="member-card">
+      <div class="member-avatar">⚙️</div>
+      <div class="member-name">유민경</div>
+      <div class="member-role-badge">DEVELOPER</div>
+      <ul class="member-tasks">
+        <li>React 기반 웹 게임 클라이언트 개발</li>
+        <li>프로토타입 Unity 버전 → React/Vite 이식</li>
+        <li>게임 리소스(이미지·사운드) 파이프라인 연결</li>
+        <li>Electron 래퍼로 데스크톱 실행파일 빌드</li>
+        <li>GitHub Pages 배포 및 CI/CD 구성</li>
+      </ul>
+    </div>
+
+    <!-- 고기혁 -->
+    <div class="member-card">
+      <div class="member-avatar">🗺️</div>
+      <div class="member-name">고기혁</div>
+      <div class="member-role-badge">PLANNER</div>
+      <ul class="member-tasks">
+        <li>AI 도구(Midjourney·DALL·E)로 게임 이미지 생성</li>
+        <li>항구 시세·수요·공급 밸런스 수치 설계</li>
+        <li>UI/UX 화면 흐름 및 HUD 레이아웃 기획</li>
+        <li>게임 루프·이벤트·날씨 시스템 기획</li>
+        <li>공모전 제출 서류 총괄 작성</li>
+      </ul>
+    </div>
+
+    <!-- 조시연 -->
+    <div class="member-card">
+      <div class="member-avatar">🎨</div>
+      <div class="member-name">조시연</div>
+      <div class="member-role-badge">ART / DESIGN</div>
+      <ul class="member-tasks">
+        <li>선박·항구 UI 이펙트 제작</li>
+        <li>AI 생성 이미지 품질 검수 및 디렉션</li>
+        <li>게임 내 아이콘·배너·스플래시 디자인</li>
+        <li>색채·폰트·레이아웃 비주얼 가이드 정의</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ S03 AI 활용 현황 -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">팀 내 AI 활용 현황</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:18%">담당자</th>
+          <th style="width:28%">활용 AI 도구</th>
+          <th>활용 목적</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>유민경</strong></td>
+          <td>Claude Code, GitHub Copilot</td>
+          <td>게임 로직 코드 생성·리팩토링, 빌드 스크립트 자동화</td>
+        </tr>
+        <tr>
+          <td><strong>고기혁</strong></td>
+          <td>Claude Code, Codex, Midjourney, DALL·E, ChatGPT</td>
+          <td>게임 기획 문서 작성·정리, AI 이미지 생성, 밸런스 수치 시뮬레이션</td>
+        </tr>
+        <tr>
+          <td><strong>조시연</strong></td>
+          <td>Midjourney, Adobe Firefly</td>
+          <td>이펙트 레퍼런스 생성, AI 이미지 후보군 검수 및 편집 디렉션</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  Pioneer Team &nbsp;·&nbsp; NAN 2026 제출용 팀원 롤 기술서 &nbsp;·&nbsp; 2026. 08.
+</div>
+
+</body>
+</html>

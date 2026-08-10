@@ -8,8 +8,8 @@ const path = require('path');
 const SAMPLE_RATE = 44100;
 const BPM = 72;
 const BEAT = 60 / BPM; // 0.8333초
-const BARS = 8;
-const DURATION = BARS * 4 * BEAT; // 26.667초
+const BARS = 12;
+const DURATION = BARS * 4 * BEAT; // 40.0초
 const NUM_SAMPLES = Math.round(DURATION * SAMPLE_RATE);
 
 // A minor pentatonic 음 (Hz)
@@ -98,6 +98,11 @@ const melodyNotes = [
   NOTE.G4, NOTE.E4, NOTE.D4, NOTE.C4,
   NOTE.D4, NOTE.E4, NOTE.G4, NOTE.E4,
   NOTE.D4, NOTE.C4, NOTE.A3, NOTE.A3,
+  // bars 9-12
+  NOTE.A3, NOTE.C4, NOTE.D4, NOTE.E4,
+  NOTE.G4, NOTE.A4, NOTE.G4, NOTE.E4,
+  NOTE.D4, NOTE.C4, NOTE.A3, NOTE.C4,
+  NOTE.E4, NOTE.D4, NOTE.C4, NOTE.A3,
 ];
 
 const noteDur = BEAT; // quarter note duration
@@ -136,6 +141,14 @@ const bassSequence = [
   { freq: NOTE.G3, beat: 26 },
   { freq: NOTE.A2, beat: 28 },  // bar 8
   { freq: NOTE.A2, beat: 30 },
+  { freq: NOTE.D3, beat: 32 },  // bar 9
+  { freq: NOTE.D3, beat: 34 },
+  { freq: NOTE.A2, beat: 36 },  // bar 10
+  { freq: NOTE.E3, beat: 38 },
+  { freq: NOTE.D3, beat: 40 },  // bar 11
+  { freq: NOTE.D3, beat: 42 },
+  { freq: NOTE.A2, beat: 44 },  // bar 12
+  { freq: NOTE.A2, beat: 46 },
 ];
 
 for (const b of bassSequence) {
@@ -198,14 +211,10 @@ function writeWav(samples, sampleRate, filename) {
   console.log(`  Samples : ${samples.length}`);
 }
 
-// 앞 8초만 추출하여 저장 (700KB 이하 유지)
-const LOOP_SAMPLES = Math.round(8.0 * SAMPLE_RATE); // 352,800 샘플
-const loopMix = mix.slice(0, LOOP_SAMPLES);
-
-// 출력 경로 확인 및 생성
+// 전체 40초 루프 저장
 const outDir = path.join('C:', 'Development', '2_Pioneer', 'src', 'assets');
 if (!fs.existsSync(outDir)) {
   fs.mkdirSync(outDir, { recursive: true });
 }
 const outPath = path.join(outDir, 'bgm_demo.wav');
-writeWav(loopMix, SAMPLE_RATE, outPath);
+writeWav(mix, SAMPLE_RATE, outPath);
