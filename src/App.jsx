@@ -28,10 +28,14 @@ import hudSaveUrl from './assets/hud-save.png';
 import hudDailyUrl from './assets/hud-daily.png';
 import hudHelpUrl from './assets/hud-help.png';
 import pioneerSubtitleUrl from './assets/pioneer-subtitle.png';
+import bgmDemoUrl from './assets/bgm_demo.wav';
 
 const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.png', { eager: true, query: '?url', import: 'default' });
 const SHIP_ICON_FILES = import.meta.glob('./assets/icons/ships/*.png', { eager: true, query: '?url', import: 'default' });
 const UI_ICON_FILES = import.meta.glob('./assets/icons/ui/*.png', { eager: true, query: '?url', import: 'default' });
+
+const DEMO_MODE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === '1';
+const DEMO_SPEED_MULT = 10;
 
 const RESOURCE_ICON_KEY = {
   '향신료': 'spice',
@@ -789,11 +793,11 @@ const OceanTycoon = () => {
   const [gs, setGsRaw] = useState(() => {
     const firstCrew = { ...makeCrew(), shipId: 1, specialty: null, navBonus: 0, tradeBonus: 0, rarity: 'common', label: null, repair: 10 };
     const v = {
-      gold: 0, gems: 3,
+      gold: DEMO_MODE ? 80000 : 0, gems: 3,
       ships: [{ id: 1, type: 'rowboat', name: '황금 수호자호',
         x: portHarbor('lisbon').x, y: portHarbor('lisbon').y, targetX: null, targetY: null, destinationX: null, destinationY: null, route: null, routeIndex: 0, startX: null, startY: null,
         isMoving: false, booster: false, stormUntil: null,
-        cargo: { '양털': 8 }, fuel: 100, hull: 100,
+        cargo: DEMO_MODE ? { '양털': 20, '비단': 8 } : { '양털': 8 }, fuel: 100, hull: 100,
         upgrades: { speed: 0, cargo: 0, crew: 0 }, morale: 100 }],
       crew: [firstCrew],
       availableCrew: Array.from({ length: 6 }, () => makeCrew('europe')),
@@ -819,9 +823,9 @@ const OceanTycoon = () => {
     });
   }, []);
 
-  const [introSlide,    setIntroSlide]    = useState(0);
+  const [introSlide,    setIntroSlide]    = useState(DEMO_MODE ? INTRO_SLIDES.length : 0);
   // 'depart' → 'sailing' → 'sell' → 'buy' → 'done'
-  const [tutorialPhase, setTutorialPhase] = useState('select');
+  const [tutorialPhase, setTutorialPhase] = useState(DEMO_MODE ? 'done' : 'select');
   const [selShip,       setSelShipRaw]    = useState(1);
   const [tab,           setTab]           = useState('info');
   const [showBuy,       setShowBuy]       = useState(false);
@@ -852,7 +856,7 @@ const OceanTycoon = () => {
   const [missionSubTab, setMissionSubTab] = useState('daily');
   const [mapEvents,     setMapEvents]     = useState([]);
   const [saveExists,    setSaveExists]    = useState(() => !!localStorage.getItem('pioneer_save'));
-  const [saveDecided,   setSaveDecided]   = useState(false);
+  const [saveDecided,   setSaveDecided]   = useState(DEMO_MODE ? true : false);
   const [lastSaved,     setLastSaved]     = useState(null);
   const [tradeDone,     setTradeDone]     = useState(null); // { type: 'buy'|'sell', ts: number } — 0.8s 완료 피드백
   const [bigTradePopup, setBigTradePopup] = useState(null); // { amount: number, id: number } — 큰 거래 보상 연출
@@ -1273,7 +1277,7 @@ const OceanTycoon = () => {
           }
           const isStormed = s.stormUntil && Date.now() < s.stormUntil;
           const effectiveBooster = s.booster && (s.fuel ?? 100) > 5;
-          const sp = st.speed * (effectiveBooster ? BOOSTER_SPEED_MULT : 1.0) * (isStormed ? 0.4 : 1.0) * st.weather.speedMult;
+          const sp = st.speed * (effectiveBooster ? BOOSTER_SPEED_MULT : 1.0) * (isStormed ? 0.4 : 1.0) * st.weather.speedMult * (DEMO_MODE ? DEMO_SPEED_MULT : 1);
           const baseFuel = effectiveBooster ? 0.015 * BOOSTER_FUEL_COST_MULT : 0.015;
           const fuelCost = baseFuel * st.fuelEffMult * st.weather.fuelMult;
           const a  = Math.atan2(dy, dx);
@@ -1951,6 +1955,158 @@ const OceanTycoon = () => {
     setMapEvents(prev => prev.map(e => e.id === evtId ? { ...e, claimed: true } : e));
     addLog(`${evt.icon} ${evt.label.replace('!', '')} — ${evt.reward.toLocaleString()}금 획득!`);
   }, [mapEvents, setGs, addLog]);
+
+  // ── Demo BGM ──
+  useEffect(() => {
+    if (!DEMO_MODE) return;
+    const audio = new Audio(bgmDemoUrl);
+    audio.loop = true;
+    audio.volume = 0;
+    const play = () => {
+      audio.play().catch(() => {});
+      let v = 0;
+      const fade = setInterval(() => { v = Math.min(0.42, v + 0.02); audio.volume = v; if (v >= 0.42) clearInterval(fade); }, 80);
+    };
+    // 첫 인터랙션 후 재생 (브라우저 정책)
+    const onFirst = () => { play(); document.removeEventListener('pointerdown', onFirst); document.removeEventListener('keydown', onFirst); };
+    document.addEventListener('pointerdown', onFirst);
+    document.addEventListener('keydown', onFirst);
+    // 데모 모드는 자동 시작 시도
+    setTimeout(() => { play(); document.removeEventListener('pointerdown', onFirst); document.removeEventListener('keydown', onFirst); }, 800);
+    return () => { audio.pause(); audio.src = ''; };
+  }, []);
+
+  // ── Demo auto-pilot ──
+  useEffect(() => {
+    if (!DEMO_MODE || !pricesReady) return;
+
+    // 전략 선택 함수
+    const pickStrategy = (snapshot, pk) => {
+      const roll = Math.random();
+      if (roll < 0.15) return 'explore';      // 새 항구 탐험
+      if (roll < 0.30) return 'volume';       // 대량 저가 화물
+      if (roll < 0.50) return 'premium';      // 소량 고가 화물
+      return 'best';                          // 최고 수익
+    };
+
+    // 최적 거래 탐색
+    const findTrade = (snapshot, pk, strategy) => {
+      const ship = snapshot.ships.find(s => s.id === selShipRef.current);
+      if (!ship) return null;
+      const stats = calcStats(ship, snapshot.crew);
+      const cap = stats.capacity;
+      const used = Object.values(ship.cargo || {}).reduce((a, v) => a + v, 0);
+      const available = Math.max(1, cap - used);
+      const spendable = Math.max(1000, snapshot.gold * 0.7);
+      const visited = (snapshot.visitedPorts || []).filter(k => k !== pk && prices[k]);
+      if (!visited.length) return null;
+
+      let candidates = [];
+      Object.keys(RESOURCES).forEach(res => {
+        const buyBase = prices[pk]?.[res];
+        if (!buyBase || buyBase <= 0) return;
+        const buyPrice = calcBuyPrice(buyBase, stats.tradePct);
+        const singleCost = getBuyTotal(buyPrice, 1);
+        if (singleCost > spendable) return;
+        visited.forEach(destPk => {
+          const sellBase = prices[destPk]?.[res];
+          if (!sellBase || sellBase <= buyBase) return;
+          const sellPrice = calcSellPrice(sellBase, stats.tradePct);
+          const feeRate = getFeeRate(stats.tradePct);
+          const maxByGold = Math.max(1, Math.floor(spendable / singleCost));
+          const qty = Math.min(available, maxByGold, strategy === 'volume' ? 50 : 30);
+          if (qty < 1) return;
+          const profit = getSellTotal(sellPrice, qty, feeRate) - getBuyTotal(buyPrice, qty);
+          candidates.push({ res, destPk, qty, profit, price: buyPrice });
+        });
+      });
+      if (!candidates.length) return null;
+
+      candidates.sort((a, b) => b.profit - a.profit);
+      if (strategy === 'explore') {
+        // 방문 횟수 적은 항구 우선
+        const lessVisited = candidates.filter((_, i) => i > candidates.length * 0.3);
+        return lessVisited[0] || candidates[0];
+      }
+      if (strategy === 'premium') return candidates[0]; // 최고 수익
+      if (strategy === 'volume') {
+        // 단가 낮고 수량 많은 것
+        const byQty = [...candidates].sort((a, b) => b.qty - a.qty);
+        return byQty[0];
+      }
+      return candidates[0];
+    };
+
+    let phase = 0; // 0=selling, 1=buying, 2=sailing
+    let pendingDest = null;
+    let showMarketTimer = null;
+    let tabTimer = null;
+
+    const TABS = ['info', 'cargo', 'crew', 'mission'];
+    let tabIdx = 0;
+
+    const tick = () => {
+      const snapshot = gsRef.current;
+      const ship = snapshot.ships.find(s => s.id === selShipRef.current);
+      if (!ship) return;
+
+      // 항해 중 → 카메라 팔로우 ON + 가끔 탭 전환
+      if (ship.isMoving) {
+        setFollowShip(true);
+        return;
+      }
+
+      setFollowShip(false);
+      const pk = portOf(ship);
+      if (!pk || !prices[pk]) return;
+
+      // 도착 시 마켓 패널 잠깐 열기
+      if (showMarketTimer) { clearTimeout(showMarketTimer); showMarketTimer = null; }
+      setShowMarket(true);
+      showMarketTimer = setTimeout(() => setShowMarket(false), 1800);
+
+      // 화물 전량 판매
+      const cargo = ship.cargo || {};
+      Object.entries(cargo).forEach(([res, qty]) => { if (qty > 0) doSell(res, qty); });
+
+      // 탭 순환 (현황 → 화물 → 승무원 → 임무)
+      if (tabTimer) clearTimeout(tabTimer);
+      tabTimer = setTimeout(() => {
+        tabIdx = (tabIdx + 1) % TABS.length;
+        setTab(TABS[tabIdx]);
+      }, 600);
+
+      // 거래 탐색 및 출항
+      const strategy = pickStrategy(snapshot, pk);
+      const trade = findTrade(snapshot, pk, strategy);
+
+      setTimeout(() => {
+        setShowMarket(false);
+        if (trade) {
+          doBuy(trade.res, trade.qty);
+          setTimeout(() => {
+            chooseDestinationPort(trade.destPk);
+            setFollowShip(true);
+          }, 400);
+        } else {
+          // 수익 루트 없으면 가장 멀리 있는 방문 항구로 이동
+          const visited = (snapshot.visitedPorts || []).filter(k => k !== pk);
+          if (visited.length) {
+            const dest = visited[Math.floor(Math.random() * visited.length)];
+            chooseDestinationPort(dest);
+            setFollowShip(true);
+          }
+        }
+      }, 2000);
+    };
+
+    const id = setInterval(tick, 3000);
+    return () => {
+      clearInterval(id);
+      if (showMarketTimer) clearTimeout(showMarketTimer);
+      if (tabTimer) clearTimeout(tabTimer);
+    };
+  }, [pricesReady, prices, doBuy, doSell, chooseDestinationPort, setFollowShip, setTab, setShowMarket]);
 
   const portGuard   = (l) => <div className="text-center py-4 text-gray-500 text-sm">⚓ 항구에 정박해야<br/>{l}을 이용할 수 있습니다.</div>;
   const gaugeColor  = (v) => v > 60 ? 'bg-green-500' : v > 30 ? 'bg-yellow-500' : 'bg-red-500';
@@ -3427,14 +3583,7 @@ const OceanTycoon = () => {
                   ))}
                 </div>
                 <div className="fleet-trade-actions">
-                  <div className="fleet-trade-copy">
-                    <span className="fleet-trade-summary" title={fleetTradeFlow.summary}>{fleetTradeFlow.summary}</span>
-                    <div className="fleet-trade-result-cue" aria-label="항해 복귀 브리핑">
-                      <span><b>복귀 상태</b>{fleetTradeFlow.resultCue.cause}</span>
-                      <span><b>수익 · 손실</b>{fleetTradeFlow.resultCue.delta}</span>
-                      <span><b>다음 추천</b>{fleetTradeFlow.resultCue.nextAction}</span>
-                    </div>
-                  </div>
+                  <span className="fleet-trade-summary" title={fleetTradeFlow.summary}>{fleetTradeFlow.summary}</span>
                   <button
                     type="button"
                     className="fleet-trade-back"
@@ -3458,6 +3607,11 @@ const OceanTycoon = () => {
                   >
                     {fleetTradeFlow.primaryAction.label}
                   </button>
+                </div>
+                <div className="fleet-trade-result-cue" aria-label="항해 복귀 브리핑">
+                  <span><b>현재 상태</b>{fleetTradeFlow.resultCue.cause}</span>
+                  <span><b>손익</b>{fleetTradeFlow.resultCue.delta}</span>
+                  <span><b>다음 행동</b>{fleetTradeFlow.resultCue.nextAction}</span>
                 </div>
               </div>
               <div className="flex gap-0.5 mb-2">

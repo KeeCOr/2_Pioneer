@@ -503,14 +503,7 @@ body {
   margin-top: 7px;
 }
 
-.fleet-trade-copy {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-}
-
-.fleet-trade-summary,
-.fleet-trade-result-cue {
+.fleet-trade-summary {
   min-width: 0;
   overflow-wrap: anywhere;
   white-space: normal;
@@ -522,20 +515,30 @@ body {
 
 .fleet-trade-result-cue {
   display: grid;
-  gap: 3px;
-  color: rgba(186, 230, 253, 0.86);
-  font-size: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(248, 201, 106, 0.14);
 }
 .fleet-trade-result-cue span {
-  display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
-  gap: 8px;
-  align-items: baseline;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 1.25;
+  color: rgba(186, 230, 253, 0.86);
+  overflow-wrap: anywhere;
 }
 .fleet-trade-result-cue b {
+  display: block;
   color: #f8d989;
-  font-size: 0.7rem;
-  letter-spacing: 0;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  opacity: 0.85;
 }
 
 .fleet-trade-back,
@@ -591,6 +594,10 @@ body {
   }
 
   .fleet-trade-actions {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .fleet-trade-result-cue {
     grid-template-columns: minmax(0, 1fr);
   }
 
