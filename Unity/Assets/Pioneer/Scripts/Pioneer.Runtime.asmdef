@@ -1,7 +1,9 @@
 {
     "name": "Pioneer.Runtime",
     "rootNamespace": "Pioneer",
-    "references": [],
+    "references": [
+        "Unity.TextMeshPro"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
