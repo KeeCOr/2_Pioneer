@@ -1,0 +1,24 @@
+"AppBuild"
+{
+    "AppID"         "REPLACE_WITH_REAL_APP_ID"
+    "Desc"          "Pioneer v1.9.0"
+    "BuildOutput"   "../../steamcmd_output/"
+    "ContentRoot"   "..\dist\"
+    "SetLive"       ""
+    "Preview"       "0"
+
+    "Depots"
+    {
+        "REPLACE_WITH_DEPOT_ID"
+        {
+            "FileMapping"
+            {
+                "LocalPath"     "*"
+                "DepotPath"     "."
+                "recursive"     "1"
+            }
+            "FileExclusion"     "*.pdb"
+            "FileExclusion"     "*.map"
+        }
+    }
+}
