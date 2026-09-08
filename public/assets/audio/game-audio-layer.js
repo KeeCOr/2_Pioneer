@@ -362,6 +362,8 @@
     if (!state) return null;
     return {
       started: state.started,
+      // Compatibility summary for integrations that predate independent mutes.
+      muted: state.settings.bgmMuted && state.settings.sfxMuted,
       bgmMuted: state.settings.bgmMuted,
       sfxMuted: state.settings.sfxMuted,
       bgmVolume: state.settings.bgmVolume,
@@ -379,7 +381,10 @@
     for (var i = 0; i < toClean.length; i++) cleanupEntry(toClean[i]);
     clearAllDucking();
     state.bgm.pause();
-    if (state.ui && state.ui.root && state.ui.root.parentNode) state.ui.root.parentNode.removeChild(state.ui.root);
+    if (state.ui && state.ui.root && state.ui.root.parentNode) {
+      if (typeof state.ui.root.parentNode.removeChild === 'function') state.ui.root.parentNode.removeChild(state.ui.root);
+      else if (typeof state.ui.root.remove === 'function') state.ui.root.remove();
+    }
     state = null;
   }
 
@@ -418,4 +423,3 @@
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
-
