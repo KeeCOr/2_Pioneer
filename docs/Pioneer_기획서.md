@@ -280,3 +280,12 @@ Pioneer??"媛??鍮꾩떬 怨녹뿉 ?붾㈃ ?닿린??寃뚯엫"?대씪湲곕낫
 - <span style="color:#d93025">플레이어 매수/매도 영향은 대기 주기에 묶지 않고 거래 직후 해당 항구·품목 가격에 즉시 반영한다.</span>
 - <span style="color:#d93025">대형 시장 사건은 플레이어 거래량과 독립된 외부 충격으로 처리하며, 정보 예측과 수주 목록 순환은 대형 사건 주기에 맞췄다.</span>
 - <span style="color:#d93025">검증: npm test 32개 통과, npm run build 통과, Pioneer_v1.8.0_portable.exe 생성 및 배치 완료.</span>
+
+## 오디오 시스템 (2026-09-08 업데이트)
+
+- **BGM**: Kenney Music Loops의 CC0 OGG 루프 1곡
+- **SFX**: 자체 제작한 결정론적 CC0 WAV 6종으로 입력·액션·위험·전환·성공·실패 구분
+- **설정**: BGM과 SFX 볼륨 및 음소거 상태를 분리 저장
+- **재생**: 브라우저는 사용자 제스처 이후 시작하며 Unity는 Resources 기반 AudioSource로 로드
+- **권장 믹스**: BGM 0.28, SFX 0.70
+- **라이선스**: 각 오디오 자산 폴더에 CC0 고지 보관

@@ -28,7 +28,6 @@ import hudSaveUrl from './assets/hud-save.png';
 import hudDailyUrl from './assets/hud-daily.png';
 import hudHelpUrl from './assets/hud-help.png';
 import pioneerSubtitleUrl from './assets/pioneer-subtitle.png';
-import bgmDemoUrl from './assets/bgm_demo.wav';
 
 const RESOURCE_ICON_FILES = import.meta.glob('./assets/icons/resources/*.png', { eager: true, query: '?url', import: 'default' });
 const SHIP_ICON_FILES = import.meta.glob('./assets/icons/ships/*.png', { eager: true, query: '?url', import: 'default' });
@@ -1955,26 +1954,6 @@ const OceanTycoon = () => {
     setMapEvents(prev => prev.map(e => e.id === evtId ? { ...e, claimed: true } : e));
     addLog(`${evt.icon} ${evt.label.replace('!', '')} — ${evt.reward.toLocaleString()}금 획득!`);
   }, [mapEvents, setGs, addLog]);
-
-  // ── Demo BGM ──
-  useEffect(() => {
-    if (!DEMO_MODE) return;
-    const audio = new Audio(bgmDemoUrl);
-    audio.loop = true;
-    audio.volume = 0;
-    const play = () => {
-      audio.play().catch(() => {});
-      let v = 0;
-      const fade = setInterval(() => { v = Math.min(0.42, v + 0.02); audio.volume = v; if (v >= 0.42) clearInterval(fade); }, 80);
-    };
-    // 첫 인터랙션 후 재생 (브라우저 정책)
-    const onFirst = () => { play(); document.removeEventListener('pointerdown', onFirst); document.removeEventListener('keydown', onFirst); };
-    document.addEventListener('pointerdown', onFirst);
-    document.addEventListener('keydown', onFirst);
-    // 데모 모드는 자동 시작 시도
-    setTimeout(() => { play(); document.removeEventListener('pointerdown', onFirst); document.removeEventListener('keydown', onFirst); }, 800);
-    return () => { audio.pause(); audio.src = ''; };
-  }, []);
 
   // ── Demo auto-pilot ──
   useEffect(() => {

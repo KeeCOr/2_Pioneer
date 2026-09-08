@@ -1,6 +1,6 @@
 {
     "name": "pioneer",
-    "version": "1.8.2",
+    "version": "1.9.0",
     "description": "Pioneer: ocean trade and fleet-management simulation game.",
     "type": "module",
     "scripts": {
