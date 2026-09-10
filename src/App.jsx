@@ -3519,8 +3519,8 @@ const OceanTycoon = () => {
                           style={{left:sx, top:sy, transform:'translate(-50%,-50%)', zIndex:12}}
                           onClick={evt.clickable?(e)=>{e.stopPropagation();claimEvent(evt.id);}:undefined}>
                           <div className="text-xl animate-bounce drop-shadow-lg">{evt.icon}</div>
-                          {zoom >= 1.45 && <div className="text-white font-bold whitespace-nowrap bg-black/70 px-1 py-0.5 rounded mt-0.5"
-                            style={{fontSize:'0.45rem',textShadow:'0 0 4px #000'}}>
+                          {zoom >= 1.45 && <div className={`absolute top-full left-1/2 -translate-x-1/2 text-white font-bold bg-black/70 px-1 py-0.5 rounded mt-0.5`}
+                            style={{fontSize:'clamp(0.7rem, 1.6vw, 0.85rem)',lineHeight:1.2,maxWidth:'min(28vw, 160px)',whiteSpace:'normal',overflowWrap:'anywhere',textShadow:'0 0 4px #000'}}>
                             {evt.label}{evt.clickable&&!evt.claimed&&evt.reward>0?' (클릭!)':''}
                           </div>}
                         </div>

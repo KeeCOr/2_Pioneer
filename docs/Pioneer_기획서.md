@@ -1,6 +1,6 @@
 # Pioneer 湲고쉷??
 
-> 버전 v1.8.1 · 2026-08-05
+> 버전 v1.9.1 · 2026-09-10
 
 ---
 
@@ -289,3 +289,10 @@ Pioneer??"媛??鍮꾩떬 怨녹뿉 ?붾㈃ ?닿린??寃뚯엫"?대씪湲곕낫
 - **재생**: 브라우저는 사용자 제스처 이후 시작하며 Unity는 Resources 기반 AudioSource로 로드
 - **권장 믹스**: BGM 0.28, SFX 0.70
 - **라이선스**: 각 오디오 자산 폴더에 CC0 고지 보관
+
+## 2026-09-10 v1.9.1 World-Map Event Label Readability
+
+- 월드맵 항해 이벤트 라벨을 아이콘 아래에 절대 위치(`absolute top-full left-1/2 -translate-x-1/2`)로 고정해, 라벨 유무·길이와 무관하게 아이콘의 맵 좌표가 흔들리지 않도록 했다.
+- 읽기 어려웠던 `fontSize: 0.45rem` 고정값과 `whitespace-nowrap`을 제거하고, `clamp(0.7rem, 1.6vw, 0.85rem)` 반응형 글자 크기, `lineHeight: 1.2` 압축 행간, `maxWidth: min(28vw, 160px)` 뷰포트 안전 폭, `overflowWrap: anywhere`(줄바꿈 허용)으로 교체했다.
+- 한글 UI 폰트 스택을 `Pretendard, 'Noto Sans KR', 'Malgun Gothic'`이 `Segoe UI` 등 시스템 폴백보다 우선하도록 조정했다.
+- 소스 계약 테스트(`tests/ui-event-label-contract.test.cjs`)를 추가해 이벤트 라벨 앵커 기하 구조, 가독성 있는 타이포그래피/줄바꿈, 한글 폰트 폴백 순서, `Pioneer_v${version}_portable.exe` 포터블 아티팩트 명명 규칙을 회귀로부터 보호한다.

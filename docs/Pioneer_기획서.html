@@ -20,9 +20,9 @@
 </head>
 <body>
 <h1>Pioneer 湲고쉷??</h1>
-<p class="meta">버전 v1.8.1 · 2026-08-05</p>
+<p class="meta">버전 v1.9.1 · 2026-09-10</p>
 <blockquote>
-<p>버전 v1.8.1 · 2026-08-05</p>
+<p>버전 v1.9.1 · 2026-09-10</p>
 </blockquote>
 <hr>
 <h2>臾몄젣 ?뺤쓽</h2>
@@ -299,6 +299,16 @@
       <li><strong>재생</strong>: 브라우저는 사용자 제스처 이후 시작하며 Unity는 Resources 기반 AudioSource로 로드</li>
       <li><strong>권장 믹스</strong>: BGM 0.28, SFX 0.70</li>
       <li><strong>라이선스</strong>: 각 오디오 자산 폴더에 CC0 고지 보관</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>2026-09-10 v1.9.1 World-Map Event Label Readability</h2>
+    <ul>
+      <li>월드맵 항해 이벤트 라벨을 아이콘 아래에 절대 위치(<code>absolute top-full left-1/2 -translate-x-1/2</code>)로 고정해, 라벨 유무·길이와 무관하게 아이콘의 맵 좌표가 흔들리지 않도록 했다.</li>
+      <li>읽기 어려웠던 <code>fontSize: 0.45rem</code> 고정값과 <code>whitespace-nowrap</code>을 제거하고, <code>clamp(0.7rem, 1.6vw, 0.85rem)</code> 반응형 글자 크기, <code>lineHeight: 1.2</code> 압축 행간, <code>maxWidth: min(28vw, 160px)</code> 뷰포트 안전 폭, <code>overflowWrap: anywhere</code>(줄바꿈 허용)으로 교체했다.</li>
+      <li>한글 UI 폰트 스택을 <code>Pretendard, 'Noto Sans KR', 'Malgun Gothic'</code>이 <code>Segoe UI</code> 등 시스템 폴백보다 우선하도록 조정했다.</li>
+      <li>소스 계약 테스트(<code>tests/ui-event-label-contract.test.cjs</code>)를 추가해 이벤트 라벨 앵커 기하 구조, 가독성 있는 타이포그래피/줄바꿈, 한글 폰트 폴백 순서, <code>Pioneer_v${version}_portable.exe</code> 포터블 아티팩트 명명 규칙을 회귀로부터 보호한다.</li>
     </ul>
   </section>
 </body>
