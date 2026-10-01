@@ -1,0 +1,610 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0f1419;
+  color: #e4d5c9;
+}
+
+/* Animation definitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(212, 165, 116, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(212, 165, 116, 1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes gold-float-up {
+  0%   { opacity: 1;   transform: translateY(0);    }
+  70%  { opacity: 1;   transform: translateY(-16px); }
+  100% { opacity: 0;   transform: translateY(-28px); }
+}
+
+.animate-gold-float {
+  animation: gold-float-up 1.5s ease-out forwards;
+  pointer-events: none;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.4s ease-out;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s;
+}
+
+@keyframes ship-bob {
+  0%, 100% { transform: translateY(-1px) rotate(-1deg); }
+  50% { transform: translateY(2px) rotate(1deg); }
+}
+
+.ocean-map {
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(96, 205, 244, 0.48), transparent 32%),
+    radial-gradient(ellipse at 80% 40%, rgba(42, 171, 214, 0.38), transparent 40%),
+    radial-gradient(ellipse at 48% 76%, rgba(2, 105, 174, 0.42), transparent 48%),
+    linear-gradient(180deg, #197db3 0%, #0b5f99 36%, #06406f 68%, #032543 100%);
+}
+
+.ocean-map::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(ellipse at center, rgba(224, 250, 255, 0.14) 0 1px, transparent 1px 100%),
+    repeating-linear-gradient(166deg, rgba(224, 250, 255, 0.105) 0 1px, transparent 1px 18px),
+    repeating-linear-gradient(24deg, rgba(56, 189, 248, 0.10) 0 1px, transparent 1px 32px),
+    radial-gradient(circle at 52% 42%, rgba(248, 201, 106, 0.07), transparent 45%);
+  background-size: 46px 18px, 180px 78px, 136px 104px, 100% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.82;
+}
+
+.ocean-map::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 30% 16%, rgba(255, 255, 255, 0.14), transparent 24%),
+    linear-gradient(90deg, rgba(3,8,20,0.10), transparent 20%, transparent 80%, rgba(3,8,20,0.18)),
+    linear-gradient(180deg, rgba(255,255,255,0.08), transparent 18%, transparent 78%, rgba(0,0,0,0.22));
+  box-shadow: inset 0 0 64px rgba(0,0,0,0.30);
+}
+
+.ocean-current-line {
+  stroke-dasharray: 18 14;
+}
+
+.ship-wake-line {
+  stroke-dasharray: 10 12;
+}
+
+.ship-at-sea {
+  animation: ship-bob 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.ship-map-button {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.ship-map-button.is-moving {
+  filter: drop-shadow(0 5px 6px rgba(2, 6, 23, 0.68));
+}
+
+.fleet-sails {
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ship-map-button.is-moving .fleet-sails {
+  opacity: 1;
+}
+
+.fleet-sail {
+  position: absolute;
+  width: 17px;
+  height: 11px;
+  background:
+    linear-gradient(135deg, transparent 0 18%, #fffaf0 20% 56%, #bfefff 58% 100%);
+  border-radius: 70% 12% 70% 12%;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.68), 0 3px 4px rgba(0, 0, 0, 0.45);
+}
+
+.fleet-sail:nth-child(1) {
+  left: -1px;
+  top: 8px;
+  transform: rotate(-17deg) scale(0.9);
+}
+
+.fleet-sail:nth-child(2) {
+  right: -2px;
+  top: 11px;
+  transform: rotate(14deg) scale(0.78);
+}
+
+.fleet-sail:nth-child(3) {
+  left: 16px;
+  bottom: -2px;
+  transform: rotate(4deg) scale(0.72);
+}
+
+.ship-map-label {
+  position: absolute;
+  left: 50%;
+  top: 44px;
+  transform: translateX(-50%);
+  max-width: min(8.5rem, 36vw);
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(2, 6, 23, 0.78);
+  color: #fef3c7;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
+}
+
+.asset-icon {
+  display: inline-block;
+  object-fit: contain;
+  flex: 0 0 auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.resource-asset-icon {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.65));
+}
+
+.ship-asset-icon {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.72));
+}
+
+.ui-asset-icon {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+.icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* Card styles */
+.card {
+  @apply bg-gradient-to-b from-ocean-blue to-ocean-dark border border-gold rounded-lg p-4 shadow-lg;
+  background-image: linear-gradient(180deg, rgba(26, 59, 92, 0.96), rgba(10, 26, 47, 0.98));
+  border-color: rgba(248, 201, 106, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
+.button-gold {
+  @apply bg-gradient-to-r from-gold to-gold-light text-ocean-dark font-bold py-2 px-4 rounded hover:shadow-lg transition-all;
+  background-image: linear-gradient(180deg, #f8d989 0%, #d4a574 58%, #b77a3d 100%);
+  border: 1px solid rgba(255, 237, 160, 0.52);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.button-gold:hover {
+  @apply transform -translate-y-1;
+  filter: brightness(1.08);
+}
+
+.button-ocean {
+  @apply bg-gradient-to-r from-ocean-light to-ocean-blue text-gold font-bold py-2 px-4 rounded hover:shadow-lg transition-all;
+  background-image: linear-gradient(180deg, #2f80b7 0%, #1a3b5c 58%, #0a1a2f 100%);
+  border: 1px solid rgba(125, 211, 252, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.button-ocean:hover {
+  @apply transform -translate-y-1;
+  filter: brightness(1.1);
+}
+
+.game-panel-frame {
+  background-image: linear-gradient(180deg, rgba(17, 39, 62, 0.98), rgba(5, 14, 26, 0.98));
+  border-color: rgba(248, 201, 106, 0.26) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.game-modal-frame {
+  background-image:
+    url('./assets/frames/modal-nautical.png'),
+    linear-gradient(180deg, rgba(12, 28, 45, 0.99), rgba(4, 12, 23, 0.99));
+  background-size: 100% 100%, auto;
+  background-repeat: no-repeat;
+  border-color: rgba(248, 201, 106, 0.32) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 22px 58px rgba(0, 0, 0, 0.56);
+}
+
+.game-button-gold-frame {
+  background-image: linear-gradient(180deg, #f8d989, #d4a574 58%, #9b6a35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 16px rgba(0,0,0,0.22);
+}
+
+.game-button-ocean-frame {
+  background-image: linear-gradient(180deg, #2879ad, #16395b 58%, #071827);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 8px 16px rgba(0,0,0,0.22);
+}
+
+.inventory-slot-frame {
+  background-image: linear-gradient(180deg, rgba(20, 32, 54, 0.88), rgba(3, 7, 18, 0.96));
+  border-color: rgba(248, 201, 106, 0.22) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.nautical-hud {
+  background:
+    linear-gradient(180deg, rgba(10, 25, 42, 0.96), rgba(3, 10, 18, 0.98));
+  border-color: rgba(248, 201, 106, 0.38) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 18px rgba(0, 0, 0, 0.24);
+}
+
+.market-command-panel {
+  background-image:
+    radial-gradient(ellipse at 18% 0%, rgba(56, 189, 248, 0.13), transparent 34%),
+    radial-gradient(ellipse at 82% 12%, rgba(248, 201, 106, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(10, 28, 47, 0.99), rgba(3, 10, 18, 0.99));
+}
+
+.market-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 16px 0;
+}
+
+.market-summary-chip {
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid rgba(248, 201, 106, 0.18);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.38);
+  padding: 8px 10px;
+}
+
+.market-summary-chip span {
+  display: block;
+  min-width: 0;
+  color: rgba(203, 213, 225, 0.78);
+  font-size: 10px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.market-summary-chip b {
+  display: block;
+  min-width: 0;
+  color: #f8e1a5;
+  font-size: 14px;
+  line-height: 1.25;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.ship-status-hero {
+  border: 1px solid rgba(248, 201, 106, 0.18);
+  border-radius: 8px;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(125, 211, 252, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(15, 42, 66, 0.92), rgba(3, 10, 18, 0.94));
+  padding: 10px;
+}
+
+.ship-status-emblem {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid rgba(248, 201, 106, 0.26);
+  background:
+    linear-gradient(180deg, rgba(248, 201, 106, 0.14), rgba(2, 6, 23, 0.62));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+.ship-stat-chip {
+  min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 6px 8px;
+}
+
+.ship-stat-chip span {
+  display: block;
+  min-width: 0;
+  color: rgba(203, 213, 225, 0.74);
+  font-size: 10px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.ship-stat-chip b {
+  display: block;
+  min-width: 0;
+  color: #f8e1a5;
+  font-size: 12px;
+  line-height: 1.2;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.port-nameplate {
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.88), rgba(0, 0, 0, 0.78));
+  border: 1px solid rgba(248, 201, 106, 0.2) !important;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.28);
+}
+
+.currency-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(248, 201, 106, 0.42);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(6, 12, 22, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(0, 0, 0, 0.22);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.currency-pill-gem {
+  border-color: rgba(125, 211, 252, 0.44);
+}
+
+.currency-mark {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.currency-value {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.fleet-trade-flow {
+  border: 1px solid rgba(248, 201, 106, 0.2);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(15, 42, 66, 0.86), rgba(3, 10, 18, 0.94));
+  padding: 8px;
+}
+
+.fleet-trade-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.fleet-trade-step {
+  min-height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.62);
+  color: rgba(203, 213, 225, 0.78);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 5px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.fleet-trade-step.is-ready,
+.fleet-trade-step.is-active {
+  border-color: rgba(248, 201, 106, 0.48);
+  color: #f8e1a5;
+  background: rgba(120, 79, 22, 0.24);
+}
+
+.fleet-trade-step.is-needs-attention {
+  border-color: rgba(250, 204, 21, 0.5);
+  color: #fde68a;
+  background: rgba(113, 63, 18, 0.34);
+}
+
+.fleet-trade-step.is-blocked {
+  border-color: rgba(248, 113, 113, 0.38);
+  color: #fecaca;
+  background: rgba(69, 10, 10, 0.28);
+}
+
+.fleet-trade-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, auto);
+  gap: 6px;
+  align-items: center;
+  margin-top: 7px;
+}
+
+.fleet-trade-summary {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.fleet-trade-result-cue {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(248, 201, 106, 0.14);
+}
+.fleet-trade-result-cue span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 1.25;
+  color: rgba(186, 230, 253, 0.86);
+  overflow-wrap: anywhere;
+}
+.fleet-trade-result-cue b {
+  display: block;
+  color: #f8d989;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.fleet-trade-back,
+.fleet-trade-primary {
+  min-width: 0;
+  max-width: min(9.5rem, 34vw);
+  min-height: 34px;
+  border-radius: 7px;
+  padding: 0 9px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.fleet-trade-back {
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.fleet-trade-primary {
+  border: 1px solid rgba(248, 201, 106, 0.54);
+  color: #0a1a2f;
+  background: #f8c96a;
+}
+
+.fleet-trade-back:disabled,
+.fleet-trade-primary:disabled {
+  opacity: 0.45;
+}
+
+.inventory-slot-frame > .absolute.bottom-full,
+.ocean-map .port-nameplate,
+.ocean-map .absolute.whitespace-nowrap {
+  max-width: min(12rem, calc(100vw - 24px));
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.ocean-map .port-nameplate {
+  width: max-content;
+  max-width: min(7.5rem, 30vw);
+}
+
+@media (max-width: 520px) {
+  .market-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-inline: 10px;
+  }
+
+  .fleet-trade-actions {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .fleet-trade-result-cue {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fleet-trade-back,
+  .fleet-trade-primary {
+    width: 100%;
+    max-width: none;
+  }
+}
+
