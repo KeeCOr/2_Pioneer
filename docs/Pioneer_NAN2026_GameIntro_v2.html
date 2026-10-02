@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pioneer — NAN 2026 게임 소개서</title>
+  <style>
+    @media print { body { max-width: 100%; padding: 20px; } }
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;line-height:1.7;max-width:900px;margin:0 auto;padding:48px 32px;color:#1a1e26;background:#fff}
+    h1{font-size:32px;margin:0 0 6px;letter-spacing:-0.5px}
+    h2{font-size:20px;margin-top:36px;border-bottom:2px solid #e8eaed;padding-bottom:8px;color:#2c2f36}
+    h3{font-size:16px;margin-top:24px;color:#444}
+    h4{font-size:15px;margin-top:18px;color:#555}
+    p,li,pre{font-size:15px;line-height:1.75}
+    li{margin:4px 0}
+    pre{white-space:pre-wrap;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:14px 16px;font-family:monospace;font-size:13.5px}
+    table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+    th,td{border:1px solid #dde1e7;padding:9px 13px;text-align:left}
+    th{background:#f3f4f6;font-weight:600;color:#333}
+    tr:nth-child(even) td{background:#fafbfc}
+    .meta{color:#777;font-size:13px;margin-bottom:36px;border-bottom:1px solid #eee;padding-bottom:12px}
+    hr{border:none;border-top:1px solid #e8eaed;margin:32px 0}
+    blockquote{border-left:4px solid #4f8ef7;margin:16px 0;padding:10px 18px;color:#444;background:#f0f4ff;border-radius:0 8px 8px 0;font-style:italic}
+    code{background:#f0f0f0;border-radius:4px;padding:2px 6px;font-size:13px;font-family:monospace}
+    a{color:#4f8ef7}
+  </style>
+</head>
+<body>
+<h1>Pioneer — NAN 2026 게임 소개서</h1>
+<p><strong>장르:</strong> 항해 무역 / 함대 경영 / 캐주얼 전략 시뮬레이션</p>
+<p><strong>플랫폼:</strong> React + Vite 웹 게임 | Electron portable 빌드</p>
+<p><strong>버전:</strong> v1.7.0 | <strong>제출일:</strong> 2026-08-03</p>
+<hr>
+<h2>한 줄 소개</h2>
+<blockquote><p>9개 항구, 10종 상품, 끊임없이 움직이는 시세 — Pioneer는 "지금 팔아야 하는가, 더 가야 하는가"를 30초마다 묻는 항해 무역 시뮬레이션입니다.</p></blockquote>
+<hr>
+<h2>왜 Pioneer인가</h2>
+<p>대부분의 무역 게임은 플레이어가 최적 루트를 한 번 찾으면 반복할 수 있습니다.</p>
+<p>Pioneer는 그것을 불가능하게 만듭니다.</p>
+<p>시장이 살아 있기 때문입니다 — 3분마다 가격이 흔들리고, 1시간마다 무역풍·봉쇄·흉작이</p>
+<p>항구 네트워크를 뒤흔듭니다. 어제의 정답이 오늘의 함정이 됩니다.</p>
+<hr>
+<h2>핵심 플레이 루프</h2>
+<pre>항구 도착 → 시세·항로 분석 → 목적지·화물 결정 → 출항
+  → 항해 이벤트 대응 → 도착 후 거래·성장 → 다시 항구 도착</pre>
+<p>루프 한 사이클 <strong>3~10분</strong> — 짧은 판단이 누적되어 선단 성장으로 이어집니다.</p>
+<table>
+  <thead><tr><th>단계</th><th>플레이어 결정</th><th>게임 피드백</th></tr></thead>
+  <tbody>
+    <tr><td>시세 분석</td><td>"리스본 향신료가 지금 고점이다. 팔까?"</td><td>20턴 가격 히스토리 그래프, 예상 판매 이익</td></tr>
+    <tr><td>항로 결정</td><td>"알렉산드리아 — 위험하지만 수익이 크다"</td><td>Route Summary: 예상 수익·이동일·위험 등급·대안 항구</td></tr>
+    <tr><td>출항</td><td>목적지 확정</td><td>날씨·해적·조우 이벤트, 차항 시세 알림</td></tr>
+    <tr><td>도착</td><td>판매·매입·퀘스트 수행</td><td>수익 원인·손실 원인·다음 추천 행동 피드백</td></tr>
+  </tbody>
+</table>
+<hr>
+<h2>주요 시스템</h2>
+<h3>동적 시장 엔진</h3>
+<p>Pioneer 경제의 핵심은 세 레이어가 독립적으로 작동하는 생성형 시장 모델입니다.</p>
+<table>
+  <thead><tr><th>레이어</th><th>주기</th><th>효과</th></tr></thead>
+  <tbody>
+    <tr><td>소형 드리프트</td><td>3분</td><td>모든 항구 시세 ±2.5% 무작위 변동</td></tr>
+    <tr><td>플레이어 충격</td><td>실시간</td><td>대량 매입/매도가 해당 항구 가격에 즉시 반영 (최대 ±18%)</td></tr>
+    <tr><td>대형 이벤트</td><td>1시간</td><td>무역풍·봉쇄·흉작이 2~4개 항구에 16~38% 충격파 생성</td></tr>
+  </tbody>
+</table>
+<p>대량 매도를 반복하면 그 항구의 가격이 스스로 떨어집니다.</p>
+<p>분산 거래와 타이밍이 전략이 되는 이유입니다.</p>
+<h3>Route Summary (항로 요약)</h3>
+<p>출항 전 한 화면에서 확인합니다:</p>
+<p>예상 순수익 | 이동 소요일 | 위험 등급 | 위협 원인 | 대안 항구 비교</p>
+<p>결정에 필요한 정보를 이동 없이 모두 보여줍니다.</p>
+<h3>함대 & 선박 성장</h3>
+<ul>
+  <li>11종 선박 (스쿠너 ~ 갈레온) — 화물·속도·내구성 트레이드오프</li>
+  <li>선원 고용·훈련 / 선박 수리·업그레이드 / 지역·항로 해금 구조</li>
+</ul>
+<h3>퀘스트 & 일일 목표</h3>
+<ul>
+  <li>납품 퀘스트: 특정 항구에 특정 물자를 기간 내 납품</li>
+  <li>일일 목표: 매일 갱신되는 단기 과제로 짧은 세션 완결감 제공</li>
+</ul>
+<hr>
+<h2>구현 현황</h2>
+<table>
+  <thead><tr><th>항목</th><th>상태</th></tr></thead>
+  <tbody>
+    <tr><td>항구 9개 / 상품 10종 / 선박 11종</td><td>✅</td></tr>
+    <tr><td>동적 시장 엔진 (drift + impact + event)</td><td>✅</td></tr>
+    <tr><td>20턴 가격 히스토리 시각화</td><td>✅</td></tr>
+    <tr><td>항로 리스크/수익 Route Summary</td><td>✅</td></tr>
+    <tr><td>함대·선원 성장 / 퀘스트 / 저장·불러오기</td><td>✅</td></tr>
+    <tr><td>node --test 로직 테스트 25/25 통과</td><td>✅</td></tr>
+    <tr><td>Electron portable 빌드</td><td>✅ Pioneer_v1.7.0_portable.exe</td></tr>
+  </tbody>
+</table>
+<hr>
+<h2>실행 방법</h2>
+<table>
+  <thead><tr><th>방식</th><th>명령</th></tr></thead>
+  <tbody>
+    <tr><td>웹 개발 서버</td><td><code>npm install &amp;&amp; npm run dev</code></td></tr>
+    <tr><td>프로덕션 빌드</td><td><code>npm run build &amp;&amp; npm run preview</code></td></tr>
+    <tr><td>테스트</td><td><code>npm test</code></td></tr>
+    <tr><td>데스크톱</td><td><code>Pioneer_v1.7.0_portable.exe</code> 실행</td></tr>
+  </tbody>
+</table>
+<hr>
+<p><em>Pioneer — 항구마다 다른 가격, 항로마다 다른 위험. 최선의 결정이 최고의 항해를 만듭니다.</em></p>
+
+</body>
+</html>
