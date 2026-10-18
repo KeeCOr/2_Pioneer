@@ -1,0 +1,13 @@
+{
+  "project": "2_Pioneer",
+  "updated": "2026-10-18",
+  "audio": [
+    {
+      "role": "background music",
+      "runtime": "src\\bgm-player.js",
+      "asset": "src\\assets\\audio\\bgm_main_loop.ogg",
+      "source": "existing local asset",
+      "behavior": "one decoded loop after trusted gesture; retry; visibility suspend/resume"
+    }
+  ]
+}
